@@ -1158,6 +1158,46 @@ th.num {
   fill: var(--accent-soft);
 }
 
+/* Shown in place of the results when the calculation or a chart fails (App ErrorBoundary). */
+.error-panel {
+  border-color: var(--fail);
+  background: var(--fail-soft);
+}
+
+.error-panel h2 {
+  margin: 0 0 6px;
+  color: var(--fail);
+  font-size: 16px;
+}
+
+.error-panel p {
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.error-message {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.error-retry {
+  padding: 7px 14px;
+  border: 1px solid var(--fail);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fail);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .chart-line {
   fill: none;
   stroke: var(--accent);

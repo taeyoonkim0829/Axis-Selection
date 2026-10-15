@@ -166,6 +166,8 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 - **Selected row**: soft yellow fill + 2px yellow inset ring.
 - **Inputs**: 38px, data face 17px, unit at right, no spin buttons; invalid gets a red border and red soft ring.
 - **Segmented toggles**: blue fill when active.
+- **Error panel**: replaces the results column when the calculation fails; fail-soft fill, fail border and title, the error text on a white block, an outlined fail-colour 다시 시도 button. The inputs stay usable.
+- **Chart spans**: dwell shaded `--surface-2`, press (press move + hold) shaded `--accent-soft`, each labelled above the plot.
 
 ## Do's and Don'ts
 

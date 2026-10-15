@@ -4,8 +4,9 @@ import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './ca
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
-import { LangProvider, storedLang, storeLang, translate, type Lang } from './i18n'
+import { LangProvider, storedLang, storeLang, translate, useT, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
+import { ErrorBoundary } from './ui/ErrorBoundary'
 import { GearboxStep } from './ui/GearboxStep'
 import { InputPanel } from './ui/InputPanel'
 import { KitStep } from './ui/KitStep'
@@ -26,11 +27,67 @@ const initialRequirements: Requirements = {
   press: defaultPress,
 }
 
+interface Inputs {
+  req: Requirements
+  settings: Settings
+  setReq: (req: Requirements) => void
+  setSettings: (settings: Settings) => void
+  lang: Lang
+  setLang: (lang: Lang) => void
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>(storedLang)
   useEffect(() => storeLang(lang), [lang])
   const [req, setReq] = useState(initialRequirements)
   const [settings, setSettings] = useState<Settings>(defaultSettings)
+  const inputs: Inputs = { req, settings, setReq, setSettings, lang, setLang }
+
+  // A failing calculation or chart must not blank the page: the inputs stay, and editing one retries.
+  return (
+    <LangProvider value={lang}>
+      <ErrorBoundary resetKeys={[req, settings, lang]} fallback={(error, retry) => <Fallback {...inputs} error={error} retry={retry} />}>
+        <Workspace {...inputs} />
+      </ErrorBoundary>
+    </LangProvider>
+  )
+}
+
+function Footer() {
+  return (
+    <footer className="app-footer">
+      © 2026. Kim Taeyoon. All rights reserved.
+      <br />
+      <a href="mailto:theo.kim0829@gmail.com">theo.kim0829@gmail.com</a>
+    </footer>
+  )
+}
+
+/** The page after an error: the inputs and an error notice in place of the results. */
+function Fallback({ req, settings, setReq, setSettings, lang, setLang, error, retry }: Inputs & { error: Error; retry: () => void }) {
+  const t = useT()
+  return (
+    <div className="app">
+      <RouteRail axis={null} drive={null} kit={null} onExport={() => {}} exporting={false} lang={lang} onLang={setLang} />
+      <main className="layout">
+        <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} />
+        <div className="results">
+          <section className="panel error-panel" role="alert">
+            <h2>{t('계산 중 오류가 발생했습니다')}</h2>
+            <p>{t('입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.')}</p>
+            <pre className="error-message">{error.message}</pre>
+            <button type="button" className="error-retry" onClick={retry}>
+              {t('다시 시도')}
+            </button>
+          </section>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs) {
   const [axisId, setAxisId] = useState<string | null>(null)
   const [motorId, setMotorId] = useState<string | null>(null)
   // Gearbox picked in step 3; null = the motor step's recommendation (direct drive unless useGearbox)
@@ -100,7 +157,7 @@ export default function App() {
   }, [exporting]) // eslint-disable-line react-hooks/exhaustive-deps -- runs once per export
 
   return (
-    <LangProvider value={lang}>
+    <>
       <div className="app">
         <RouteRail
           axis={selectedAxis}
@@ -168,11 +225,7 @@ export default function App() {
             />
           </div>
         </main>
-        <footer className="app-footer">
-          © 2026. Kim Taeyoon. All rights reserved.
-          <br />
-          <a href="mailto:theo.kim0829@gmail.com">theo.kim0829@gmail.com</a>
-        </footer>
+        <Footer />
       </div>
       {exporting && selectedAxis && (
         <div className="report-stage" ref={reportRef} aria-hidden="true">
@@ -187,6 +240,6 @@ export default function App() {
           />
         </div>
       )}
-    </LangProvider>
+    </>
   )
 }

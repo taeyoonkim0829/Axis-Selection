@@ -137,6 +137,10 @@ export const en: Record<string, string> = {
   '가압 유지': 'Press hold',
   '압착': 'Press',
   '압착 방향': 'Press direction',
+  '계산 중 오류가 발생했습니다': 'An error occurred during the calculation',
+  '입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.':
+    'Changing an input recalculates. If the same error keeps appearing, reload the page.',
+  '다시 시도': 'Try again',
   '위→아래 (눌러 내림)': 'Top-down (pressing down)',
   '아래→위 (밀어 올림)': 'Bottom-up (pushing up)',
   'ESBF 외부 가이드 사용': 'ESBF with external guide',
