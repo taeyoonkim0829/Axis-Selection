@@ -1401,7 +1401,8 @@
       "stage": 1,
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": 100,
       "maxTorque": 180,
@@ -2216,8 +2217,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": 300,
       "maxTorque": 540,
@@ -5003,8 +5007,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,

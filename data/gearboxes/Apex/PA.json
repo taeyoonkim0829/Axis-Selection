@@ -9,7 +9,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -30,7 +32,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -51,7 +55,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -72,7 +78,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -93,7 +101,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -114,7 +124,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -135,7 +147,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -156,7 +170,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -177,7 +193,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -198,7 +216,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -219,7 +239,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -240,7 +262,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -261,7 +285,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -282,7 +308,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -303,7 +331,9 @@
       "flangeSize": 42,
       "compatibleMotors": [
         "KP053",
-        "KP13"
+        "KR053",
+        "KP13",
+        "KR13"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -324,7 +354,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -345,7 +377,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -366,7 +400,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -387,7 +423,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -408,7 +446,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -429,7 +469,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -450,7 +492,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -471,7 +515,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -492,7 +538,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -513,7 +561,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -534,7 +584,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -555,7 +607,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -576,7 +630,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -597,7 +653,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -618,7 +676,9 @@
       "flangeSize": 60,
       "compatibleMotors": [
         "KP23",
-        "KP43"
+        "KR23",
+        "KP43",
+        "KR43"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -638,7 +698,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -658,7 +719,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -678,7 +740,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -698,7 +761,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -718,7 +782,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -738,7 +803,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -758,7 +824,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -778,7 +845,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -798,7 +866,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -818,7 +887,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -838,7 +908,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -858,7 +929,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -878,7 +950,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -898,7 +971,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -918,7 +992,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -939,8 +1014,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -961,8 +1039,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -983,8 +1064,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1005,8 +1089,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1027,8 +1114,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1049,8 +1139,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1071,8 +1164,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1093,8 +1189,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1115,8 +1214,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1137,8 +1239,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1159,8 +1264,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1181,8 +1289,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1203,8 +1314,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1225,8 +1339,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1247,8 +1364,11 @@
       "flangeSize": 115,
       "compatibleMotors": [
         "SP52",
+        "SR52",
         "SP102",
-        "SP152"
+        "SR102",
+        "SP152",
+        "SR152"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1269,9 +1389,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1292,9 +1416,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1315,9 +1443,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1338,9 +1470,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1361,9 +1497,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1384,9 +1524,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1407,9 +1551,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1430,9 +1578,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1453,9 +1605,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1476,9 +1632,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1499,9 +1659,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1522,9 +1686,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1545,9 +1713,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1568,9 +1740,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,
@@ -1591,9 +1767,13 @@
       "flangeSize": 142,
       "compatibleMotors": [
         "SP202",
+        "SR202",
         "SP352",
+        "SR352",
         "SP502",
-        "SP702"
+        "SR502",
+        "SP702",
+        "SR702"
       ],
       "continuousTorque": null,
       "maxTorque": null,

@@ -8,7 +8,8 @@
       "maker": "Apex",
       "flangeSize": 90,
       "compatibleMotors": [
-        "KP73"
+        "KP73",
+        "KR73"
       ],
       "continuousTorque": null,
       "maxTorque": null,

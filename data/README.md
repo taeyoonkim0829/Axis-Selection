@@ -63,6 +63,8 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `inertia` | kg·cm², at the input (motor) side |
 | `efficiency` | % |
 | `driveCode` | interface code at the input (motor) side; equals the motor's `interfaceCode`, e.g. `60P`. Apex: taken from `compatibleMotors` (HF-KP = HG-KR codes, HF-SP = HG-SR codes); `null` where `compatibleMotors` is `null` |
+
+Apex `compatibleMotors` lists each HF-KP / HF-SP code together with the HG-KR / HG-SR code of the same size (`KP13` + `KR13`, `SP102` + `SR102`): HG-KR has HF-KP's mounting interface and HG-SR has HF-SP's (confirmed by the user), so both series get the same gearboxes.
 | `interfaceCode` | mounting kit code at the output (axis) side, e.g. `60G0` |
 
 Apex AB/ABR (`gearboxes/Apex/AB.json`, `ABR.json`) is built from the Apex Dynamics catalog in that folder (AB p.79, ABR p.82): one item per size and ratio, including AB060A/AB090A (larger input bore, 2-stage only). `continuousTorque` is the nominal output torque T2N and `maxTorque` the max. acceleration torque T2B = 60% of T2NOT = 1.8 × T2N. `compatibleMotors` and `interfaceCode` came from the retired Excel and exist only for the sizes listed there; the rest are `null` (not in the catalog). Extra fields: `stage`, `nominalInputSpeed` / `maxInputSpeed` (rpm), `emergencyStopTorque` (T2NOT, Nm), `backlashArcmin` (`P0`/`P1`/`P2`, arcmin; `null` = not made), `radialLoad` / `axialLoad` (N), `mass` (kg). `ABR120-14` is not in the catalog and is left as it was. PA and AE still have only ratio and inertia.

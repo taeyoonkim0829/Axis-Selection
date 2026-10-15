@@ -114,6 +114,17 @@ describe('selection on real data', () => {
     expect(drives.every((d) => d.motor.brake)).toBe(true)
   })
 
+  it('offers Apex gearboxes to HG-KR/HG-SR like their HF-KP/HF-SP counterparts', () => {
+    const fits = (model: string) => gearboxOptionsFor(motors.find((m) => m.model === model)!).map((g) => g.id)
+    expect(fits('HG-KR13')).toEqual(fits('HF-KP13'))
+    expect(fits('HG-KR13')).toContain('AB042-3')
+    expect(fits('HG-SR102')).toEqual(fits('HF-SP102'))
+    expect(fits('HG-SR102').length).toBeGreaterThan(0)
+    // The gearbox input side must take the motor's mounting interface.
+    for (const m of motors.filter((x) => x.maker === 'Mitsubishi'))
+      for (const g of gearboxOptionsFor(m)) if (g.driveCode) expect(g.driveCode, `${m.model} ${g.id}`).toBe(m.interfaceCode)
+  })
+
   it('checks direct drive only, or each motor with its lowest passing gearbox', () => {
     const [first] = selectAxes(axes, baseReq, defaultSettings)
     const direct = selectMotors(first, motors, defaultSettings)
