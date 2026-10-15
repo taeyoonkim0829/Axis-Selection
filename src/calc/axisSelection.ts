@@ -47,6 +47,8 @@ export interface InfoItem {
 
 export interface AxisEvaluation {
   axis: Axis
+  /** Model and order number for the required stroke */
+  order: AxisOrder
   status: Status
   checks: Check[]
   info: InfoItem[]
@@ -76,6 +78,37 @@ export interface AxisEvaluation {
   samples: AxisSample[]
   guideFv: number
   axisMass: number
+}
+
+/** What to order for an axis and a required stroke. */
+export interface AxisOrder {
+  /** Type code with the ordered stroke filled in (ESBF), else the data model name */
+  model: string
+  partNumber: string | null
+  /** mm, the ordered stroke; null when the axis is not ordered by stroke here */
+  stroke: number | null
+  /** true when no standard stroke fits and the stroke is configured (modular product system) */
+  modular: boolean
+}
+
+/**
+ * ESBF comes in standard strokes with their own order numbers: the required stroke is rounded up to the
+ * next one. Longer strokes are configured in the modular product system (stroke rounded up to a whole mm,
+ * ordered by module number). Other axes keep their data model name.
+ */
+export function axisOrder(axis: Axis, stroke: number): AxisOrder {
+  if (!axis.strokePartNumbers) return { model: axis.model, partNumber: null, stroke: null, modular: false }
+  const standard = Object.keys(axis.strokePartNumbers)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .find((s) => s >= stroke)
+  const ordered = standard ?? Math.ceil(stroke)
+  return {
+    model: axis.model.replace('…', String(ordered)),
+    partNumber: standard != null ? axis.strokePartNumbers[String(standard)] : (axis.moduleNumber ?? null),
+    stroke: ordered,
+    modular: standard == null,
+  }
 }
 
 export function axisFeed(axis: Axis): number | null {
@@ -205,8 +238,11 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const vertical = req.mounting === 'vertical'
   const efficiency = settings.efficiency[axis.drive]
   const mu = settings.friction[axis.drive]
-  const mass = req.payload + axis.slideMass + ((axis.slideMassPer10mm ?? 0) * req.stroke) / 10
-  const inertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * req.stroke) / 1000 + axis.inertiaJLPerKg * req.payload
+  // Mass and inertia follow the built stroke (the ordered one for ESBF), the motion the required one.
+  const order = axisOrder(axis, req.stroke)
+  const builtStroke = order.stroke ?? req.stroke
+  const mass = req.payload + axis.slideMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
+  const inertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * builtStroke) / 1000 + axis.inertiaJLPerKg * req.payload
   const toRad = (2 * Math.PI) / (feed / 1000)
   // Weight opposes the forward move when it goes up and helps it when it goes down (top-down pressing).
   const gravity = vertical ? (verticalForward(req) === 'down' ? -1 : 1) * mass * G : 0
@@ -280,7 +316,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     })
   }
 
-  const mAxis = axisMass(axis, req.stroke)
+  const mAxis = axisMass(axis, builtStroke)
   if (!vertical) {
     const totalLength = axis.baseLength ? req.stroke + axis.baseLength : null
     const span = settings.supportSpan > 0 ? settings.supportSpan : totalLength
@@ -347,6 +383,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
 
   return {
     axis,
+    order,
     status: worstStatus(checks),
     checks,
     info,

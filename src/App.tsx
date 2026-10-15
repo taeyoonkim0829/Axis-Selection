@@ -140,7 +140,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   }
   useEffect(() => {
     if (!exporting || !reportRef.current || !selectedAxis) return
-    const title = reportTitle(selectedAxis.axis.model, lang)
+    const title = reportTitle(selectedAxis.order.model, lang)
     reportToPdf(reportRef.current, title)
       .then((blob) => {
         const url = URL.createObjectURL(new File([blob], `${title}.pdf`, { type: 'application/pdf' }))

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
-import { curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
+import { axisOrder, curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
 import { moveProfile } from './motionProfile'
 import { defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
@@ -220,6 +220,17 @@ describe('selection on real data', () => {
     const long = life(800, 0.1)
     expect(long.value).toBeGreaterThan(5000)
     expect(long.alert).toBe(false)
+  })
+
+  it('orders ESBF in the next standard stroke, or modular above 400 mm', () => {
+    const esbf63 = axes.find((a) => a.id === 'ESBF-BS-63-…-10P')!
+    expect(axisOrder(esbf63, 250)).toEqual({ model: 'ESBF-BS-63-300-10P', partNumber: '574098', stroke: 300, modular: false })
+    expect(axisOrder(esbf63, 100).partNumber).toBe('574096')
+    expect(axisOrder(esbf63, 512.3)).toEqual({ model: 'ESBF-BS-63-513-10P', partNumber: '574090', stroke: 513, modular: true })
+    expect(axisOrder(spindle, 250)).toEqual({ model: spindle.model, partNumber: null, stroke: null, modular: false })
+    // Mass follows the ordered stroke: 250 mm is built as 300 mm.
+    const ev = evaluateAxis(esbf63, { ...baseReq, stroke: 250 }, defaultSettings)!
+    expect(ev.axisMass).toBeCloseTo(3.165 + 0.087 * 30)
   })
 
   it('curveAt interpolates and clamps', () => {

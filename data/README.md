@@ -31,6 +31,7 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `Iy`, `Iz` | mm⁴ |
 | `baseLength` (at 0 stroke), `slideLength`, `allowableDeflection` | mm |
 | `screwDynamicLoadRating` | N |
+| `strokePartNumbers` / `moduleNumber` | ESBF only: order number per standard stroke (100, 200, 300, 400 mm; documentation p.24–25) / module number for other strokes (modular product system, p.26). `model` has … where the stroke goes |
 | `maxSwitchingCycles` | ESBF only: the screw life also ends after this many switching cycles (round trips), 10 million for ESBF-BS (documentation p.16) |
 | `pulleyDensity` | kg/cm³ |
 | `standardStrokes` | mm |

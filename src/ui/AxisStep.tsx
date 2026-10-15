@@ -38,7 +38,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
     toggle,
   } = useSort(showFailed ? results : passing, {
     status: (e) => statusRank[e.status],
-    model: (e) => e.axis.model,
+    model: (e) => e.order.model,
     drive: (e) => driveLabel[e.axis.drive],
     mass: (e) => e.axisMass,
     speed: (e) => ratioOf(e, '속도'),
@@ -129,7 +129,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
                   <td>
                     <StatusBadge status={e.status} />
                   </td>
-                  <td className="model">{e.axis.model}</td>
+                  <td className="model">{e.order.model}</td>
                   <td>{t(driveLabel[e.axis.drive])}</td>
                   <td className="num">{fmt(e.axisMass, 1)} kg</td>
                   <td>
@@ -157,7 +157,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
       {selected && (
         <div className="detail">
           <CollapseTitle open={detailOpen} onToggle={() => setDetailOpen(!detailOpen)}>
-            {t('{model} 세부사항', { model: selected.axis.model })}
+            {t('{model} 세부사항', { model: selected.order.model })}
           </CollapseTitle>
           {detailOpen && (
             <>

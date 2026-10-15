@@ -106,7 +106,7 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
           <Sign
             no={1}
             name={t('직교 축')}
-            value={axis?.axis.model ?? null}
+            value={axis?.order.model ?? null}
             status={axis?.status}
             detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
             active={active === 0}

@@ -36,7 +36,9 @@ export async function reportToPdf(root: HTMLElement, title: string): Promise<Blo
 
 /** Suggested file name / PDF title: 축선정_<axis model>_<yyyy-mm-dd> (AxisSelection_… in English). */
 export function reportTitle(axisModel: string, lang: Lang): string {
-  const date = new Date().toISOString().slice(0, 10)
+  // Local date (toISOString would give the UTC date, a day early in Korea before 9:00)
+  const now = new Date()
+  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   return translate(lang, '축선정_{model}_{date}', { model: axisModel, date }).replace(/[\\/:*?"<>|]/g, '_')
 }
 

@@ -60,6 +60,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022562",
+        "200": "2215384",
+        "300": "8022563",
+        "400": "8022564"
+      },
+      "moduleNumber": "8022569",
       "interfaceCode": "D32",
       "pressureForceCurve": [
         [0, 1000],
@@ -147,6 +154,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022565",
+        "200": "8022566",
+        "300": "8022567",
+        "400": "8022568"
+      },
+      "moduleNumber": "8022569",
       "interfaceCode": "D32",
       "pressureForceCurve": [
         [0, 1000],
@@ -234,6 +248,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022574",
+        "200": "2215385",
+        "300": "8022575",
+        "400": "8022576"
+      },
+      "moduleNumber": "8022585",
       "interfaceCode": "D40",
       "pressureForceCurve": [
         [0, 3000],
@@ -323,6 +344,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022577",
+        "200": "8022578",
+        "300": "8022579",
+        "400": "8022580"
+      },
+      "moduleNumber": "8022585",
       "interfaceCode": "D40",
       "pressureForceCurve": [
         [0, 3000],
@@ -412,6 +440,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022581",
+        "200": "8022582",
+        "300": "8022583",
+        "400": "8022584"
+      },
+      "moduleNumber": "8022585",
       "interfaceCode": "D40",
       "pressureForceCurve": [
         [0, 2600],
@@ -501,6 +536,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022590",
+        "200": "2215386",
+        "300": "8022591",
+        "400": "8022592"
+      },
+      "moduleNumber": "8022601",
       "interfaceCode": "D50",
       "pressureForceCurve": [
         [0, 5000],
@@ -592,6 +634,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022593",
+        "200": "8022594",
+        "300": "8022595",
+        "400": "8022596"
+      },
+      "moduleNumber": "8022601",
       "interfaceCode": "D50",
       "pressureForceCurve": [
         [0, 5000],
@@ -683,6 +732,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "8022597",
+        "200": "8022598",
+        "300": "8022599",
+        "400": "8022600"
+      },
+      "moduleNumber": "8022601",
       "interfaceCode": "D50",
       "pressureForceCurve": [
         [0, 4500],
@@ -773,6 +829,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574093",
+        "200": "1347390",
+        "300": "574094",
+        "400": "574095"
+      },
+      "moduleNumber": "574090",
       "interfaceCode": "D60",
       "pressureForceCurve": [
         [0, 7000],
@@ -864,6 +927,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574096",
+        "200": "574097",
+        "300": "574098",
+        "400": "574099"
+      },
+      "moduleNumber": "574090",
       "interfaceCode": "D60",
       "pressureForceCurve": [
         [0, 7000],
@@ -955,6 +1025,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574100",
+        "200": "574101",
+        "300": "574102",
+        "400": "574103"
+      },
+      "moduleNumber": "574090",
       "interfaceCode": "D60",
       "pressureForceCurve": [
         [0, 6000],
@@ -1045,6 +1122,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574104",
+        "200": "1347391",
+        "300": "574105",
+        "400": "574106"
+      },
+      "moduleNumber": "574091",
       "interfaceCode": "D80",
       "pressureForceCurve": [
         [0, 12000],
@@ -1136,6 +1220,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574107",
+        "200": "574108",
+        "300": "574109",
+        "400": "574110"
+      },
+      "moduleNumber": "574091",
       "interfaceCode": "D80",
       "pressureForceCurve": [
         [0, 12000],
@@ -1227,6 +1318,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574111",
+        "200": "574112",
+        "300": "574113",
+        "400": "574114"
+      },
+      "moduleNumber": "574091",
       "interfaceCode": "D80",
       "pressureForceCurve": [
         [0, 10000],
@@ -1319,6 +1417,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574115",
+        "200": "1347393",
+        "300": "574116",
+        "400": "574117"
+      },
+      "moduleNumber": "574092",
       "interfaceCode": "D100",
       "pressureForceCurve": [
         [0, 17000],
@@ -1409,6 +1514,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574118",
+        "200": "574119",
+        "300": "574120",
+        "400": "574121"
+      },
+      "moduleNumber": "574092",
       "interfaceCode": "D100",
       "pressureForceCurve": [
         [0, 17000],
@@ -1499,6 +1611,13 @@
         300,
         400
       ],
+      "strokePartNumbers": {
+        "100": "574122",
+        "200": "574123",
+        "300": "574124",
+        "400": "574125"
+      },
+      "moduleNumber": "574092",
       "interfaceCode": "D100",
       "pressureForceCurve": [
         [0, 14500],

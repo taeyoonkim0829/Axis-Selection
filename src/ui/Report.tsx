@@ -82,7 +82,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const selection: [string, string, string, string | null, Status | null][] = [
-    [t('직교 축'), 'Festo', a.model, null, axis.status],
+    [t('직교 축'), 'Festo', axis.order.model, axis.order.partNumber, axis.status],
     [t('모터'), drive?.motor.maker ?? '—', drive?.motor.model ?? t('선택 안 됨'), null, drive?.status ?? null],
     [
       t('감속기'),
@@ -181,9 +181,18 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
       </Chapter>
 
       <Chapter no={3} title={t('축 선정 세부사항')}>
-        <h3>{a.model}</h3>
+        <h3>{axis.order.model}</h3>
         <SpecTable
           rows={[
+            ...(axis.order.stroke != null
+              ? ([
+                  ['주문번호', axis.order.partNumber ?? '—'],
+                  [
+                    '주문 스트로크',
+                    `${q(axis.order.stroke, 'mm')}${axis.order.modular ? ` (${t('모듈러 제품, 모듈 번호로 주문')})` : ''}`,
+                  ],
+                ] as Row[])
+              : []),
             ['제품군', [a.family, a.variant].filter(Boolean).join('-')],
             ['구동 방식', t(driveLabel[a.drive])],
             ['최대 스트로크', q(a.maxStroke, 'mm')],

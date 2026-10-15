@@ -56,6 +56,10 @@ export interface Axis {
   maxSwitchingCycles?: number | null
   allowableDeflection: number | null
   standardStrokes: number[] | string[] | null
+  /** ESBF: order number per standard stroke (mm as key); `model` has … where the stroke goes */
+  strokePartNumbers?: Record<string, string> | null
+  /** ESBF: module number for other strokes (modular product system) */
+  moduleNumber?: string | null
   /** mechanical interface code for mounting kits; null when unknown */
   interfaceCode: string | null
 }

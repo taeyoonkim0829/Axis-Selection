@@ -140,6 +140,8 @@ export const en: Record<string, string> = {
   '입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.':
     'Changing an input recalculates. If the same error keeps appearing, reload the page.',
   '다시 시도': 'Try again',
+  '주문 스트로크': 'Ordered stroke',
+  '모듈러 제품, 모듈 번호로 주문': 'modular product, ordered by module number',
   '어플리케이션 선택': 'Application',
   '어플리케이션': 'Application',
   '일반': 'General',
