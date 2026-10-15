@@ -60,7 +60,7 @@ export const defaultSettings: Settings = {
   hoursPerDay: 24,
   supportSpan: 0,
   defaultInertiaRatio: 10,
-  families: ['ELGT', 'ELGD', 'EGC'],
+  families: ['ELGT', 'ELGD', 'EGC', 'ESBF'],
   drives: ['belt', 'spindle'],
   makers: ['Festo'],
   excludedMotorFamilies: [],

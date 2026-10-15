@@ -40,7 +40,7 @@ Vendor tools (Festo Electric Motion Sizing, Rexroth LinSelect, SigmaSelect, Moto
 
 ## Evidence on Hand
 
-- Real product data in `data/` (Festo ELGT/ELGD/EGC axes, motors, gearboxes, kits).
+- Real product data in `data/` (Festo ELGT/ELGD/EGC/ESBF axes, motors, gearboxes, kits).
 - `images/center_of_gravity.png` (COG coordinate explanation).
 - No customer testimonials, logos or case studies; none should be invented.
 

@@ -8,7 +8,7 @@ data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits
 
 Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up automatically (restart `npm run dev`). Every item needs a unique `id`, and `family` should match its file name. Missing values are `null`. The TypeScript shapes are in `src/data/types.ts`, and `npm test` loads the real data.
 
-## Axes (`axes/Festo/ELGT|ELGD|EGC.json`)
+## Axes (`axes/Festo/ELGT|ELGD|EGC|ESBF.json`)
 
 | Field | Unit / meaning |
 |---|---|
@@ -31,6 +31,8 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `pulleyDensity` | kg/cm³ |
 | `standardStrokes` | mm |
 | `interfaceCode` | mounting kit code, e.g. `T42-60` |
+
+ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide) is extracted from the ED_Data sheet of the E-Drive workbook Ver15.04: the ball screw versions ESBF-BS-32…100. `interfaceCode` comes from the Motor Kit_Selection workbook (`D32`, `D40`, `D50`, `D60` for size 63, `D80`, `D100`). Guide maxima (`FyMax`…`MzMax`), `Iy`/`Iz` and `screwDynamicLoadRating` are not in the Excel, so the guide check has no limits, deflection and screw life are skipped; the payload needs an external guide. `baseMass` of ESBF-BS-40-…-5P is 1.237 (the Excel has 1237). The lead screw versions ESBF-LS are left out: the Excel lists them as ball screws with values copied from the BS rows.
 
 ## Motors (`motors/<maker>/<family>.json`)
 

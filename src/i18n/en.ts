@@ -274,6 +274,7 @@ export const enData: [RegExp, string][] = [
   [/^볼베어링 가이드 스핀들 축$/, 'Spindle axis with ball bearing guide'],
   [/^고하중 가이드내장 스핀들축$/, 'Heavy-duty spindle axis with integrated guide'],
   [/^고하중 가이드내장 톱니벨트축$/, 'Heavy-duty toothed belt axis with integrated guide'],
+  [/^전기 실린더 축$/, 'Electric cylinder'],
   [/^저관성 /, 'Low-inertia '],
   [/^고관성 /, 'High-inertia '],
   [/초저관성/g, 'ultra-low inertia'],

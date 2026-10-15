@@ -1,7 +1,7 @@
 // Shapes of the JSON files in data/. Field units are listed in data/README.md
 // (mm, kg, N, Nm, kg·cm², m/s, m/s², rpm).
 
-export type AxisFamily = 'ELGT' | 'ELGD' | 'EGC'
+export type AxisFamily = 'ELGT' | 'ELGD' | 'EGC' | 'ESBF'
 export type DriveKind = 'belt' | 'spindle'
 
 export interface Axis {

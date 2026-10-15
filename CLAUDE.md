@@ -13,7 +13,7 @@ The app sizes and selects a Festo Cartesian (linear) axis, plus the matching mot
 **Inputs:** stroke, velocity, acceleration, jerk, payload mass, payload center of gravity (x/y/z offsets), mounting orientation — floor (horizontal), wall (horizontal, side-mounted), or vertical.
 
 **Selection outputs, in order (each step depends on the previous):**
-1. **Axis** — Festo ELGT, ELGD, EGC (incl. EGC-HD, ELGD-WD)
+1. **Axis** — Festo ELGT, ELGD, EGC (incl. EGC-HD, ELGD-WD), ESBF (electric cylinder, ball screw)
 2. **Motor** — Festo, Siemens, Mitsubishi
 3. **Gearbox** — optional (direct drive or a compatible gearbox)
 4. **Motor–axis mounting kit** — Festo, matched to the gearbox output when one is used

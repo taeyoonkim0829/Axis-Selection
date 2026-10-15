@@ -15,7 +15,7 @@ interface Props {
   onSettings: (settings: Settings) => void
 }
 
-const families: AxisFamily[] = ['ELGT', 'ELGD', 'EGC']
+const families: AxisFamily[] = ['ELGT', 'ELGD', 'EGC', 'ESBF']
 const drives: DriveKind[] = ['belt', 'spindle']
 
 const ratioOf = (e: AxisEvaluation, label: string) => e.checks.find((c) => c.label === label)?.ratio ?? null

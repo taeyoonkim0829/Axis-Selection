@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { axes, gearboxes, motors } from '../data'
+import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
 import { evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
@@ -118,6 +118,15 @@ describe('selection on real data', () => {
     expect(motors.some((m) => m.family.startsWith('HF-'))).toBe(false)
     expect(gearboxes.some((g) => g.family === 'PA')).toBe(false)
     expect(gearboxes.some((g) => g.family === 'AE')).toBe(true)
+  })
+
+  it('loads ESBF ball screw axes with kits for their interface codes', () => {
+    const esbf = axes.filter((a) => a.family === 'ESBF')
+    expect(esbf.length).toBe(17)
+    expect(new Set(esbf.map((a) => a.interfaceCode))).toEqual(new Set(['D32', 'D40', 'D50', 'D60', 'D80', 'D100']))
+    for (const a of esbf) expect(kits.some((k) => k.axisCode === a.interfaceCode), a.id).toBe(true)
+    expect(esbf.every((a) => a.baseMass < 20)).toBe(true)
+    expect(selectAxes(esbf, baseReq, defaultSettings).some((r) => r.status !== 'fail')).toBe(true)
   })
 
   it('offers Apex gearboxes to HG-KR/HG-SR (same interface as HF-KP/HF-SP)', () => {
