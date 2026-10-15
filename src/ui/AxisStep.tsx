@@ -19,6 +19,13 @@ const families: AxisFamily[] = ['ELGT', 'ELGD', 'EGC', 'ESBF']
 const drives: DriveKind[] = ['belt', 'spindle']
 
 const ratioOf = (e: AxisEvaluation, label: string) => e.checks.find((c) => c.label === label)?.ratio ?? null
+/** Feed force column: the tighter of Fx and, for electric cylinders, the buckling limit */
+const forceRatio = (e: AxisEvaluation) => {
+  const r = [ratioOf(e, '이송력 Fx'), ratioOf(e, '압축력 (좌굴)')].filter((x) => x != null)
+  return r.length ? Math.max(...r) : null
+}
+/** Guide column: fv, or the piston rod lateral force for electric cylinders */
+const guideRatio = (e: AxisEvaluation) => ratioOf(e, '가이드 하중 비교값 fv') ?? ratioOf(e, '로드 횡하중 Fq')
 
 export function AxisStep({ results, selectedId, onSelect, settings, onSettings }: Props) {
   const t = useT()
@@ -36,9 +43,9 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
     mass: (e) => e.axisMass,
     speed: (e) => ratioOf(e, '속도'),
     accel: (e) => ratioOf(e, '가속도'),
-    force: (e) => ratioOf(e, '이송력 Fx'),
+    force: forceRatio,
     torque: (e) => ratioOf(e, '구동 토크'),
-    fv: (e) => ratioOf(e, '가이드 하중 비교값 fv'),
+    fv: guideRatio,
   })
   const th = { sort, onSort: toggle }
   const selected = results.find((r) => r.axis.id === selectedId)
@@ -125,13 +132,13 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
                     <Ratio ratio={ratioOf(e, '가속도')} />
                   </td>
                   <td>
-                    <Ratio ratio={ratioOf(e, '이송력 Fx')} />
+                    <Ratio ratio={forceRatio(e)} />
                   </td>
                   <td>
                     <Ratio ratio={ratioOf(e, '구동 토크')} />
                   </td>
                   <td>
-                    <Ratio ratio={ratioOf(e, '가이드 하중 비교값 fv')} />
+                    <Ratio ratio={guideRatio(e)} />
                   </td>
                 </tr>
               ))}

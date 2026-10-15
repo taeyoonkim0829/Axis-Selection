@@ -118,6 +118,12 @@ export const en: Record<string, string> = {
   '이 스트로크부터 스핀들 최대 속도가 줄어듭니다. 카탈로그의 속도-스트로크 선도를 확인하세요.':
     'From this stroke the maximum spindle speed decreases. Check the speed-stroke curve in the catalog.',
   '가이드 하중 비교값 fv': 'Guide load comparison value fv',
+  '압축력 (좌굴)': 'Pressure force (buckling)',
+  '로드 길이 {stroke} mm 기준, 전진 = 로드가 나가는 방향': 'For a rod length of {stroke} mm; forward = rod extending',
+  '로드 횡하중 Fq': 'Lateral force on piston rod Fq',
+  '외부 가이드 없이 로드에 하중을 걸 때의 한계 — 외부 가이드 사용 검토':
+    'Limit for a load carried by the rod without an external guide; consider an external guide',
+  '무게 중심 오프셋에 의한 모멘트는 포함하지 않음': 'Moments from the centre-of-gravity offset are not included',
   '허용값 없음: {keys}': 'No allowed value: {keys}',
   '처짐': 'Deflection',
   '지지 간격 {span} mm 기준': 'For a support spacing of {span} mm',

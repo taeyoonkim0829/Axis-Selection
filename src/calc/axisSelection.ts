@@ -80,6 +80,19 @@ export function screwLoadFactor(v: number): number {
   return 3.5
 }
 
+/** Linear interpolation in a [x, y] curve, clamped to its ends. */
+export function curveAt(curve: [number, number][], x: number): number {
+  if (x <= curve[0][0]) return curve[0][1]
+  for (let i = 1; i < curve.length; i++) {
+    const [x1, y1] = curve[i]
+    if (x <= x1) {
+      const [x0, y0] = curve[i - 1]
+      return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0)
+    }
+  }
+  return curve[curve.length - 1][1]
+}
+
 export interface GuideLoads {
   Fy: number
   Fz: number
@@ -179,6 +192,17 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
   ]
 
+  // Electric cylinder: the pressure force is limited by buckling of the piston rod (rod length = stroke).
+  // Positive force pushes in the forward direction, taken as the rod extending.
+  if (axis.pressureForceCurve) {
+    const compression = Math.max(0, ...samples.map((s) => s.force))
+    checks.push({
+      ...check('압축력 (좌굴)', compression, curveAt(axis.pressureForceCurve, req.stroke), 'N'),
+      note: '로드 길이 {stroke} mm 기준, 전진 = 로드가 나가는 방향',
+      noteArgs: { stroke: req.stroke },
+    })
+  }
+
   if (axis.drive === 'spindle' && axis.speedLimitStroke && req.stroke > axis.speedLimitStroke) {
     checks.push({
       label: '스트로크별 속도 한계',
@@ -192,12 +216,24 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   }
 
   const loads = guideLoads(req, mass, fwd.peakAcceleration)
-  const { fv, missing } = guideComparisonValue(loads, axis)
-  checks.push({
-    ...check('가이드 하중 비교값 fv', fv, 1, ''),
-    note: missing.length ? '허용값 없음: {keys}' : undefined,
-    noteArgs: missing.length ? { keys: missing.join(', ') } : undefined,
-  })
+  let fv = 0
+  if (axis.rodLateralForceCurve) {
+    // Electric cylinder without its own guide: the payload hangs on the piston rod.
+    const c = check('로드 횡하중 Fq', Math.hypot(loads.Fy, loads.Fz), curveAt(axis.rodLateralForceCurve, req.stroke), 'N')
+    checks.push(
+      c.status === 'fail'
+        ? { ...c, status: 'warn', note: '외부 가이드 없이 로드에 하중을 걸 때의 한계 — 외부 가이드 사용 검토' }
+        : { ...c, note: '무게 중심 오프셋에 의한 모멘트는 포함하지 않음' },
+    )
+  } else {
+    const guide = guideComparisonValue(loads, axis)
+    fv = guide.fv
+    checks.push({
+      ...check('가이드 하중 비교값 fv', fv, 1, ''),
+      note: guide.missing.length ? '허용값 없음: {keys}' : undefined,
+      noteArgs: guide.missing.length ? { keys: guide.missing.join(', ') } : undefined,
+    })
+  }
 
   const mAxis = axisMass(axis, req.stroke)
   if (!vertical) {

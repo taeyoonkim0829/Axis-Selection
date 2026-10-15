@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
-import { evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
+import { curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
 import { defaultSettings, type Requirements } from './types'
 
@@ -130,6 +130,30 @@ describe('selection on real data', () => {
     // The piston rod grows with the stroke: moving mass mb = mb0 + mb10 · stroke / 10.
     const esbf63 = esbf.find((a) => a.id === 'ESBF-BS-63-…-10P')!
     expect(evaluateAxis(esbf63, baseReq, defaultSettings)!.movingMass).toBeCloseTo(10 + 1.831 + 0.052 * 50)
+  })
+
+  it('limits ESBF by rod buckling and rod lateral force from the data sheet curves', () => {
+    const esbf63 = axes.find((a) => a.id === 'ESBF-BS-63-…-10P')!
+    const checkOf = (stroke: number, mounting: Requirements['mounting'] = 'floor') =>
+      evaluateAxis(esbf63, { ...baseReq, stroke, mounting }, defaultSettings)!.checks
+    const buckling = (stroke: number) => checkOf(stroke).find((c) => c.label === '압축력 (좌굴)')!
+    expect(buckling(500).limit).toBe(7000)
+    expect(buckling(1200).limit).toBeGreaterThan(1500)
+    expect(buckling(1200).limit).toBeLessThan(1800)
+
+    // 10 kg on the rod is far beyond the lateral force at 500 mm: warn (an external guide may carry it).
+    const lateral = checkOf(500).find((c) => c.label === '로드 횡하중 Fq')!
+    expect(lateral.value).toBeCloseTo((10 + 1.831 + 0.052 * 50) * G)
+    expect(lateral.status).toBe('warn')
+    expect(checkOf(500).some((c) => c.label === '가이드 하중 비교값 fv')).toBe(false)
+    expect(checkOf(500, 'vertical').find((c) => c.label === '로드 횡하중 Fq')!.status).toBe('ok')
+  })
+
+  it('curveAt interpolates and clamps', () => {
+    const curve: [number, number][] = [[0, 10], [100, 10], [200, 4]]
+    expect(curveAt(curve, 50)).toBe(10)
+    expect(curveAt(curve, 150)).toBe(7)
+    expect(curveAt(curve, 500)).toBe(4)
   })
 
   it('offers Apex gearboxes to HG-KR/HG-SR (same interface as HF-KP/HF-SP)', () => {
