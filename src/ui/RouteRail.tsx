@@ -25,22 +25,6 @@ function tightest(checks: Check[]): Check | null {
   return checks.reduce<Check | null>((max, c) => (c.ratio != null && (!max || c.ratio > (max.ratio ?? 0)) ? c : max), null)
 }
 
-function bomText(
-  axis: AxisEvaluation | null,
-  drive: DriveEvaluation | null,
-  kit: Kit | null,
-  t: (text: string) => string,
-): string {
-  const g = drive?.gearbox
-  const lines = [
-    [t('직교 축'), axis ? axis.axis.model : ''],
-    [t('모터'), drive ? `${drive.motor.maker} ${drive.motor.model}` : ''],
-    [t('감속기'), drive ? (g ? `${g.maker} ${g.model}${g.partNumber ? ` (${g.partNumber})` : ''}` : t('직결')) : ''],
-    [t('연결키트'), kit ? `${kit.product}${kit.partNumber ? ` (${kit.partNumber})` : ''}` : ''],
-  ]
-  return lines.map(([k, v]) => `${k}\t${v || '—'}`).join('\n')
-}
-
 /** Highlights the step section nearest the top of the viewport. */
 function useActiveStep(): number {
   const [active, setActive] = useState(0)
@@ -102,7 +86,6 @@ function Sign({
 export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
   const t = useT()
   const active = useActiveStep()
-  const [copied, setCopied] = useState(false)
   const axisTight = axis && tightest(axis.checks)
   const driveTight = drive && tightest(drive.checks)
   const g = drive?.gearbox
@@ -111,16 +94,6 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
   const missing = [!axis && t('직교 축'), !drive && t('모터'), !kit && t('연결키트')].filter((m): m is string => !!m)
   const missingText = missing.join(', ')
   const exportClick = () => (missing.length ? dialog.current?.showModal() : onExport())
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(bomText(axis, drive, kit, t))
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1600)
-    } catch {
-      setCopied(false)
-    }
-  }
 
   return (
     <header className="rail">
@@ -165,9 +138,6 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
           />
         </ol>
         <div className="rail-actions">
-          <button type="button" className="rail-action" onClick={copy} disabled={!axis}>
-            {copied ? t('복사됨') : t('BOM 복사')}
-          </button>
           <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
             {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
           </button>

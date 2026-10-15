@@ -13,8 +13,6 @@ export const en: Record<string, string> = {
   '선택 안 됨': 'Not selected',
   '해당 키트 없음': 'No matching kit',
   '축 {axis} · {motor}': 'Axis {axis} · {motor}',
-  '복사됨': 'Copied',
-  'BOM 복사': 'Copy BOM',
   'PDF 생성 중…': 'Creating PDF…',
   'PDF로 내보내기': 'Export PDF',
   'PDF로 내보낼 수 없습니다': 'Cannot export PDF',
