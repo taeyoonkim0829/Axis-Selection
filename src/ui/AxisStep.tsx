@@ -72,11 +72,13 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           onChange={(v) => onSettings({ ...settings, drives: v })}
         />
         <ToggleGroup options={families} selected={settings.families} onChange={(v) => onSettings({ ...settings, families: v })} />
-        <ToggleButton
-          label={t('ESBF 외부 가이드 사용')}
-          checked={settings.externalGuide}
-          onChange={(v) => onSettings({ ...settings, externalGuide: v })}
-        />
+        {settings.families.includes('ESBF') && (
+          <ToggleButton
+            label={t('ESBF 외부 가이드 사용')}
+            checked={settings.externalGuide}
+            onChange={(v) => onSettings({ ...settings, externalGuide: v })}
+          />
+        )}
       </div>
 
       {rows.length === 0 ? (
