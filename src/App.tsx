@@ -1,9 +1,9 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
 import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './calc/kitSelection'
-import { evaluateDrive, selectMotors } from './calc/motorSelection'
+import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultSettings, type Requirements, type Settings } from './calc/types'
-import { axes, gearboxesFor, kits, motors } from './data'
+import { axes, kits, motors } from './data'
 import { LangProvider, storedLang, storeLang, translate, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
 import { GearboxStep } from './ui/GearboxStep'
@@ -32,7 +32,7 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>(defaultSettings)
   const [axisId, setAxisId] = useState<string | null>(null)
   const [motorId, setMotorId] = useState<string | null>(null)
-  // null = no gearbox (direct drive); a gearbox is only used when the user picks one
+  // Gearbox picked in step 3; null = the motor step's recommendation (direct drive unless useGearbox)
   const [gearboxId, setGearboxId] = useState<string | null>(null)
   // undefined = the type the axis data assumes
   const [kitType, setKitType] = useState<KitType | undefined>(undefined)
@@ -49,15 +49,22 @@ export default function App() {
     () => (selectedAxis ? selectMotors(selectedAxis, motors, deferredSettings) : []),
     [selectedAxis, deferredSettings],
   )
-  const selectedMotor = motorResults.find((r) => r.motor.id === motorId)?.motor ?? null
-  // Direct drive plus each compatible gearbox; only a handful, so cheap to evaluate on every render.
+  const motorResult = motorResults.find((r) => r.motor.id === motorId) ?? null
+  const selectedMotor = motorResult?.motor ?? null
+  // Direct drive only, or each compatible gearbox when the motor step is set to use one; only a handful,
+  // so cheap to evaluate on every render.
   const gearboxOptions =
     selectedAxis && selectedMotor
-      ? [null, ...gearboxesFor(selectedMotor).toSorted((a, b) => a.ratio - b.ratio)].map((g) =>
+      ? (deferredSettings.useGearbox ? gearboxOptionsFor(selectedMotor) : [null]).map((g) =>
           evaluateDrive(selectedAxis, selectedMotor, g, deferredSettings),
         )
       : []
-  const selectedDrive = gearboxOptions.find((o) => (o.gearbox?.id ?? null) === gearboxId) ?? gearboxOptions[0] ?? null
+  // The user's gearbox pick in step 3, else the one the motor step recommended.
+  const selectedDrive =
+    gearboxOptions.find((o) => o.gearbox && o.gearbox.id === gearboxId) ??
+    gearboxOptions.find((o) => (o.gearbox?.id ?? null) === (motorResult?.gearbox?.id ?? null)) ??
+    gearboxOptions[0] ??
+    null
 
   const axisKitType = selectedAxis ? kitTypeFor(selectedAxis.axis) : 'axial'
   const shownKitType = kitType ?? axisKitType
@@ -142,7 +149,12 @@ export default function App() {
                 <p className="empty">{translate(lang, '먼저 직교 축을 선택하세요.')}</p>
               </section>
             )}
-            <GearboxStep options={gearboxOptions} selected={selectedDrive} onSelect={setGearboxId} />
+            <GearboxStep
+              options={gearboxOptions}
+              selected={selectedDrive}
+              onSelect={setGearboxId}
+              useGearbox={deferredSettings.useGearbox}
+            />
             <KitStep
               match={kitMatch}
               axisType={axisKitType}

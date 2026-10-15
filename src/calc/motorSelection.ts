@@ -138,7 +138,15 @@ function constantTorqueCheck(value: number, overTime: number, rated: number, con
 
 const statusOrder: Record<Status, number> = { ok: 0, warn: 1, fail: 2 }
 
-/** Best drive option per motor: direct drive if it passes, otherwise the lowest passing gearbox ratio. */
+/** Compatible gearboxes of a motor, lowest ratio first. */
+export function gearboxOptionsFor(motor: Motor) {
+  return gearboxesFor(motor).toSorted((a, b) => a.ratio - b.ratio)
+}
+
+/**
+ * One drive option per motor. Direct drive unless `settings.useGearbox`; then the lowest passing gearbox
+ * ratio (the lowest ratio when none passes), and motors without a compatible gearbox drop out.
+ */
 export function selectMotors(axisEval: AxisEvaluation, all: Motor[], settings: Settings): DriveEvaluation[] {
   return all
     .filter(
@@ -147,14 +155,11 @@ export function selectMotors(axisEval: AxisEvaluation, all: Motor[], settings: S
         !settings.excludedMotorFamilies.includes(m.family) &&
         (!settings.requireBrake || m.brake),
     )
-    .map((motor) => {
-      const direct = evaluateDrive(axisEval, motor, null, settings)
-      if (direct.status !== 'fail') return direct
-      const geared = gearboxesFor(motor)
-        .sort((a, b) => a.ratio - b.ratio)
-        .map((g) => evaluateDrive(axisEval, motor, g, settings))
-        .find((e) => e.status !== 'fail')
-      return geared ?? direct
+    .flatMap((motor) => {
+      if (!settings.useGearbox) return [evaluateDrive(axisEval, motor, null, settings)]
+      const geared = gearboxOptionsFor(motor).map((g) => evaluateDrive(axisEval, motor, g, settings))
+      const best = geared.find((e) => e.status !== 'fail') ?? geared[0]
+      return best ? [best] : []
     })
     .sort(
       (a, b) =>

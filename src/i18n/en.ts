@@ -135,7 +135,6 @@ export const en: Record<string, string> = {
   '모터 선정': 'Motor selection',
   '적합 {pass}': '{pass} passed',
   '브레이크 모터만': 'Brake motors only',
-  '조건을 만족하는 모터가 없습니다. 다른 축을 선택해 보세요.': 'No motor meets the conditions. Try another axis.',
   '메이커': 'Maker',
   '정격 출력': 'Rated power',
   '최대 토크': 'Peak torque',
@@ -143,7 +142,6 @@ export const en: Record<string, string> = {
   '회전수': 'Speed',
   '관성비': 'Inertia ratio',
   '브레이크': 'Brake',
-  '{ratio}:1 필요': '{ratio}:1 needed',
   '상위 {n}개만 표시합니다.': 'Showing the top {n} only.',
   '시리즈': 'Series',
   '정격 / 최대 토크': 'Rated / peak torque',
@@ -163,16 +161,21 @@ export const en: Record<string, string> = {
     'Above rated torque {time} s / cycle — the motor may overheat if this is long compared with its thermal time constant',
 
   // Step 3: gearbox
+  '감속기 사용': 'With gearbox',
+  '추천 감속기': 'Recommended gearbox',
+  '조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 직결을 선택해 보세요.':
+    'No motor meets the conditions. Only motors with gearbox data are checked. Try another axis or direct drive.',
+  '조건을 만족하는 모터가 없습니다. 감속기 사용을 선택하거나 다른 축을 선택해 보세요.':
+    'No motor meets the conditions. Try With gearbox or another axis.',
+  '감속기 없이 직결(축-키트-모터)로 검토합니다. 감속기가 필요하면 2단계에서 감속기 사용을 선택하세요.':
+    'Checked as direct drive (axis-kit-motor) without a gearbox. If a gearbox is needed, choose With gearbox in step 2.',
+  '2단계에서 추천한 감속기(통과하는 가장 낮은 감속비)가 적용되어 있습니다. 다른 감속기를 누르면 바꿀 수 있습니다.':
+    'The gearbox recommended in step 2 (the lowest passing ratio) is applied. Click another gearbox to change it.',
   '감속기 선정': 'Gearbox selection',
   '{model} 호환 {n}': '{n} compatible with {model}',
   '모터를 선택하면 그 모터와 호환되는 감속기를 검토합니다.':
     'Select a motor to check the gearboxes compatible with it.',
-  '이 모터와 호환되는 감속기 데이터가 없어 직결로 검토합니다.':
-    'There is no gearbox data compatible with this motor, so it is checked as direct drive.',
-  '감속기를 선택하지 않으면 직결(축-키트-모터)로 검토합니다. 선택한 감속기를 다시 누르면 해제됩니다.':
-    'Without a gearbox the drive is checked as direct (axis-kit-motor). Click the selected gearbox again to remove it.',
   '감속비': 'Ratio',
-  '선택 안 함 (직결)': 'None (direct drive)',
 
   // Step 4: mounting kit
   '모터-축 연결키트': 'Motor-axis mounting kit',

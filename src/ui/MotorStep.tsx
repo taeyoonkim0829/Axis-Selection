@@ -3,15 +3,15 @@ import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Settings } from '../calc/types'
 import { motorFamilies } from '../data'
 import type { MotorMaker } from '../data/types'
-import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
 import { fmt } from './format'
 
 interface Props {
-  /** One row per motor; a motor that fails direct drive may carry the gearbox it would need (a hint only) */
+  /** One row per motor: direct drive, or with its recommended gearbox when settings.useGearbox */
   results: DriveEvaluation[]
-  /** The selected motor with the gearbox actually chosen in step 3 (direct drive by default) */
+  /** The selected motor with the gearbox actually used (the recommendation unless changed in step 3) */
   selected: DriveEvaluation | null
   onSelect: (id: string) => void
   settings: Settings
@@ -72,6 +72,14 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
         </label>
       </header>
       <div className="step-filters">
+        <RadioGroup
+          options={['direct', 'gearbox'] as const}
+          value={settings.useGearbox ? 'gearbox' : 'direct'}
+          onChange={(v) => onSettings({ ...settings, useGearbox: v === 'gearbox' })}
+          label={(v) => t(v === 'gearbox' ? '감속기 사용' : '직결 (감속기 없음)')}
+        />
+      </div>
+      <div className="step-filters">
         <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
         <ToggleButton
           label={t('브레이크 모터만')}
@@ -96,7 +104,11 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
       </div>
 
       {rows.length === 0 ? (
-        <p className="empty">{t('조건을 만족하는 모터가 없습니다. 다른 축을 선택해 보세요.')}</p>
+        <p className="empty">
+          {settings.useGearbox
+            ? t('조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 직결을 선택해 보세요.')
+            : t('조건을 만족하는 모터가 없습니다. 감속기 사용을 선택하거나 다른 축을 선택해 보세요.')}
+        </p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
@@ -114,9 +126,11 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                 <SortTh id="power" num {...th}>
                   {t('정격 출력')}
                 </SortTh>
-                <SortTh id="gearbox" {...th}>
-                  {t('감속기')}
-                </SortTh>
+                {settings.useGearbox && (
+                  <SortTh id="gearbox" {...th}>
+                    {t('추천 감속기')}
+                  </SortTh>
+                )}
                 <SortTh id="peak" {...th}>
                   {t('최대 토크')}
                 </SortTh>
@@ -151,7 +165,9 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                       {d.motor.brake && <span className="tag">{t('브레이크')}</span>}
                     </td>
                     <td className="num">{d.motor.ratedPower ? `${fmt(d.motor.ratedPower, 0)} W` : '—'}</td>
-                    <td>{d.gearbox ? t('{ratio}:1 필요', { ratio: d.gearbox.ratio }) : t('직결')}</td>
+                    {settings.useGearbox && (
+                      <td className="model">{d.gearbox ? `${d.gearbox.model} (${d.gearbox.ratio}:1)` : '—'}</td>
+                    )}
                     <td>
                       <Ratio ratio={d.peakTorque / d.motor.peakTorque} />
                     </td>

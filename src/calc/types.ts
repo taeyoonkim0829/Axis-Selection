@@ -44,6 +44,8 @@ export interface Settings {
   /** motor families (`Motor.family`) turned off; families not listed are included */
   excludedMotorFamilies: string[]
   requireBrake: boolean
+  /** false = motors are checked in direct drive only; true = with a compatible gearbox only */
+  useGearbox: boolean
   /** Constant-velocity torque above the rated torque fails instead of warning */
   conservative: boolean
 }
@@ -63,6 +65,7 @@ export const defaultSettings: Settings = {
   makers: ['Festo'],
   excludedMotorFamilies: [],
   requireBrake: false,
+  useGearbox: false,
   conservative: false,
 }
 

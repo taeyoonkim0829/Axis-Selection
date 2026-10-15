@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
 import { evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
-import { evaluateDrive, selectMotors } from './motorSelection'
+import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
 import { defaultSettings, type Requirements } from './types'
 
 const baseReq: Requirements = {
@@ -112,5 +112,19 @@ describe('selection on real data', () => {
     const [first] = selectAxes(axes, { ...baseReq, mounting: 'vertical' }, defaultSettings)
     const drives = selectMotors(first, motors, { ...defaultSettings, requireBrake: true })
     expect(drives.every((d) => d.motor.brake)).toBe(true)
+  })
+
+  it('checks direct drive only, or each motor with its lowest passing gearbox', () => {
+    const [first] = selectAxes(axes, baseReq, defaultSettings)
+    const direct = selectMotors(first, motors, defaultSettings)
+    expect(direct.every((d) => d.gearbox === null)).toBe(true)
+
+    const geared = selectMotors(first, motors, { ...defaultSettings, useGearbox: true })
+    expect(geared.length).toBeGreaterThan(0)
+    expect(geared.every((d) => d.gearbox !== null)).toBe(true)
+    for (const d of geared.filter((g) => g.status !== 'fail')) {
+      const lower = gearboxOptionsFor(d.motor).filter((g) => g.ratio < d.gearbox!.ratio)
+      expect(lower.every((g) => evaluateDrive(first, d.motor, g, defaultSettings).status === 'fail')).toBe(true)
+    }
   })
 })

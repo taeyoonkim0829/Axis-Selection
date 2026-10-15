@@ -125,6 +125,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['지지 간격', settings.supportSpan > 0 ? q(settings.supportSpan, 'mm') : t('양 끝만 지지')],
             ['일 가동 시간', q(settings.hoursPerDay, 'h')],
             ['브레이크', settings.requireBrake ? t('필요') : t('선택')],
+            ['감속기', settings.useGearbox ? t('감속기 사용') : t('직결 (감속기 없음)')],
             ['보수적 판정', settings.conservative ? t('켜짐 (등속 구간 정격 토크 초과 시 부적합)') : t('꺼짐')],
           ]}
         />
