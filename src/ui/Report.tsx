@@ -7,7 +7,7 @@ import type { Requirements, Settings, Status } from '../calc/types'
 import type { Kit } from '../data/types'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
-import { driveLabel, fmt, mountingLabel, moveLabel } from './format'
+import { driveLabel, fmt, kgf, mountingLabel, moveLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
 import { ProfilePlot } from './ProfileChart'
@@ -111,7 +111,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['휴지 시간', q(settings.dwellTime, 's')],
             ...(axis.press
               ? ([
-                  ['압착력', q(axis.press.force, 'N')],
+                  ['압착력', `${q(axis.press.force, 'N')} (${kgf(axis.press.force)})`],
                   ['압착 구간', q(axis.press.distance, 'mm')],
                   ['압착 속도', q(req.press!.speed, 'm/s')],
                   ['가압 유지 시간', q(axis.press.holdTime, 's')],

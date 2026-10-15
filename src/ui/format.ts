@@ -7,6 +7,11 @@ export function fmt(value: number | null | undefined, digits = 2): string {
   return value.toLocaleString('ko-KR', { maximumFractionDigits: d })
 }
 
+/** Force in kgf (standard gravity 9.80665 N/kgf), e.g. "≈ 102 kgf". */
+export function kgf(newton: number): string {
+  return `≈ ${fmt(newton / 9.80665, 1)} kgf`
+}
+
 export function pct(ratio: number | null | undefined): string {
   if (ratio == null || !Number.isFinite(ratio)) return '—'
   return `${Math.round(ratio * 100)}%`
