@@ -10,7 +10,7 @@ import { CheckTable, Ratio, StatusBadge } from './common'
 import { driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
-import { ProfilePlot } from './ProfileChart'
+import { ProfilePlot, type ProfileView } from './ProfileChart'
 
 interface Props {
   req: Requirements
@@ -21,6 +21,8 @@ interface Props {
   gearboxOptions: DriveEvaluation[]
   kitMatch: KitMatch | null
   kit: Kit | null
+  /** Motion profile view selected on screen */
+  profileView: ProfileView
 }
 
 type Row = [label: string, value: ReactNode]
@@ -71,7 +73,7 @@ function Chapter({ no, title, children }: { no: number; title: string; children:
   )
 }
 
-export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, kit }: Props) {
+export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, kit, profileView }: Props) {
   const t = useT()
   const lang = useLang()
   const a = axis.axis
@@ -168,16 +170,14 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
 
       <Chapter no={2} title={t('모션 프로파일')}>
         <ProfileNumbers axis={axis} />
-        {[false, true].map((back) => (
-          <figure key={String(back)} className="profile-chart report-chart">
-            <figcaption>
-              {t(moveLabel(back, vertical))}
-              {!back && axis.press ? ` + ${t('압착')}` : ''}
-              {settings.dwellTime > 0 ? ` + ${t('휴지')}` : ''} ({t('편도, 가로축 시간 s')})
-            </figcaption>
-            <ProfilePlot axis={axis} drive={drive} settings={settings} view={back ? 'back' : 'forward'} />
-          </figure>
-        ))}
+        <figure className="profile-chart report-chart">
+          <figcaption>
+            {t(profileView === 'cycle' ? '왕복' : moveLabel(profileView === 'back', vertical))}
+            {profileView !== 'back' && axis.press ? ` + ${t('압착')}` : ''}
+            {settings.dwellTime > 0 ? ` + ${t('휴지')}` : ''} ({t('가로축 시간 s')})
+          </figcaption>
+          <ProfilePlot axis={axis} drive={drive} settings={settings} view={profileView} />
+        </figure>
       </Chapter>
 
       <Chapter no={3} title={t('축 선정 세부사항')}>

@@ -11,6 +11,7 @@ import { GearboxStep } from './ui/GearboxStep'
 import { InputPanel } from './ui/InputPanel'
 import { KitStep } from './ui/KitStep'
 import { MotionProfile } from './ui/MotionProfile'
+import type { ProfileView } from './ui/ProfileChart'
 import { MotorStep } from './ui/MotorStep'
 import { openPendingTab, reportTitle, reportToPdf } from './ui/pdfExport'
 import { Report } from './ui/Report'
@@ -93,6 +94,8 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   // Gearbox picked in step 3; null = the motor step's recommendation (direct drive unless useGearbox)
   const [gearboxId, setGearboxId] = useState<string | null>(null)
   const [kitId, setKitId] = useState<string | null>(null)
+  // Motion profile view (왕복 / 전진 / 복귀); the PDF prints the same view
+  const [profileView, setProfileView] = useState<ProfileView>('cycle')
 
   const deferredReq = useDeferredValue(req)
   const deferredSettings = useDeferredValue(settings)
@@ -173,6 +176,8 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
                 drive={selectedDrive}
                 settings={deferredSettings}
                 vertical={verticalForward(deferredReq)}
+                view={profileView}
+                onView={setProfileView}
               />
             )}
             <AxisStep
@@ -229,6 +234,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             gearboxOptions={gearboxOptions}
             kitMatch={kitMatch}
             kit={selectedKit}
+            profileView={profileView}
           />
         </div>
       )}

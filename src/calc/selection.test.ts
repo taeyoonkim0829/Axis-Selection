@@ -163,7 +163,7 @@ describe('selection on real data', () => {
     expect(ev.press!.profile.moveTime).toBeGreaterThan(20 / 1000 / 0.02)
     const approach = moveProfile(0.48, 0.5, 5, 0, 1).moveTime
     const back = moveProfile(0.5, 0.5, 5, 0, -1).moveTime
-    expect(ev.cycleTime).toBeCloseTo(approach + ev.press!.profile.moveTime + 2 + back + 2 * 0.2)
+    expect(ev.cycleTime).toBeCloseTo(approach + ev.press!.profile.moveTime + 2 + back + 0.2)
 
     const hold = ev.samples.filter((s) => s.v === 0 && s.a === 0 && s.load > 0)
     expect(hold.reduce((t, s) => t + s.dt, 0)).toBeCloseTo(2)

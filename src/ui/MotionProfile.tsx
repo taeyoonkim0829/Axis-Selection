@@ -3,7 +3,7 @@ import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Settings, VerticalDirection } from '../calc/types'
 import { useT } from '../i18n'
-import { ProfileChart } from './ProfileChart'
+import { ProfileChart, type ProfileView } from './ProfileChart'
 import { fmt } from './format'
 
 interface Props {
@@ -12,9 +12,11 @@ interface Props {
   settings: Settings
   /** direction of the forward move on a vertical axis, null otherwise */
   vertical: VerticalDirection | null
+  view: ProfileView
+  onView: (view: ProfileView) => void
 }
 
-export function MotionProfile({ axis, drive, settings, vertical }: Props) {
+export function MotionProfile({ axis, drive, settings, vertical, view, onView }: Props) {
   const [open, setOpen] = useState(true)
   return (
     <section className="panel">
@@ -25,6 +27,8 @@ export function MotionProfile({ axis, drive, settings, vertical }: Props) {
         vertical={vertical}
         open={open}
         onToggle={() => setOpen(!open)}
+        view={view}
+        onView={onView}
       />
       <ProfileNumbers axis={axis} />
     </section>

@@ -56,7 +56,7 @@ export function verticalForward(req: Requirements): VerticalDirection | null {
 
 /** Advanced parameters; defaults follow the Excel calc sheets. */
 export interface Settings {
-  /** s, at each end of the stroke */
+  /** s, once per cycle, after the return move */
   dwellTime: number
   efficiency: Record<DriveKind, number>
   friction: Record<DriveKind, number>

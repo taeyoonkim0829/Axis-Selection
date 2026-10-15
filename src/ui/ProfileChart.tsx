@@ -76,15 +76,17 @@ interface Props {
   vertical: VerticalDirection | null
   open: boolean
   onToggle: () => void
+  /** Shown view; the PDF report prints the same one */
+  view: ProfileView
+  onView: (view: ProfileView) => void
 }
 
 /** Full cycle, or one move with its dwell. */
 export type ProfileView = 'cycle' | 'forward' | 'back'
 
 /** The cycle (or one move) as stacked panels sharing the time axis. */
-export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }: Props) {
+export function ProfileChart({ axis, drive, settings, vertical, open, onToggle, view, onView }: Props) {
   const t = useT()
-  const [view, setView] = useState<ProfileView>('cycle')
   return (
     <figure className="profile-chart">
       <div className="profile-chart-head">
@@ -100,7 +102,7 @@ export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }
                 role="radio"
                 aria-checked={view === v}
                 className={view === v ? 'active' : ''}
-                onClick={() => setView(v)}
+                onClick={() => onView(v)}
               >
                 {t(v === 'cycle' ? '왕복' : moveLabel(v === 'back', vertical))}
               </button>
@@ -113,13 +115,9 @@ export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }
   )
 }
 
-/** Phases of the view: each move is followed by its dwell, as in the cycle the checks use. */
+/** Phases of the view: the dwell always comes last (the cycle has one, after the return). */
 function viewPhases(axis: AxisEvaluation, view: ProfileView): Phase[] {
-  return view === 'cycle'
-    ? [...axis.forwardPhases, ...axis.backPhases]
-    : view === 'back'
-      ? axis.backPhases
-      : axis.forwardPhases
+  return view === 'cycle' ? axis.cyclePhases : view === 'back' ? axis.backPhases : axis.forwardPhases
 }
 
 type SpanKind = 'dwell' | 'press'
