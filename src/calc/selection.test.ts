@@ -127,6 +127,7 @@ describe('selection on real data', () => {
     expect(new Set(esbf.map((a) => a.interfaceCode))).toEqual(new Set(['D32', 'D40', 'D50', 'D60', 'D80', 'D100']))
     for (const a of esbf) expect(kits.some((k) => k.axisCode === a.interfaceCode), a.id).toBe(true)
     expect(esbf.every((a) => a.baseMass < 20)).toBe(true)
+    expect(esbf.every((a) => (a.screwDynamicLoadRating ?? 0) > 0)).toBe(true)
     expect(selectAxes(esbf, baseReq, { ...defaultSettings, externalGuide: true }).some((r) => r.status !== 'fail')).toBe(true)
     // The piston rod grows with the stroke: moving mass mb = mb0 + mb10 · stroke / 10.
     const esbf63 = esbf.find((a) => a.id === 'ESBF-BS-63-…-10P')!
