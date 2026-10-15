@@ -9,6 +9,8 @@ export const G = 9.81
 const YOUNGS_MODULUS = 70000
 /** Reference distance of the guide load comparison value [km] */
 const GUIDE_REFERENCE_LIFE_KM = 5000
+/** Ball screw life below this is shown in red [km] */
+export const SCREW_LIFE_MIN_KM = 5000
 
 export interface AxisSample {
   /** m/s, signed (+ = forward; vertical: see `verticalForward`) */
@@ -39,6 +41,8 @@ export interface InfoItem {
   /** Korean source text with `{name}` placeholders filled from `noteArgs` */
   note?: string
   noteArgs?: Record<string, string | number>
+  /** shown in red (ball screw life under SCREW_LIFE_MIN_KM) */
+  alert?: boolean
 }
 
 export interface AxisEvaluation {
@@ -307,8 +311,23 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       den += w
     }
     const meanLoad = Math.cbrt(num / den)
-    const km = (axis.screwDynamicLoadRating / (screwLoadFactor(peakVelocity) * meanLoad)) ** 3 * axis.spindlePitch
-    info.push({ label: '볼스크류 예상 수명', value: km, unit: 'km', ...lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay) })
+    const loadKm = (axis.screwDynamicLoadRating / (screwLoadFactor(peakVelocity) * meanLoad)) ** 3 * axis.spindlePitch
+    // ESBF-BS: the life also ends after a number of switching cycles (one cycle = one round trip of the stroke).
+    const cycleKm = axis.maxSwitchingCycles ? (axis.maxSwitchingCycles * 2 * req.stroke) / 1e6 : Infinity
+    const km = Math.min(loadKm, cycleKm)
+    const life = lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay)
+    info.push({
+      label: '볼스크류 예상 수명',
+      value: km,
+      unit: 'km',
+      ...(cycleKm < loadKm
+        ? {
+            note: '약 {years}년 · 왕복 {cycles}회 한계',
+            noteArgs: { ...life.noteArgs, cycles: axis.maxSwitchingCycles!.toLocaleString('en-US') },
+          }
+        : life),
+      alert: km < SCREW_LIFE_MIN_KM,
+    })
   }
 
   return {

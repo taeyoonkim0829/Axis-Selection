@@ -141,6 +141,7 @@ export const en: Record<string, string> = {
   '입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.':
     'Changing an input recalculates. If the same error keeps appearing, reload the page.',
   '다시 시도': 'Try again',
+  '약 {years}년 · 왕복 {cycles}회 한계': 'about {years} years · limited to {cycles} round trips',
   '위→아래 (눌러 내림)': 'Top-down (pressing down)',
   '아래→위 (밀어 올림)': 'Bottom-up (pushing up)',
   'ESBF 외부 가이드 사용': 'ESBF with external guide',

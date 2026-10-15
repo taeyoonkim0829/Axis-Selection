@@ -206,6 +206,22 @@ describe('selection on real data', () => {
     expect(esbf63.screwDynamicLoadRating).toBeGreaterThan(0)
   })
 
+  it('ESBF screw life ends after 10 million round trips and is flagged under 5000 km', () => {
+    const esbf32 = axes.find((a) => a.id === 'ESBF-BS-32-…-5P')!
+    const life = (stroke: number, payload: number) =>
+      evaluateAxis(esbf32, { ...baseReq, stroke, payload, mounting: 'vertical' }, defaultSettings)!.info.find(
+        (i) => i.label === '볼스크류 예상 수명',
+      )!
+    // 50 mm stroke, light load: 10 million round trips = 1000 km, well below the load-based life.
+    const short = life(50, 0.1)
+    expect(short.value).toBeCloseTo(1000)
+    expect(short.note).toBe('약 {years}년 · 왕복 {cycles}회 한계')
+    expect(short.alert).toBe(true)
+    const long = life(800, 0.1)
+    expect(long.value).toBeGreaterThan(5000)
+    expect(long.alert).toBe(false)
+  })
+
   it('curveAt interpolates and clamps', () => {
     const curve: [number, number][] = [[0, 10], [100, 10], [200, 4]]
     expect(curveAt(curve, 50)).toBe(10)

@@ -52,6 +52,8 @@ export interface Axis {
   baseLength: number | null
   slideLength: number | null
   screwDynamicLoadRating: number | null
+  /** ESBF-BS: the screw life also ends after this many switching cycles (round trips) */
+  maxSwitchingCycles?: number | null
   allowableDeflection: number | null
   standardStrokes: number[] | string[] | null
   /** mechanical interface code for mounting kits; null when unknown */

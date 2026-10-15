@@ -206,7 +206,10 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
           <>
             <h3>{t('참고값')}</h3>
             <SpecTable
-              rows={axis.info.map((i): Row => [i.label, `${q(i.value, i.unit)}${i.note ? ` (${t(i.note, i.noteArgs)})` : ''}`])}
+              rows={axis.info.map((i): Row => {
+                const text = `${q(i.value, i.unit)}${i.note ? ` (${t(i.note, i.noteArgs)})` : ''}`
+                return [i.label, i.alert ? <span key={i.label} className="fail-text">{text}</span> : text]
+              })}
             />
           </>
         )}

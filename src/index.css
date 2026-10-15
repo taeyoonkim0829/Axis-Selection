@@ -932,6 +932,10 @@ th.num {
   color: var(--warn);
 }
 
+.fail-text {
+  color: var(--fail);
+}
+
 .ratio {
   display: inline-flex;
   align-items: center;

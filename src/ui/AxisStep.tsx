@@ -166,7 +166,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
                 {selected.info.map((i) => (
                   <div key={i.label}>
                     <dt>{t(i.label)}</dt>
-                    <dd>
+                    <dd className={i.alert ? 'fail-text' : undefined}>
                       {fmt(i.value, 3)} {i.unit}
                       {i.note && <span className="muted"> ({t(i.note, i.noteArgs)})</span>}
                     </dd>
