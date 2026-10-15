@@ -28,6 +28,8 @@ export interface Axis {
   baseMass: number
   massPer10mm: number
   slideMass: number
+  /** kg per 10 mm stroke added to the moving mass (ESBF piston rod); absent for slide axes */
+  slideMassPer10mm?: number | null
   pulleyDiameter: number | null
   feedConstant: number | null
   spindleDiameter: number | null

@@ -20,6 +20,7 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `maxSpeed` / `maxAcceleration` | m/s / m/s² |
 | `repeatability` | ±mm |
 | `baseMass` / `massPer10mm` / `slideMass` | kg at 0 mm stroke / kg per 10 mm stroke / kg |
+| `slideMassPer10mm` | kg per 10 mm stroke added to the moving mass (ESBF only: the piston rod grows with the stroke) |
 | `beltPitch`, `pulleyDiameter` (effective), `spindleDiameter`, `pulleyWidth` | mm |
 | `beltTensileStress` | % |
 | `feedConstant` (belt), `spindlePitch` | mm/rev |
@@ -32,7 +33,7 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `standardStrokes` | mm |
 | `interfaceCode` | mounting kit code, e.g. `T42-60` |
 
-ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide) is extracted from the ED_Data sheet of the E-Drive workbook Ver15.04: the ball screw versions ESBF-BS-32…100. `interfaceCode` comes from the Motor Kit_Selection workbook (`D32`, `D40`, `D50`, `D60` for size 63, `D80`, `D100`). Guide maxima (`FyMax`…`MzMax`), `Iy`/`Iz` and `screwDynamicLoadRating` are not in the Excel, so the guide check has no limits, deflection and screw life are skipped; the payload needs an external guide. `baseMass` of ESBF-BS-40-…-5P is 1.237 (the Excel has 1237). The lead screw versions ESBF-LS are left out: the Excel lists them as ball screws with values copied from the BS rows.
+ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide): ball screw versions ESBF-BS-32…100, first extracted from the ED_Data sheet of the E-Drive workbook Ver15.04, then checked against and corrected to the Festo documentation 203032 (2025/11, data sheet p.7–9): `slideMass` = moving mass mb0 (the Excel had the lead screw basic weight for sizes 32–50), `slideMassPer10mm` = mb10, `inertiaJ0` of ESBF-BS-100-…-40P = 6.710 (Excel 6.17), `baseMass` of ESBF-BS-40 = 1.237 (Excel 1237), `FxMax` = max. cylinder force. `interfaceCode` comes from the Motor Kit_Selection workbook (`D32`, `D40`, `D50`, `D60` for size 63, `D80`, `D100`). `speedLimitStroke` is the Excel value, a little below the knee of the documentation's speed curve (the speed falls with 1/stroke² above it). Not entered (only curves in the documentation): lateral force on the piston rod vs stroke, max. pressure force vs rod length (buckling), screw service life. Guide maxima, `Iy`/`Iz` and `screwDynamicLoadRating` are `null`, so the guide check has no limits and deflection and screw life are skipped; the payload needs an external guide. The lead screw versions ESBF-LS are left out: their efficiency is far below the 0.9 the app uses for spindles.
 
 ## Motors (`motors/<maker>/<family>.json`)
 

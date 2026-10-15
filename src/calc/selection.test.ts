@@ -127,6 +127,9 @@ describe('selection on real data', () => {
     for (const a of esbf) expect(kits.some((k) => k.axisCode === a.interfaceCode), a.id).toBe(true)
     expect(esbf.every((a) => a.baseMass < 20)).toBe(true)
     expect(selectAxes(esbf, baseReq, defaultSettings).some((r) => r.status !== 'fail')).toBe(true)
+    // The piston rod grows with the stroke: moving mass mb = mb0 + mb10 · stroke / 10.
+    const esbf63 = esbf.find((a) => a.id === 'ESBF-BS-63-…-10P')!
+    expect(evaluateAxis(esbf63, baseReq, defaultSettings)!.movingMass).toBeCloseTo(10 + 1.831 + 0.052 * 50)
   })
 
   it('offers Apex gearboxes to HG-KR/HG-SR (same interface as HF-KP/HF-SP)', () => {

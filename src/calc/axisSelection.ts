@@ -151,7 +151,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const vertical = req.mounting === 'vertical'
   const efficiency = settings.efficiency[axis.drive]
   const mu = settings.friction[axis.drive]
-  const mass = req.payload + axis.slideMass
+  const mass = req.payload + axis.slideMass + ((axis.slideMassPer10mm ?? 0) * req.stroke) / 10
   const inertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * req.stroke) / 1000 + axis.inertiaJLPerKg * req.payload
   const toRad = (2 * Math.PI) / (feed / 1000)
   const gravity = vertical ? mass * G : 0
