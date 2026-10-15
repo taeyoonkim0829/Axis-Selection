@@ -126,7 +126,7 @@ describe('selection on real data', () => {
     expect(new Set(esbf.map((a) => a.interfaceCode))).toEqual(new Set(['D32', 'D40', 'D50', 'D60', 'D80', 'D100']))
     for (const a of esbf) expect(kits.some((k) => k.axisCode === a.interfaceCode), a.id).toBe(true)
     expect(esbf.every((a) => a.baseMass < 20)).toBe(true)
-    expect(selectAxes(esbf, baseReq, defaultSettings).some((r) => r.status !== 'fail')).toBe(true)
+    expect(selectAxes(esbf, baseReq, { ...defaultSettings, externalGuide: true }).some((r) => r.status !== 'fail')).toBe(true)
     // The piston rod grows with the stroke: moving mass mb = mb0 + mb10 · stroke / 10.
     const esbf63 = esbf.find((a) => a.id === 'ESBF-BS-63-…-10P')!
     expect(evaluateAxis(esbf63, baseReq, defaultSettings)!.movingMass).toBeCloseTo(10 + 1.831 + 0.052 * 50)
@@ -141,10 +141,13 @@ describe('selection on real data', () => {
     expect(buckling(1200).limit).toBeGreaterThan(1500)
     expect(buckling(1200).limit).toBeLessThan(1800)
 
-    // 10 kg on the rod is far beyond the lateral force at 500 mm: warn (an external guide may carry it).
+    // 10 kg on the rod is far beyond the lateral force at 500 mm; an external guide takes it over.
     const lateral = checkOf(500).find((c) => c.label === '로드 횡하중 Fq')!
     expect(lateral.value).toBeCloseTo((10 + 1.831 + 0.052 * 50) * G)
-    expect(lateral.status).toBe('warn')
+    expect(lateral.status).toBe('fail')
+    const guided = evaluateAxis(esbf63, baseReq, { ...defaultSettings, externalGuide: true })!
+    expect(guided.checks.find((c) => c.label === '로드 횡하중 Fq')!.status).toBe('ok')
+    expect(guided.status).not.toBe('fail')
     expect(checkOf(500).some((c) => c.label === '가이드 하중 비교값 fv')).toBe(false)
     expect(checkOf(500, 'vertical').find((c) => c.label === '로드 횡하중 Fq')!.status).toBe('ok')
   })

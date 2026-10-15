@@ -44,6 +44,8 @@ export interface Settings {
   /** motor families (`Motor.family`) turned off; families not listed are included */
   excludedMotorFamilies: string[]
   requireBrake: boolean
+  /** Electric cylinders (ESBF) run with an external guide that carries the payload: the rod lateral force is not checked */
+  externalGuide: boolean
   /** false = motors are checked in direct drive only; true = with a compatible gearbox only */
   useGearbox: boolean
   /** Constant-velocity torque above the rated torque fails instead of warning */
@@ -65,6 +67,7 @@ export const defaultSettings: Settings = {
   makers: ['Festo'],
   excludedMotorFamilies: [],
   requireBrake: false,
+  externalGuide: false,
   useGearbox: false,
   conservative: false,
 }

@@ -126,6 +126,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['일 가동 시간', q(settings.hoursPerDay, 'h')],
             ['브레이크', settings.requireBrake ? t('필요') : t('선택')],
             ['감속기', settings.useGearbox ? t('감속기 사용') : t('감속기 미사용')],
+            ['ESBF 외부 가이드', settings.externalGuide ? t('사용 (로드 횡하중 검토 생략)') : t('미사용')],
             ['보수적 판정', settings.conservative ? t('켜짐 (등속 구간 정격 토크 초과 시 부적합)') : t('꺼짐')],
           ]}
         />

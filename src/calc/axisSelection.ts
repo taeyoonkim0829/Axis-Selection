@@ -218,12 +218,12 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const loads = guideLoads(req, mass, fwd.peakAcceleration)
   let fv = 0
   if (axis.rodLateralForceCurve) {
-    // Electric cylinder without its own guide: the payload hangs on the piston rod.
-    const c = check('로드 횡하중 Fq', Math.hypot(loads.Fy, loads.Fz), curveAt(axis.rodLateralForceCurve, req.stroke), 'N')
+    // Electric cylinder: without an external guide the payload hangs on the piston rod.
+    const lateral = Math.hypot(loads.Fy, loads.Fz)
     checks.push(
-      c.status === 'fail'
-        ? { ...c, status: 'warn', note: '외부 가이드 없이 로드에 하중을 걸 때의 한계 — 외부 가이드 사용 검토' }
-        : { ...c, note: '무게 중심 오프셋에 의한 모멘트는 포함하지 않음' },
+      settings.externalGuide
+        ? check('로드 횡하중 Fq', lateral, null, 'N', '외부 가이드 사용 — 검토 생략')
+        : { ...check('로드 횡하중 Fq', lateral, curveAt(axis.rodLateralForceCurve, req.stroke), 'N'), note: '무게 중심 오프셋에 의한 모멘트는 포함하지 않음' },
     )
   } else {
     const guide = guideComparisonValue(loads, axis)

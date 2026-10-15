@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { Settings } from '../calc/types'
 import type { AxisFamily, DriveKind } from '../data/types'
-import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { useT } from '../i18n'
 import { driveLabel, fmt } from './format'
@@ -72,6 +72,11 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           onChange={(v) => onSettings({ ...settings, drives: v })}
         />
         <ToggleGroup options={families} selected={settings.families} onChange={(v) => onSettings({ ...settings, families: v })} />
+        <ToggleButton
+          label={t('ESBF 외부 가이드 사용')}
+          checked={settings.externalGuide}
+          onChange={(v) => onSettings({ ...settings, externalGuide: v })}
+        />
       </div>
 
       {rows.length === 0 ? (
