@@ -5,6 +5,7 @@ import { motorFamilies } from '../data'
 import type { MotorMaker } from '../data/types'
 import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
+import { translateData, useLang, useT } from '../i18n'
 import { fmt } from './format'
 
 interface Props {
@@ -22,6 +23,8 @@ const makers: MotorMaker[] = ['Festo', 'Siemens', 'Mitsubishi']
 const ROW_LIMIT = 60
 
 export function MotorStep({ results, selected, onSelect, settings, onSettings }: Props) {
+  const t = useT()
+  const lang = useLang()
   const selectedId = selected?.motor.id ?? null
   const [showFailed, setShowFailed] = useState(false)
   const [detailOpen, setDetailOpen] = useState(true)
@@ -60,18 +63,18 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
     <section className="panel step" id="step-motor">
       <header className="step-head">
         <h2>
-          <span className="step-no">2</span> 모터 선정
+          <span className="step-no">2</span> {t('모터 선정')}
         </h2>
-        <span className="muted">적합 {passing.length}</span>
+        <span className="muted">{t('적합 {pass}', { pass: passing.length })}</span>
         <label className="toggle small">
           <input type="checkbox" checked={showFailed} onChange={(e) => setShowFailed(e.target.checked)} />
-          <span>부적합 포함</span>
+          <span>{t('부적합 포함')}</span>
         </label>
       </header>
       <div className="step-filters">
         <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
         <ToggleButton
-          label="브레이크 모터만"
+          label={t('브레이크 모터만')}
           checked={settings.requireBrake}
           onChange={(v) => onSettings({ ...settings, requireBrake: v })}
         />
@@ -93,38 +96,38 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
       </div>
 
       {rows.length === 0 ? (
-        <p className="empty">조건을 만족하는 모터가 없습니다. 다른 축을 선택해 보세요.</p>
+        <p className="empty">{t('조건을 만족하는 모터가 없습니다. 다른 축을 선택해 보세요.')}</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
                 <SortTh id="status" {...th}>
-                  판정
+                  {t('판정')}
                 </SortTh>
                 <SortTh id="maker" {...th}>
-                  메이커
+                  {t('메이커')}
                 </SortTh>
                 <SortTh id="model" {...th}>
-                  모델명
+                  {t('모델명')}
                 </SortTh>
                 <SortTh id="power" num {...th}>
-                  정격 출력
+                  {t('정격 출력')}
                 </SortTh>
                 <SortTh id="gearbox" {...th}>
-                  감속기
+                  {t('감속기')}
                 </SortTh>
                 <SortTh id="peak" {...th}>
-                  최대 토크
+                  {t('최대 토크')}
                 </SortTh>
                 <SortTh id="rms" {...th}>
-                  실효 토크
+                  {t('실효 토크')}
                 </SortTh>
                 <SortTh id="speed" {...th}>
-                  회전수
+                  {t('회전수')}
                 </SortTh>
                 <SortTh id="inertia" {...th}>
-                  관성비
+                  {t('관성비')}
                 </SortTh>
               </tr>
             </thead>
@@ -145,10 +148,10 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                     <td>{d.motor.maker}</td>
                     <td className="model">
                       {d.motor.model}
-                      {d.motor.brake && <span className="tag">브레이크</span>}
+                      {d.motor.brake && <span className="tag">{t('브레이크')}</span>}
                     </td>
                     <td className="num">{d.motor.ratedPower ? `${fmt(d.motor.ratedPower, 0)} W` : '—'}</td>
-                    <td>{d.gearbox ? `${d.gearbox.ratio}:1 필요` : '직결'}</td>
+                    <td>{d.gearbox ? t('{ratio}:1 필요', { ratio: d.gearbox.ratio }) : t('직결')}</td>
                     <td>
                       <Ratio ratio={d.peakTorque / d.motor.peakTorque} />
                     </td>
@@ -166,37 +169,38 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
               })}
             </tbody>
           </table>
-          {listed.length > ROW_LIMIT && <p className="muted small-print">상위 {ROW_LIMIT}개만 표시합니다.</p>}
+          {listed.length > ROW_LIMIT && <p className="muted small-print">{t('상위 {n}개만 표시합니다.', { n: ROW_LIMIT })}</p>}
         </div>
       )}
 
       {selected && (
         <div className="detail">
           <CollapseTitle open={detailOpen} onToggle={() => setDetailOpen(!detailOpen)}>
-            {selected.motor.model}
-            {selected.gearbox && ` + ${selected.gearbox.model}`} 세부사항
+            {t('{model} 세부사항', {
+              model: selected.motor.model + (selected.gearbox ? ` + ${selected.gearbox.model}` : ''),
+            })}
           </CollapseTitle>
           {detailOpen && (
             <>
               <CheckTable checks={selected.checks} />
               <dl className="info">
                 <div>
-                  <dt>시리즈</dt>
-                  <dd>{[selected.motor.series, selected.motor.description].filter(Boolean).join(' · ') || '—'}</dd>
+                  <dt>{t('시리즈')}</dt>
+                  <dd>{translateData(lang, [selected.motor.series, selected.motor.description].filter(Boolean).join(' · ')) || '—'}</dd>
                 </div>
                 <div>
-                  <dt>정격 / 최대 토크</dt>
+                  <dt>{t('정격 / 최대 토크')}</dt>
                   <dd>
                     {fmt(selected.motor.ratedTorque, 3)} / {fmt(selected.motor.peakTorque, 3)} Nm
                   </dd>
                 </div>
                 <div>
-                  <dt>로터 관성</dt>
+                  <dt>{t('로터 관성')}</dt>
                   <dd>{fmt(selected.motor.inertia, 4)} kg·cm²</dd>
                 </div>
                 {selected.motor.amplifier && (
                   <div>
-                    <dt>앰프</dt>
+                    <dt>{t('앰프')}</dt>
                     <dd>{selected.motor.amplifier}</dd>
                   </div>
                 )}

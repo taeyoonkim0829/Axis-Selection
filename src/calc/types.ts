@@ -76,7 +76,9 @@ export interface Check {
   /** value / limit; null when there is no limit */
   ratio: number | null
   status: Status
+  /** Korean source text; may contain `{name}` placeholders filled from `noteArgs` (translated in the UI) */
   note?: string
+  noteArgs?: Record<string, string | number>
 }
 
 export function check(label: string, value: number, limit: number | null | undefined, unit: string, note?: string): Check {

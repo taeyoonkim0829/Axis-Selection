@@ -4,6 +4,7 @@ import type { Settings } from '../calc/types'
 import type { AxisFamily, DriveKind } from '../data/types'
 import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
+import { useT } from '../i18n'
 import { driveLabel, fmt } from './format'
 
 interface Props {
@@ -20,6 +21,7 @@ const drives: DriveKind[] = ['belt', 'spindle']
 const ratioOf = (e: AxisEvaluation, label: string) => e.checks.find((c) => c.label === label)?.ratio ?? null
 
 export function AxisStep({ results, selectedId, onSelect, settings, onSettings }: Props) {
+  const t = useT()
   const [showFailed, setShowFailed] = useState(false)
   const [detailOpen, setDetailOpen] = useState(true)
   const passing = results.filter((r) => r.status !== 'fail')
@@ -45,59 +47,59 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
     <section className="panel step" id="step-axis">
       <header className="step-head">
         <h2>
-          <span className="step-no">1</span> 직교 축 선정
+          <span className="step-no">1</span> {t('직교 축 선정')}
         </h2>
         <span className="muted">
-          적합 {passing.length} / 검토 {results.length}
+          {t('적합 {pass} / 검토 {total}', { pass: passing.length, total: results.length })}
         </span>
         <label className="toggle small">
           <input type="checkbox" checked={showFailed} onChange={(e) => setShowFailed(e.target.checked)} />
-          <span>부적합 포함</span>
+          <span>{t('부적합 포함')}</span>
         </label>
       </header>
       <div className="step-filters">
         <ToggleGroup
           options={drives}
           selected={settings.drives}
-          label={(d) => driveLabel[d]}
+          label={(d) => t(driveLabel[d])}
           onChange={(v) => onSettings({ ...settings, drives: v })}
         />
         <ToggleGroup options={families} selected={settings.families} onChange={(v) => onSettings({ ...settings, families: v })} />
       </div>
 
       {rows.length === 0 ? (
-        <p className="empty">조건을 만족하는 축이 없습니다. 부적합 포함을 켜서 초과 항목을 확인하세요.</p>
+        <p className="empty">{t('조건을 만족하는 축이 없습니다. 부적합 포함을 켜서 초과 항목을 확인하세요.')}</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
                 <SortTh id="status" {...th}>
-                  판정
+                  {t('판정')}
                 </SortTh>
                 <SortTh id="model" {...th}>
-                  모델명
+                  {t('모델명')}
                 </SortTh>
                 <SortTh id="drive" {...th}>
-                  구동
+                  {t('구동')}
                 </SortTh>
                 <SortTh id="mass" num {...th}>
-                  축 질량
+                  {t('축 질량')}
                 </SortTh>
                 <SortTh id="speed" {...th}>
-                  속도
+                  {t('속도')}
                 </SortTh>
                 <SortTh id="accel" {...th}>
-                  가속도
+                  {t('가속도')}
                 </SortTh>
                 <SortTh id="force" {...th}>
-                  이송력
+                  {t('이송력')}
                 </SortTh>
                 <SortTh id="torque" {...th}>
-                  구동 토크
+                  {t('구동 토크')}
                 </SortTh>
                 <SortTh id="fv" {...th}>
-                  가이드 fv
+                  {t('가이드 fv')}
                 </SortTh>
               </tr>
             </thead>
@@ -114,7 +116,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
                     <StatusBadge status={e.status} />
                   </td>
                   <td className="model">{e.axis.model}</td>
-                  <td>{driveLabel[e.axis.drive]}</td>
+                  <td>{t(driveLabel[e.axis.drive])}</td>
                   <td className="num">{fmt(e.axisMass, 1)} kg</td>
                   <td>
                     <Ratio ratio={ratioOf(e, '속도')} />
@@ -141,7 +143,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
       {selected && (
         <div className="detail">
           <CollapseTitle open={detailOpen} onToggle={() => setDetailOpen(!detailOpen)}>
-            {selected.axis.model} 세부사항
+            {t('{model} 세부사항', { model: selected.axis.model })}
           </CollapseTitle>
           {detailOpen && (
             <>
@@ -149,10 +151,10 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
               <dl className="info">
                 {selected.info.map((i) => (
                   <div key={i.label}>
-                    <dt>{i.label}</dt>
+                    <dt>{t(i.label)}</dt>
                     <dd>
                       {fmt(i.value, 3)} {i.unit}
-                      {i.note && <span className="muted"> ({i.note})</span>}
+                      {i.note && <span className="muted"> ({t(i.note, i.noteArgs)})</span>}
                     </dd>
                   </div>
                 ))}

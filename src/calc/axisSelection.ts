@@ -34,7 +34,9 @@ export interface InfoItem {
   label: string
   value: number
   unit: string
+  /** Korean source text with `{name}` placeholders filled from `noteArgs` */
   note?: string
+  noteArgs?: Record<string, string | number>
 }
 
 export interface AxisEvaluation {
@@ -128,6 +130,10 @@ function lifeYears(km: number, strokeMm: number, cycleTime: number, hoursPerDay:
   return km / kmPerYear
 }
 
+function lifeNote(km: number, strokeMm: number, cycleTime: number, hoursPerDay: number) {
+  return { note: '약 {years}년', noteArgs: { years: lifeYears(km, strokeMm, cycleTime, hoursPerDay).toFixed(1) } }
+}
+
 export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings): AxisEvaluation | null {
   const feed = axisFeed(axis)
   if (!feed || !(req.stroke > 0 && req.velocity > 0 && req.acceleration > 0)) return null
@@ -189,7 +195,8 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const { fv, missing } = guideComparisonValue(loads, axis)
   checks.push({
     ...check('가이드 하중 비교값 fv', fv, 1, ''),
-    note: missing.length ? `허용값 없음: ${missing.join(', ')}` : undefined,
+    note: missing.length ? '허용값 없음: {keys}' : undefined,
+    noteArgs: missing.length ? { keys: missing.join(', ') } : undefined,
   })
 
   const mAxis = axisMass(axis, req.stroke)
@@ -202,8 +209,8 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       const deflection =
         (mass * G * span ** 3) / (48 * YOUNGS_MODULUS * I) + (5 * selfWeight * span ** 3) / (384 * YOUNGS_MODULUS * I)
       const limit = axis.allowableDeflection ?? 0.5
-      const c = check('처짐', deflection, limit, 'mm', `지지 간격 ${Math.round(span)} mm 기준`)
-      checks.push(c.status === 'fail' ? { ...c, status: 'warn', note: `${c.note} — 중간 지지 추가 또는 지지 간격 입력 검토` } : c)
+      const c = { ...check('처짐', deflection, limit, 'mm', '지지 간격 {span} mm 기준'), noteArgs: { span: Math.round(span) } }
+      checks.push(c.status === 'fail' ? { ...c, status: 'warn', note: '지지 간격 {span} mm 기준 — 중간 지지 추가 또는 지지 간격 입력 검토' } : c)
     }
   }
 
@@ -215,7 +222,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   ]
   if (fv > 0) {
     const km = GUIDE_REFERENCE_LIFE_KM / fv ** 3
-    info.push({ label: '가이드 예상 수명', value: km, unit: 'km', note: `약 ${lifeYears(km, req.stroke, cycleTime, settings.hoursPerDay).toFixed(1)}년` })
+    info.push({ label: '가이드 예상 수명', value: km, unit: 'km', ...lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay) })
   }
   if (axis.drive === 'spindle' && axis.screwDynamicLoadRating && axis.spindlePitch) {
     let num = 0
@@ -227,7 +234,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     }
     const meanLoad = Math.cbrt(num / den)
     const km = (axis.screwDynamicLoadRating / (screwLoadFactor(fwd.peakVelocity) * meanLoad)) ** 3 * axis.spindlePitch
-    info.push({ label: '볼스크류 예상 수명', value: km, unit: 'km', note: `약 ${lifeYears(km, req.stroke, cycleTime, settings.hoursPerDay).toFixed(1)}년` })
+    info.push({ label: '볼스크류 예상 수명', value: km, unit: 'km', ...lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay) })
   }
 
   return {

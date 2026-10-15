@@ -1,5 +1,6 @@
 // Calculation report → PDF, entirely in the browser. Each chapter is rendered to an image and placed on A4
 // pages (a chapter taller than a page continues on the next), so Korean text needs no embedded PDF font.
+import { translate, type Lang } from '../i18n'
 
 const PAGE_W = 210
 const PAGE_H = 297
@@ -33,22 +34,23 @@ export async function reportToPdf(root: HTMLElement, title: string): Promise<Blo
   return pdf.output('blob')
 }
 
-/** Suggested file name / PDF title: 축선정_<axis model>_<yyyy-mm-dd>. */
-export function reportTitle(axisModel: string): string {
+/** Suggested file name / PDF title: 축선정_<axis model>_<yyyy-mm-dd> (AxisSelection_… in English). */
+export function reportTitle(axisModel: string, lang: Lang): string {
   const date = new Date().toISOString().slice(0, 10)
-  return `축선정_${axisModel}_${date}`.replace(/[\\/:*?"<>|]/g, '_')
+  return translate(lang, '축선정_{model}_{date}', { model: axisModel, date }).replace(/[\\/:*?"<>|]/g, '_')
 }
 
 /**
  * Opens a tab right away (inside the click, so popup blockers allow it) that shows a waiting message
  * until the PDF is ready.
  */
-export function openPendingTab(): Window | null {
+export function openPendingTab(lang: Lang): Window | null {
   const win = window.open('', '_blank')
   if (win) {
-    win.document.title = 'PDF 생성 중…'
+    const text = translate(lang, 'PDF 생성 중…')
+    win.document.title = text
     win.document.body.style.cssText = 'font-family: sans-serif; display: grid; place-items: center; height: 100vh; margin: 0; color: #5b6672'
-    win.document.body.textContent = 'PDF 생성 중…'
+    win.document.body.textContent = text
   }
   return win
 }

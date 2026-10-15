@@ -3,6 +3,7 @@ import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Check, Status } from '../calc/types'
 import type { Kit } from '../data/types'
+import { koSubjectParticle, langSwitchLabel, useT, type Lang } from '../i18n'
 import { pct, statusLabel } from './format'
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
   onExport: () => void
   /** true while the PDF is being made */
   exporting: boolean
+  lang: Lang
+  onLang: (lang: Lang) => void
 }
 
 const stepIds = ['step-axis', 'step-motor', 'step-gearbox', 'step-kit'] as const
@@ -22,21 +25,20 @@ function tightest(checks: Check[]): Check | null {
   return checks.reduce<Check | null>((max, c) => (c.ratio != null && (!max || c.ratio > (max.ratio ?? 0)) ? c : max), null)
 }
 
-function bomText(axis: AxisEvaluation | null, drive: DriveEvaluation | null, kit: Kit | null): string {
+function bomText(
+  axis: AxisEvaluation | null,
+  drive: DriveEvaluation | null,
+  kit: Kit | null,
+  t: (text: string) => string,
+): string {
   const g = drive?.gearbox
   const lines = [
-    ['직교 축', axis ? axis.axis.model : ''],
-    ['모터', drive ? `${drive.motor.maker} ${drive.motor.model}` : ''],
-    ['감속기', drive ? (g ? `${g.maker} ${g.model}${g.partNumber ? ` (${g.partNumber})` : ''}` : '직결') : ''],
-    ['연결키트', kit ? `${kit.product}${kit.partNumber ? ` (${kit.partNumber})` : ''}` : ''],
+    [t('직교 축'), axis ? axis.axis.model : ''],
+    [t('모터'), drive ? `${drive.motor.maker} ${drive.motor.model}` : ''],
+    [t('감속기'), drive ? (g ? `${g.maker} ${g.model}${g.partNumber ? ` (${g.partNumber})` : ''}` : t('직결')) : ''],
+    [t('연결키트'), kit ? `${kit.product}${kit.partNumber ? ` (${kit.partNumber})` : ''}` : ''],
   ]
   return lines.map(([k, v]) => `${k}\t${v || '—'}`).join('\n')
-}
-
-/** 이 after a final consonant (받침), else 가. */
-function subjectParticle(word: string): string {
-  const code = word.charCodeAt(word.length - 1) - 0xac00
-  return code >= 0 && code < 11172 && code % 28 !== 0 ? '이' : '가'
 }
 
 /** Highlights the step section nearest the top of the viewport. */
@@ -65,7 +67,7 @@ function Sign({
   value,
   status,
   detail,
-  empty = '선택 안 됨',
+  empty,
   active,
 }: {
   no: number
@@ -76,6 +78,7 @@ function Sign({
   empty?: string
   active: boolean
 }) {
+  const t = useT()
   const go = () => document.getElementById(stepIds[no - 1])?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return (
     <li className={`sign${active ? ' sign-active' : ''}`}>
@@ -83,10 +86,10 @@ function Sign({
         <span className="sign-no">{no}</span>
         <span className="sign-body">
           <span className="sign-name">{name}</span>
-          <span className={`sign-value${value ? '' : ' sign-empty'}`}>{value ?? empty}</span>
+          <span className={`sign-value${value ? '' : ' sign-empty'}`}>{value ?? empty ?? t('선택 안 됨')}</span>
           {(status || detail) && (
             <span className="sign-detail">
-              {status && <span className={`sign-status sign-status-${status}`}>{statusLabel[status]}</span>}
+              {status && <span className={`sign-status sign-status-${status}`}>{t(statusLabel[status])}</span>}
               {detail && <span>{detail}</span>}
             </span>
           )}
@@ -96,7 +99,8 @@ function Sign({
   )
 }
 
-export function RouteRail({ axis, drive, kit, onExport, exporting }: Props) {
+export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
+  const t = useT()
   const active = useActiveStep()
   const [copied, setCopied] = useState(false)
   const axisTight = axis && tightest(axis.checks)
@@ -104,12 +108,13 @@ export function RouteRail({ axis, drive, kit, onExport, exporting }: Props) {
   const g = drive?.gearbox
 
   const dialog = useRef<HTMLDialogElement>(null)
-  const missing = [!axis && '직교 축', !drive && '모터', !kit && '연결키트'].filter((m): m is string => !!m)
+  const missing = [!axis && t('직교 축'), !drive && t('모터'), !kit && t('연결키트')].filter((m): m is string => !!m)
+  const missingText = missing.join(', ')
   const exportClick = () => (missing.length ? dialog.current?.showModal() : onExport())
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(bomText(axis, drive, kit))
+      await navigator.clipboard.writeText(bomText(axis, drive, kit, t))
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)
     } catch {
@@ -122,60 +127,71 @@ export function RouteRail({ axis, drive, kit, onExport, exporting }: Props) {
       <div className="rail-inner">
         <div className="rail-brand">
           <span className="rail-title">Axis Selection</span>
-          <span className="rail-sub">직교 축 · 모터 · 연결키트 선정</span>
+          <span className="rail-sub">{t('직교 축 · 모터 · 연결키트 선정')}</span>
         </div>
-        <ol className="signs" aria-label="선정 경로">
+        <ol className="signs" aria-label={t('선정 경로')}>
           <Sign
             no={1}
-            name="직교 축"
+            name={t('직교 축')}
             value={axis?.axis.model ?? null}
             status={axis?.status}
-            detail={axisTight ? `${axisTight.label} ${pct(axisTight.ratio)}` : undefined}
+            detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
             active={active === 0}
           />
           <Sign
             no={2}
-            name="모터"
+            name={t('모터')}
             value={drive ? drive.motor.model : null}
             status={drive?.status}
-            detail={drive ? `${drive.motor.maker}${driveTight ? ` · ${driveTight.label} ${pct(driveTight.ratio)}` : ''}` : undefined}
+            detail={
+              drive ? `${drive.motor.maker}${driveTight ? ` · ${t(driveTight.label)} ${pct(driveTight.ratio)}` : ''}` : undefined
+            }
             active={active === 1}
           />
           <Sign
             no={3}
-            name="감속기"
-            value={drive ? (g ? g.model : '직결') : null}
-            detail={drive ? (g ? `${g.maker} · ${g.ratio}:1` : '감속기 없음') : undefined}
+            name={t('감속기')}
+            value={drive ? (g ? g.model : t('직결')) : null}
+            detail={drive ? (g ? `${g.maker} · ${g.ratio}:1` : t('감속기 없음')) : undefined}
             active={active === 2}
           />
           <Sign
             no={4}
-            name="연결키트"
+            name={t('연결키트')}
             value={kit?.product ?? null}
-            empty={drive ? '해당 키트 없음' : undefined}
-            detail={kit ? `축 ${kit.axisCode} · ${kit.motorCode}` : undefined}
+            empty={drive ? t('해당 키트 없음') : undefined}
+            detail={kit ? t('축 {axis} · {motor}', { axis: kit.axisCode, motor: kit.motorCode }) : undefined}
             active={active === 3}
           />
         </ol>
         <div className="rail-actions">
           <button type="button" className="rail-action" onClick={copy} disabled={!axis}>
-            {copied ? '복사됨' : 'BOM 복사'}
+            {copied ? t('복사됨') : t('BOM 복사')}
           </button>
           <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
-            {exporting ? 'PDF 생성 중…' : 'PDF로 내보내기'}
+            {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
+          </button>
+          <button
+            type="button"
+            className="rail-action"
+            lang={lang === 'ko' ? 'en' : 'ko'}
+            onClick={() => onLang(lang === 'ko' ? 'en' : 'ko')}
+          >
+            {langSwitchLabel[lang]}
           </button>
         </div>
         <dialog ref={dialog} className="notice" aria-labelledby="notice-title">
-          <h2 id="notice-title">PDF로 내보낼 수 없습니다</h2>
+          <h2 id="notice-title">{t('PDF로 내보낼 수 없습니다')}</h2>
           <p>
-            {missing.join(', ')}
-            {subjectParticle(missing.at(-1) ?? '')} 선정되지 않았습니다.
+            {t('{items} 선정되지 않았습니다.', {
+              items: lang === 'ko' ? missingText + koSubjectParticle(missingText) : missingText,
+            })}
             <br />
-            직교 축, 모터, 연결키트를 먼저 선정하세요.
+            {t('직교 축, 모터, 연결키트를 먼저 선정하세요.')}
           </p>
           <form method="dialog">
             <button type="submit" className="notice-ok" autoFocus>
-              확인
+              {t('확인')}
             </button>
           </form>
         </dialog>

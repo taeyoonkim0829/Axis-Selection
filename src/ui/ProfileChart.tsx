@@ -3,6 +3,7 @@ import type { AxisEvaluation } from '../calc/axisSelection'
 import { dwellPhase, tracePhases, type Phase, type TracePoint } from '../calc/motionProfile'
 import { motorTorqueFn, type DriveEvaluation } from '../calc/motorSelection'
 import type { Settings } from '../calc/types'
+import { useT } from '../i18n'
 import { CollapseTitle } from './common'
 import { fmt, moveLabel } from './format'
 
@@ -81,12 +82,13 @@ export type ProfileView = 'cycle' | 'forward' | 'back'
 
 /** The cycle (or one move) as stacked panels sharing the time axis. */
 export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }: Props) {
+  const t = useT()
   const [view, setView] = useState<ProfileView>('cycle')
   return (
     <figure className="profile-chart">
       <div className="profile-chart-head">
         <CollapseTitle open={open} onToggle={onToggle}>
-          모션 프로파일
+          {t('모션 프로파일')}
         </CollapseTitle>
         {open && (
           <div className="segmented small" role="radiogroup">
@@ -99,7 +101,7 @@ export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }
                 className={view === v ? 'active' : ''}
                 onClick={() => setView(v)}
               >
-                {v === 'cycle' ? '왕복' : moveLabel(v === 'back', vertical)}
+                {t(v === 'cycle' ? '왕복' : moveLabel(v === 'back', vertical))}
               </button>
             ))}
           </div>
@@ -130,6 +132,7 @@ export function ProfilePlot({
   settings: Settings
   view: ProfileView
 }) {
+  const t = useT()
   const [hover, setHover] = useState<Point | null>(null)
   const phases = useMemo(() => viewPhases(axis, settings.dwellTime, view), [axis, settings.dwellTime, view])
   const moveTime = phases.reduce((s, p) => s + p.duration, 0)
@@ -158,19 +161,19 @@ export function ProfilePlot({
   }, [axis, drive, settings, phases, view])
 
   const series: Series[] = [
-    { key: 'x', label: '위치', unit: 'mm', digits: 1, pick: (p) => p.x * 1000 },
-    { key: 'v', label: '속도', unit: 'm/s', digits: 3, pick: (p) => p.v },
-    { key: 'a', label: '가속도', unit: 'm/s²', digits: 2, pick: (p) => p.a },
+    { key: 'x', label: t('위치'), unit: 'mm', digits: 1, pick: (p) => p.x * 1000 },
+    { key: 'v', label: t('속도'), unit: 'm/s', digits: 3, pick: (p) => p.v },
+    { key: 'a', label: t('가속도'), unit: 'm/s²', digits: 2, pick: (p) => p.a },
     {
       key: 'j',
-      label: '저크',
+      label: t('저크'),
       unit: 'm/s³',
       digits: 1,
       pick: (p) => p.j,
     },
     {
       key: 't',
-      label: drive ? '모터 토크' : '축 구동 토크',
+      label: t(drive ? '모터 토크' : '축 구동 토크'),
       unit: 'Nm',
       digits: 3,
       pick: (p) => p.torque,
@@ -181,10 +184,10 @@ export function ProfilePlot({
   const plotH = series.length * H
   const onMove = (e: PointerEvent<SVGSVGElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
-    const t = ((((e.clientX - box.left) / box.width) * W - PAD.left) / (W - PAD.left - PAD.right)) * moveTime
-    if (t < 0 || t > moveTime) return setHover(null)
+    const time = ((((e.clientX - box.left) / box.width) * W - PAD.left) / (W - PAD.left - PAD.right)) * moveTime
+    if (time < 0 || time > moveTime) return setHover(null)
     let best = trace[0]
-    for (const p of trace) if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p
+    for (const p of trace) if (Math.abs(p.t - time) < Math.abs(best.t - time)) best = p
     setHover(best)
   }
 
@@ -192,7 +195,7 @@ export function ProfilePlot({
     <svg
       viewBox={`0 0 ${W} ${plotH + AXIS_H}`}
       role="img"
-      aria-label="위치, 속도, 가속도, 저크, 토크 프로파일 (휴지 시간 포함)"
+      aria-label={t('위치, 속도, 가속도, 저크, 토크 프로파일 (휴지 시간 포함)')}
       onPointerMove={onMove}
       onPointerLeave={() => setHover(null)}
     >
@@ -200,7 +203,7 @@ export function ProfilePlot({
         <g key={t0}>
           <rect className="chart-dwell" x={x(t0)} width={x(t1) - x(t0)} y={PAD.top} height={plotH - PAD.top - PAD.bottom} />
           <text className="chart-tick" x={(x(t0) + x(t1)) / 2} y={PAD.top - 8} textAnchor="middle">
-            휴지
+            {t('휴지')}
           </text>
         </g>
       ))}
@@ -210,10 +213,10 @@ export function ProfilePlot({
         </g>
       ))}
       {ticks(0, moveTime, 6)
-        .filter((t) => t <= moveTime)
-        .map((t) => (
-          <text key={t} className="chart-tick" x={x(t)} y={plotH + 15} textAnchor="middle">
-            {fmt(t, 3)}
+        .filter((time) => time <= moveTime)
+        .map((time) => (
+          <text key={time} className="chart-tick" x={x(time)} y={plotH + 15} textAnchor="middle">
+            {fmt(time, 3)}
           </text>
         ))}
       {hover && (

@@ -131,7 +131,8 @@ function constantTorqueCheck(value: number, overTime: number, rated: number, con
   return {
     ...c,
     status: conservative ? 'fail' : 'warn',
-    note: `정격 토크 초과 ${overTime.toFixed(2)} s / 사이클${conservative ? '' : ' — 열시정수 대비 길면 모터 과열 우려'}`,
+    note: conservative ? '정격 토크 초과 {time} s / 사이클' : '정격 토크 초과 {time} s / 사이클 — 열시정수 대비 길면 모터 과열 우려',
+    noteArgs: { time: overTime.toFixed(2) },
   }
 }
 

@@ -4,6 +4,7 @@ import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './ca
 import { evaluateDrive, selectMotors } from './calc/motorSelection'
 import { defaultSettings, type Requirements, type Settings } from './calc/types'
 import { axes, gearboxesFor, kits, motors } from './data'
+import { LangProvider, storedLang, storeLang, translate, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
 import { GearboxStep } from './ui/GearboxStep'
 import { InputPanel } from './ui/InputPanel'
@@ -25,6 +26,8 @@ const initialRequirements: Requirements = {
 }
 
 export default function App() {
+  const [lang, setLang] = useState<Lang>(storedLang)
+  useEffect(() => storeLang(lang), [lang])
   const [req, setReq] = useState(initialRequirements)
   const [settings, setSettings] = useState<Settings>(defaultSettings)
   const [axisId, setAxisId] = useState<string | null>(null)
@@ -68,12 +71,12 @@ export default function App() {
   const reportRef = useRef<HTMLDivElement>(null)
   const pdfTab = useRef<Window | null>(null)
   const startExport = () => {
-    pdfTab.current = openPendingTab()
+    pdfTab.current = openPendingTab(lang)
     setExporting(true)
   }
   useEffect(() => {
     if (!exporting || !reportRef.current || !selectedAxis) return
-    const title = reportTitle(selectedAxis.axis.model)
+    const title = reportTitle(selectedAxis.axis.model, lang)
     reportToPdf(reportRef.current, title)
       .then((blob) => {
         const url = URL.createObjectURL(new File([blob], `${title}.pdf`, { type: 'application/pdf' }))
@@ -83,20 +86,22 @@ export default function App() {
       })
       .catch((error: unknown) => {
         pdfTab.current?.close()
-        window.alert(`PDF를 만들지 못했습니다.\n${String(error)}`)
+        window.alert(`${translate(lang, 'PDF를 만들지 못했습니다.')}\n${String(error)}`)
       })
       .finally(() => setExporting(false))
   }, [exporting]) // eslint-disable-line react-hooks/exhaustive-deps -- runs once per export
 
   return (
-    <>
+    <LangProvider value={lang}>
       <div className="app">
         <RouteRail
-            axis={selectedAxis}
-            drive={selectedDrive}
+          axis={selectedAxis}
+          drive={selectedDrive}
           kit={selectedKit}
           onExport={startExport}
           exporting={exporting}
+          lang={lang}
+          onLang={setLang}
         />
         <main className="layout">
           <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} />
@@ -134,7 +139,7 @@ export default function App() {
               />
             ) : (
               <section className="panel step" id="step-motor">
-                <p className="empty">먼저 직교 축을 선택하세요.</p>
+                <p className="empty">{translate(lang, '먼저 직교 축을 선택하세요.')}</p>
               </section>
             )}
             <GearboxStep options={gearboxOptions} selected={selectedDrive} onSelect={setGearboxId} />
@@ -169,6 +174,6 @@ export default function App() {
           />
         </div>
       )}
-    </>
+    </LangProvider>
   )
 }

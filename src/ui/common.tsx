@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from 'react'
 import type { Check, Status } from '../calc/types'
+import { useT } from '../i18n'
 import { fmt, pct, statusLabel } from './format'
 import type { SortState } from './useSort'
 
 export function StatusBadge({ status }: { status: Status }) {
-  return <span className={`badge badge-${status}`}>{statusLabel[status]}</span>
+  const t = useT()
+  return <span className={`badge badge-${status}`}>{t(statusLabel[status])}</span>
 }
 
 /** Utilisation cell: percentage plus a thin bar. */
@@ -22,29 +24,30 @@ export function Ratio({ ratio, status }: { ratio: number | null; status?: Status
 }
 
 export function CheckTable({ checks }: { checks: Check[] }) {
+  const t = useT()
   return (
     <table className="check-table">
       <thead>
         <tr>
-          <th>항목</th>
-          <th className="num">계산값</th>
-          <th className="num">허용값</th>
-          <th>부하율</th>
-          <th>판정</th>
+          <th>{t('항목')}</th>
+          <th className="num">{t('계산값')}</th>
+          <th className="num">{t('허용값')}</th>
+          <th>{t('부하율')}</th>
+          <th>{t('판정')}</th>
         </tr>
       </thead>
       <tbody>
         {checks.map((c) => (
           <tr key={c.label}>
             <td>
-              {c.label}
-              {c.note && <div className="note">{c.note}</div>}
+              {t(c.label)}
+              {c.note && <div className="note">{t(c.note, c.noteArgs)}</div>}
             </td>
             <td className="num">
-              {fmt(c.value, 3)} <span className="unit">{c.unit}</span>
+              {fmt(c.value, 3)} <span className="unit">{t(c.unit)}</span>
             </td>
             <td className="num">
-              {c.limit == null ? '—' : fmt(c.limit, 3)} {c.limit != null && <span className="unit">{c.unit}</span>}
+              {c.limit == null ? '—' : fmt(c.limit, 3)} {c.limit != null && <span className="unit">{t(c.unit)}</span>}
             </td>
             <td>
               <Ratio ratio={c.ratio} status={c.status === 'ok' ? undefined : c.status} />
@@ -112,12 +115,13 @@ interface ToggleGroupProps<T extends string> {
 
 /** Multi-select segmented buttons. The last selected option cannot be turned off. */
 export function ToggleGroup<T extends string>({ options, selected, onChange, label = (v) => v, all }: ToggleGroupProps<T>) {
+  const t = useT()
   const allOn = options.every((o) => selected.includes(o))
   return (
     <div className="segmented small" role="group">
       {all && (
         <button type="button" aria-pressed={allOn} className={allOn ? 'active' : ''} onClick={() => onChange([...options])}>
-          전체
+          {t('전체')}
         </button>
       )}
       {options.map((o) => {
