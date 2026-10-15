@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
-import { findKits, kitTypeFor } from './kitSelection'
+import { findKits, kitTypeFor, orderKits } from './kitSelection'
 
 const axis = (id: string) => axes.find((a) => a.id === id)!
 const motor = (id: string) => motors.find((m) => m.id === id)!
@@ -36,5 +36,16 @@ describe('findKits', () => {
   it('defaults to a parallel kit only for axes exported with one', () => {
     expect(kitTypeFor(axis('ELGD-BS-KF-60-…10P'))).toBe('axial')
     expect(kitTypeFor(axis('ELGD-BS-KF-80-…10P_parallel kit'))).toBe('parallel')
+  })
+
+  it('lists the axis kit type first, then plain before inspection window', () => {
+    const m = findKits(axis('ELGD-BS-KF-60-…10P'), motor('HG-KR43'), null, kits)
+    expect(orderKits(m.kits, 'axial').map((k) => k.product)).toEqual([
+      'EAMM-A-T42-60P',
+      'GD060A060M1A-1000',
+      'EAMM-U-65-T42-60P-87',
+      'GD060U060M1A-1000',
+    ])
+    expect(orderKits(m.kits, 'parallel')[0].product).toBe('EAMM-U-65-T42-60P-87')
   })
 })

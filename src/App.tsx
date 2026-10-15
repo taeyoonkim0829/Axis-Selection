@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
-import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './calc/kitSelection'
+import { findKits, kitTypeFor, orderKits } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
@@ -92,9 +92,6 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const [motorId, setMotorId] = useState<string | null>(null)
   // Gearbox picked in step 3; null = the motor step's recommendation (direct drive unless useGearbox)
   const [gearboxId, setGearboxId] = useState<string | null>(null)
-  // undefined = the type the axis data assumes
-  const [kitType, setKitType] = useState<KitType | undefined>(undefined)
-  const [kitWindows, setKitWindows] = useState<KitWindow[]>(['plain'])
   const [kitId, setKitId] = useState<string | null>(null)
 
   const deferredReq = useDeferredValue(req)
@@ -125,10 +122,9 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
     null
 
   const axisKitType = selectedAxis ? kitTypeFor(selectedAxis.axis) : 'axial'
-  const shownKitType = kitType ?? axisKitType
   const kitMatch =
     selectedAxis && selectedDrive ? findKits(selectedAxis.axis, selectedDrive.motor, selectedDrive.gearbox, kits) : null
-  const kitRows = kitsOf(kitMatch?.kits ?? [], shownKitType, kitWindows)
+  const kitRows = orderKits(kitMatch?.kits ?? [], axisKitType)
   const selectedKit = kitRows.find((k) => k.id === kitId) ?? kitRows[0] ?? null
 
   // PDF export: the report is mounted off screen only while the PDF is being made.
@@ -186,7 +182,6 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
                 setAxisId(id)
                 setMotorId(null)
                 setGearboxId(null)
-                setKitType(undefined)
               }}
               settings={settings}
               onSettings={setSettings}
@@ -215,11 +210,8 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             />
             <KitStep
               match={kitMatch}
+              rows={kitRows}
               axisType={axisKitType}
-              type={shownKitType}
-              onType={setKitType}
-              windows={kitWindows}
-              onWindows={setKitWindows}
               selectedId={selectedKit?.id ?? null}
               onSelect={setKitId}
             />

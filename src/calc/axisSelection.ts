@@ -328,6 +328,18 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
         : life),
       alert: km < SCREW_LIFE_MIN_KM,
     })
+    if (km < SCREW_LIFE_MIN_KM) {
+      checks.push({
+        label: '볼스크류 수명',
+        value: km,
+        limit: SCREW_LIFE_MIN_KM,
+        unit: 'km',
+        ratio: SCREW_LIFE_MIN_KM / km,
+        status: 'warn',
+        note: '예상 수명 {min} km 미만',
+        noteArgs: { min: SCREW_LIFE_MIN_KM },
+      })
+    }
   }
 
   return {

@@ -1,30 +1,23 @@
-import { kitsOf, type KitMatch, type KitType, type KitWindow } from '../calc/kitSelection'
+import { orderKits, type KitMatch, type KitType } from '../calc/kitSelection'
 import type { Kit } from '../data/types'
 import { useT } from '../i18n'
-import { RadioGroup, ToggleGroup } from './common'
 
 interface Props {
   /** null until a motor is selected */
   match: KitMatch | null
+  /** Standard kits of the match, ordered by `orderKits` */
+  rows: Kit[]
   /** Kit type the selected axis data assumes */
   axisType: KitType
-  type: KitType
-  onType: (type: KitType) => void
-  /** Window variants to list; at least one */
-  windows: KitWindow[]
-  onWindows: (windows: KitWindow[]) => void
   selectedId: string | null
   onSelect: (id: string) => void
 }
 
-const typeLabel: Record<KitType, string> = { axial: '직렬 키트', parallel: '병렬 키트' }
-const windowLabel: Record<KitWindow, string> = { plain: '일반', window: '견시창' }
+const typeLabel: Record<KitType, string> = { axial: '직렬', parallel: '병렬' }
 
-export function KitStep({ match, axisType, type, onType, windows, onWindows, selectedId, onSelect }: Props) {
+export function KitStep({ match, rows, axisType, selectedId, onSelect }: Props) {
   const t = useT()
-  const kits = match?.kits ?? []
-  const rows = kitsOf(kits, type, windows)
-  const special = kitsOf(match?.special ?? [], type, windows)
+  const selected = rows.find((k) => k.id === selectedId)
 
   return (
     <section className="panel step" id="step-kit">
@@ -47,29 +40,15 @@ export function KitStep({ match, axisType, type, onType, windows, onWindows, sel
         <p className="empty">{t('모터를 선택하면 축과 모터(감속기)의 인터페이스 코드에 맞는 키트를 찾습니다.')}</p>
       ) : (
         <>
-          <div className="step-filters">
-            <RadioGroup
-              options={['axial', 'parallel'] as const}
-              value={type}
-              onChange={onType}
-              label={(k) => `${t(typeLabel[k])} (${kitsOf(kits, k).length})`}
-            />
-            <ToggleGroup
-              options={['plain', 'window'] as const}
-              selected={windows}
-              onChange={onWindows}
-              label={(w) => `${t(windowLabel[w])} (${kitsOf(kits, type, [w]).length})`}
-            />
-          </div>
-          {type !== axisType && (
+          <KitTable match={match} rows={rows} selectedId={selectedId} onSelect={onSelect} />
+          {selected && selected.type !== axisType && (
             <p className="muted small-print">
-              {type === 'parallel'
+              {selected.type === 'parallel'
                 ? t('선택한 축 데이터는 직렬 연결 기준입니다. 병렬 키트를 쓸 경우 1단계에서 같은 축의 병렬 키트(_parallel kit) 데이터가 있으면 그 축으로 검토하세요.')
                 : t('선택한 축 데이터는 병렬 키트 기준입니다.')}
             </p>
           )}
-          <KitTable match={match} rows={rows} type={type} windows={windows} selectedId={selectedId} onSelect={onSelect} />
-          {special.length > 0 && <SpecialKits kits={special} />}
+          {match.special.length > 0 && <SpecialKits kits={orderKits(match.special, axisType)} />}
         </>
       )}
     </section>
@@ -79,15 +58,11 @@ export function KitStep({ match, axisType, type, onType, windows, onWindows, sel
 function KitTable({
   match,
   rows,
-  type,
-  windows,
   selectedId,
   onSelect,
 }: {
   match: KitMatch
   rows: Kit[]
-  type: KitType
-  windows: KitWindow[]
   selectedId: string | null
   onSelect: (id: string) => void
 }) {
@@ -106,12 +81,7 @@ function KitTable({
   if (rows.length === 0) {
     return (
       <p className="empty">
-        {t('축 {axis} · {motor} 조합의 {type}({windows})가 없습니다.', {
-          axis: match.axisCode,
-          motor: match.motorCode,
-          type: t(typeLabel[type]),
-          windows: windows.map((w) => t(windowLabel[w])).join('·'),
-        })}
+        {t('축 {axis} · {motor} 조합의 연결키트가 없습니다.', { axis: match.axisCode, motor: match.motorCode })}
       </p>
     )
   }
@@ -120,9 +90,10 @@ function KitTable({
       <table className="data-table">
         <thead>
           <tr>
+            <th>{t('연결 방식')}</th>
             <th>{t('품명')}</th>
             <th>{t('견시창')}</th>
-            <th>{t(type === 'axial' ? '커플링' : '풀리 품번')}</th>
+            <th>{t('커플링 / 풀리 품번')}</th>
           </tr>
         </thead>
         <tbody>
@@ -134,9 +105,10 @@ function KitTable({
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && onSelect(k.id)}
             >
+              <td>{t(typeLabel[k.type])}</td>
               <td className="model">{k.product}</td>
               <td>{k.window ? 'O' : 'X'}</td>
-              <td>{(type === 'axial' ? k.coupling : k.pulley) ?? '—'}</td>
+              <td>{(k.type === 'axial' ? k.coupling : k.pulley) ?? '—'}</td>
             </tr>
           ))}
         </tbody>

@@ -72,15 +72,13 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
         </label>
       </header>
       <div className="step-filters">
+        <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
         <RadioGroup
           options={['direct', 'gearbox'] as const}
           value={settings.useGearbox ? 'gearbox' : 'direct'}
           onChange={(v) => onSettings({ ...settings, useGearbox: v === 'gearbox' })}
           label={(v) => t(v === 'gearbox' ? '감속기 사용' : '감속기 미사용')}
         />
-      </div>
-      <div className="step-filters">
-        <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
         <ToggleButton
           label={t('브레이크 모터만')}
           checked={settings.requireBrake}

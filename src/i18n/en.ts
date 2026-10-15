@@ -141,6 +141,13 @@ export const en: Record<string, string> = {
   '입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.':
     'Changing an input recalculates. If the same error keeps appearing, reload the page.',
   '다시 시도': 'Try again',
+  '볼스크류 수명': 'Ball screw life',
+  '예상 수명 {min} km 미만': 'Expected life under {min} km',
+  '연결 방식': 'Connection',
+  '직렬': 'Axial',
+  '병렬': 'Parallel',
+  '커플링 / 풀리 품번': 'Coupling / pulley part no.',
+  '축 {axis} · {motor} 조합의 연결키트가 없습니다.': 'No mounting kit for axis {axis} · {motor}.',
   '약 {years}년 · 왕복 {cycles}회 한계': 'about {years} years · limited to {cycles} round trips',
   '위→아래 (눌러 내림)': 'Top-down (pressing down)',
   '아래→위 (밀어 올림)': 'Bottom-up (pushing up)',
@@ -213,7 +220,6 @@ export const en: Record<string, string> = {
     'Select a motor to find the kits that match the interface codes of the axis and the motor (gearbox).',
   '직렬 키트': 'Axial kit',
   '병렬 키트': 'Parallel kit',
-  '일반': 'Standard',
   '견시창': 'Inspection window',
   '선택한 축 데이터는 직렬 연결 기준입니다. 병렬 키트를 쓸 경우 1단계에서 같은 축의 병렬 키트(_parallel kit) 데이터가 있으면 그 축으로 검토하세요.':
     'The selected axis data assumes an axial connection. For a parallel kit, check the same axis with parallel kit data (_parallel kit) in step 1 if it exists.',
@@ -224,7 +230,6 @@ export const en: Record<string, string> = {
     'This gearbox has no interface code. Enter interfaceCode in the gearbox data (JSON).',
   '이 모터의 인터페이스 코드가 없습니다. 모터 데이터(JSON)의 interfaceCode를 입력하세요.':
     'This motor has no interface code. Enter interfaceCode in the motor data (JSON).',
-  '축 {axis} · {motor} 조합의 {type}({windows})가 없습니다.': 'No {type} ({windows}) for axis {axis} · {motor}.',
   '품명': 'Product',
   '커플링': 'Coupling',
   '풀리 품번': 'Pulley part no.',

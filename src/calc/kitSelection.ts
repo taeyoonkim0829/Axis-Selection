@@ -35,10 +35,8 @@ export function findKits(axis: Axis, motor: Motor, gearbox: Gearbox | null, all:
   }
 }
 
-/** 'plain' = without inspection window (일반), 'window' = with one (견시창) */
-export type KitWindow = 'plain' | 'window'
-
-/** Kits of one type, optionally only those with one of the given window variants. */
-export function kitsOf(kits: Kit[], type: KitType, windows?: readonly KitWindow[]): Kit[] {
-  return kits.filter((k) => k.type === type && (!windows || windows.includes(k.window ? 'window' : 'plain')))
+/** All kits in one list: the axis's kit type first, then without inspection window before with one. */
+export function orderKits(kits: Kit[], axisType: KitType): Kit[] {
+  const rank = (k: Kit) => (k.type === axisType ? 0 : 2) + (k.window ? 1 : 0)
+  return kits.toSorted((a, b) => rank(a) - rank(b))
 }
