@@ -1,0 +1,1322 @@
+/*
+ * Axis Selection — route-sign system.
+ * Sign blue owns the top rail; signal yellow marks only the selected route
+ * (active sign, selected rows). Green / amber / red carry verdicts and nothing else.
+ */
+:root,
+.report-stage {
+  --sign: #1f4e8c;
+  --sign-deep: #183f73;
+  --sign-ink: #ffffff;
+  --sign-ink-2: #c9d8ec;
+  --signal: #ffcc00;
+  --signal-ink: #1a1d21;
+  --signal-soft: #fff5cc;
+
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --line: #dde3e9;
+  --line-strong: #c3ccd5;
+  --text: #1a1d21;
+  --muted: #5b6672;
+  --accent: #1f4e8c;
+  --accent-soft: #e4ecf6;
+
+  --ok: #1d8049;
+  --ok-soft: #e1f3e8;
+  --warn: #c25e00;
+  --warn-soft: #fdeedd;
+  --fail: #c8322b;
+  --fail-soft: #fbe4e2;
+
+  --radius: 8px;
+  --rail-h: 112px;
+  --sans: 'Pretendard Variable', Pretendard, 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --din: 'Barlow Semi Condensed', 'Pretendard Variable', Pretendard, 'Malgun Gothic', sans-serif;
+
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sign: #1c477f;
+    --sign-deep: #163a68;
+    --sign-ink-2: #b3c6df;
+    --signal-soft: #3a3214;
+    --bg: #12171d;
+    --surface: #1a2129;
+    --surface-2: #202933;
+    --line: #2c3743;
+    --line-strong: #3b4855;
+    --text: #e6ebf0;
+    --muted: #9aa7b5;
+    --accent: #7fb0ea;
+    --accent-soft: #1d3150;
+    --ok: #4cc37f;
+    --ok-soft: #163322;
+    --warn: #f0943a;
+    --warn-soft: #3b2913;
+    --fail: #f07a70;
+    --fail-soft: #43201d;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 650;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- route rail ---------- */
+
+.rail {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--sign);
+  color: var(--sign-ink);
+  box-shadow: 0 2px 10px rgb(10 30 60 / 0.18);
+}
+
+.rail-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: var(--rail-h);
+  display: flex;
+  align-items: stretch;
+  padding: 0 24px;
+}
+
+.rail-brand {
+  flex: none;
+  width: 196px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding-right: 20px;
+  border-right: 1px solid rgb(255 255 255 / 0.22);
+}
+
+.rail-title {
+  font-family: var(--din);
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.rail-sub {
+  font-size: 12px;
+  color: var(--sign-ink-2);
+}
+
+.signs {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sign {
+  position: relative;
+  min-width: 0;
+}
+
+/* Direction chevron between signs */
+.sign + .sign::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-top: 3px solid rgb(255 255 255 / 0.5);
+  border-right: 3px solid rgb(255 255 255 / 0.5);
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.sign-btn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px 14px 22px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+
+.sign-btn:hover {
+  background: var(--sign-deep);
+}
+
+.sign-btn:focus-visible {
+  outline-offset: -4px;
+}
+
+.sign-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  font-family: var(--din);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.sign-active .sign-no {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--signal-ink);
+}
+
+.sign-active .sign-btn {
+  box-shadow: inset 0 -5px 0 var(--signal);
+}
+
+.sign-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sign-name {
+  font-size: 12px;
+  color: var(--sign-ink-2);
+}
+
+.sign-value {
+  font-family: var(--din);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.sign-empty {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--sign-ink-2);
+}
+
+.sign-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--sign-ink-2);
+}
+
+.sign-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 650;
+  color: var(--sign-ink);
+}
+
+.sign-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5bd08a;
+}
+
+.sign-status-warn::before {
+  background: #ffa24a;
+}
+
+.sign-status-fail::before {
+  background: #ff7a70;
+}
+
+.rail-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding-left: 20px;
+  border-left: 1px solid rgb(255 255 255 / 0.22);
+}
+
+.rail-action {
+  min-width: 108px;
+  padding: 7px 14px;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sign-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.rail-action:hover:not(:disabled) {
+  background: var(--sign-ink);
+  color: var(--sign);
+}
+
+.rail-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---------- notice dialog ---------- */
+
+.notice {
+  width: min(400px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+}
+
+.notice::backdrop {
+  background: rgb(10 20 35 / 0.45);
+}
+
+.notice h2 {
+  margin: 0;
+  padding: 12px 18px;
+  background: var(--sign);
+  color: var(--sign-ink);
+  font-size: 15px;
+}
+
+.notice p {
+  margin: 0;
+  padding: 16px 18px 4px;
+  line-height: 1.6;
+}
+
+.notice form {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 18px 16px;
+}
+
+.notice-ok {
+  min-width: 80px;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--sign);
+  color: var(--sign-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notice-ok:hover {
+  background: var(--sign-deep);
+}
+
+@media (max-width: 1280px) {
+  .rail-brand {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .rail {
+    position: static;
+  }
+
+  .rail-inner {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .signs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sign {
+    border-bottom: 1px solid rgb(255 255 255 / 0.16);
+  }
+
+  .sign + .sign::before {
+    display: none;
+  }
+
+  .rail-actions {
+    flex-direction: row;
+    padding: 12px 16px;
+    border-left: 0;
+  }
+
+  .rail-action {
+    flex: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .signs {
+    grid-template-columns: 1fr;
+  }
+
+  .sign-btn {
+    padding: 10px 16px;
+  }
+
+  .sign-active .sign-btn {
+    box-shadow: inset 5px 0 0 var(--signal);
+  }
+}
+
+/* ---------- page layout ---------- */
+
+.layout {
+  flex: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px 24px 8px;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.app-footer {
+  padding: 20px 16px 28px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.app-footer a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* ---------- inputs ---------- */
+
+.inputs {
+  position: sticky;
+  top: calc(var(--rail-h) + 20px);
+  max-height: calc(100vh - var(--rail-h) - 40px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputs-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.settings summary {
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.settings[open] summary {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1000px) {
+  .inputs {
+    position: static;
+    max-height: none;
+  }
+}
+
+.inputs h2 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.help {
+  margin: -4px 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.grid-2,
+.grid-3 {
+  display: grid;
+  gap: 12px 10px;
+}
+
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+
+.grid-2 .field,
+.grid-3 .field {
+  margin-bottom: 0;
+}
+
+/* A full-width field between two grids */
+.grid-2 + .field {
+  margin-top: 12px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field-input {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.field-input:hover {
+  border-color: var(--muted);
+}
+
+.field-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.field-invalid .field-input {
+  border-color: var(--fail);
+  box-shadow: 0 0 0 3px var(--fail-soft);
+}
+
+.field input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  padding: 0 10px;
+  font-family: var(--din);
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  background: transparent;
+  outline: none;
+  caret-color: var(--accent);
+}
+
+.field input {
+  appearance: textfield;
+}
+
+.field input::-webkit-inner-spin-button,
+.field input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.field-unit {
+  padding: 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.inputs .segmented {
+  display: flex;
+  border-color: var(--sign);
+}
+
+.segmented button {
+  flex: 1;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--line-strong);
+}
+
+.inputs .segmented button + button {
+  border-left-color: var(--sign);
+}
+
+.segmented button:hover:not(.active):not(:disabled) {
+  background: var(--surface-2);
+}
+
+.segmented button.active {
+  background: var(--sign);
+  color: var(--sign-ink);
+  font-weight: 600;
+}
+
+.segmented.small button {
+  padding: 4px 11px;
+  font-size: 13px;
+}
+
+.segmented button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 8px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input {
+  accent-color: var(--sign);
+  width: 15px;
+  height: 15px;
+}
+
+.toggle.small {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+details summary:hover {
+  color: var(--accent);
+}
+
+.cog-details {
+  margin-top: 12px;
+}
+
+.cog-details summary {
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.cog-image {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.cog-help {
+  margin: 8px 0 0;
+}
+
+/* ---------- steps ---------- */
+
+.step {
+  scroll-margin-top: calc(var(--rail-h) + 20px);
+}
+
+@media (max-width: 1000px) {
+  .step {
+    scroll-margin-top: 16px;
+  }
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: -18px -20px 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.step-head h2 {
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+}
+
+/* Route box, the same mark as the rail */
+.step-no {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  background: var(--sign);
+  color: var(--sign-ink);
+  font-family: var(--din);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.step-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+}
+
+.table-wrap {
+  overflow: auto;
+  max-height: 480px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 var(--line-strong);
+}
+
+.num {
+  text-align: right;
+  font-family: var(--din);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+th.num {
+  font-family: var(--sans);
+  font-size: 12px;
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.data-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.data-table tbody tr.selected {
+  background: var(--signal-soft);
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.data-table tbody tr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sort-btn:hover,
+.sort-btn.active {
+  color: var(--text);
+}
+
+.sort-arrow {
+  font-size: 9px;
+  opacity: 0.4;
+}
+
+.sort-btn.active .sort-arrow {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.model {
+  font-family: var(--din);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Verdict: dot + word, never a filled pill */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge-ok {
+  color: var(--ok);
+}
+
+.badge-warn {
+  color: var(--warn);
+}
+
+.badge-fail {
+  color: var(--fail);
+}
+
+.warn-text {
+  color: var(--warn);
+}
+
+.ratio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--din);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ratio-text {
+  min-width: 42px;
+  text-align: right;
+}
+
+.ratio-bar {
+  width: 44px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.ratio-fill {
+  display: block;
+  height: 100%;
+}
+
+.fill-ok {
+  background: var(--ok);
+}
+
+.fill-warn {
+  background: var(--warn);
+}
+
+.fill-fail {
+  background: var(--fail);
+}
+
+/* ---------- evidence (세부사항) ---------- */
+
+.detail {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.detail h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Same marker as <details>: the browser's disclosure triangle */
+.collapse-chevron {
+  display: list-item;
+  list-style: disclosure-closed inside;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.collapse-btn[aria-expanded='true'] .collapse-chevron {
+  list-style-type: disclosure-open;
+}
+
+.collapse-btn:hover .collapse-chevron {
+  color: var(--accent);
+}
+
+.check-table {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.check-table th {
+  position: static;
+}
+
+.check-table td {
+  white-space: normal;
+}
+
+.check-table td:first-child {
+  min-width: 9em;
+}
+
+.detail {
+  overflow-x: auto;
+}
+
+.check-table td:first-child {
+  font-weight: 500;
+}
+
+.profile,
+.info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px 20px;
+  margin: 16px 0 0;
+}
+
+.profile dt,
+.info dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.profile dd,
+.info dd {
+  margin: 0;
+  font-family: var(--din);
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.unit {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 12px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.empty {
+  margin: 0;
+  padding: 22px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: 6px;
+}
+
+.small-print {
+  margin: 6px 0 10px;
+  font-size: 12px;
+}
+
+.table-wrap .small-print {
+  margin: 8px 12px;
+}
+
+.gearbox-pick {
+  margin-top: 16px;
+}
+
+.gearbox-pick h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+/* ---------- motion profile chart ---------- */
+
+.profile-chart {
+  margin: 0;
+}
+
+.profile-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+.profile-chart figcaption {
+  font-size: 12px;
+}
+
+.profile-chart-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 0 4px;
+}
+
+.profile-chart-head h3 {
+  font-size: 17px;
+  margin-right: auto;
+}
+
+.chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart-zero {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.chart-dwell {
+  fill: var(--surface-2);
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.chart-dot {
+  fill: var(--signal);
+  stroke: var(--signal-ink);
+  stroke-width: 1.5;
+}
+
+.chart-cursor {
+  stroke: var(--muted);
+  stroke-dasharray: 3 3;
+}
+
+.chart-tick {
+  fill: var(--muted);
+  font-family: var(--din);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-title {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart-readout {
+  fill: var(--text);
+  font-family: var(--din);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-halo {
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- calculation report (PDF export) ---------- */
+
+/* Mounted off screen only while the PDF is made; always light. Width = A4 minus 12 mm margins at 96 dpi. */
+.report-stage {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 703px;
+  background: #fff;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-chapter {
+  background: #fff;
+}
+
+.report th {
+  position: static;
+}
+
+.report-chapter > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  background: var(--sign);
+  color: var(--sign-ink);
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.report-chapter h3 {
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+
+.report-meta {
+  margin: 0 0 4px;
+  color: var(--muted);
+}
+
+.report-note {
+  margin: 6px 0;
+}
+
+.report-spec,
+.report-table,
+.report .check-table {
+  width: 100%;
+  break-inside: avoid;
+}
+
+.report-spec th,
+.report-spec td,
+.report-table th,
+.report-table td,
+.report .check-table th,
+.report .check-table td {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.report-spec th {
+  width: 22%;
+  box-shadow: none;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 500;
+  text-align: left;
+  white-space: normal;
+}
+
+.report-spec td {
+  width: 28%;
+  font-family: var(--din);
+  font-variant-numeric: tabular-nums;
+}
+
+.report-spec th,
+.report-spec td,
+.report-spec tr:last-child td {
+  border: 1px solid var(--line);
+}
+
+.report-picked td {
+  background: var(--signal-soft);
+}
+
+.report .profile {
+  grid-template-columns: repeat(6, 1fr);
+  margin: 0 0 8px;
+}
+
+.report .profile dd {
+  font-size: 13px;
+}
+
+.report-chart {
+  break-inside: avoid;
+  margin-top: 6px;
+}
+
+.report-chart figcaption {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.report .empty {
+  padding: 12px;
+}

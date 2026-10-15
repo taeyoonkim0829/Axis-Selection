@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "AEB090-9",
+      "family": "AEB",
+      "ratio": 9.0,
+      "model": "AEB090-9",
+      "maker": "Apex",
+      "flangeSize": 90,
+      "compatibleMotors": [
+        "KP73"
+      ],
+      "continuousTorque": null,
+      "maxTorque": null,
+      "torsionalStiffness": null,
+      "backlash": null,
+      "inertia": 0.44,
+      "efficiency": null,
+      "operatingTemperature": null,
+      "driveCode": "80PA",
+      "interfaceCode": null
+    }
+  ]
+}
