@@ -3,8 +3,8 @@ import { accelerationForTime, accelTimeFor, minAccelTime } from '../calc/motionP
 import { defaultPress, type Mounting, type PressConditions, type Requirements, type Settings } from '../calc/types'
 import { useT } from '../i18n'
 import cogImage from '../../images/center_of_gravity.png'
-import { NumberField, ToggleButton } from './common'
-import { fmt, kgf, mountingLabel } from './format'
+import { NumberField, RadioGroup, ToggleButton } from './common'
+import { fmt, kgf, mountingLabel, pressDirectionLabel } from './format'
 
 type AccelMode = 'acceleration' | 'time'
 const accelModeLabel: Record<AccelMode, string> = { acceleration: '가속도', time: '가속 시간' }
@@ -136,6 +136,17 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
             />
             <span className="field-hint">{t('전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀')}</span>
           </div>
+          {press.enabled && req.mounting === 'vertical' && (
+            <div className="field">
+              <span className="field-label">{t('압착 방향')}</span>
+              <RadioGroup
+                options={['down', 'up'] as const}
+                value={press.direction}
+                onChange={(v) => setPress('direction', v)}
+                label={(v) => t(pressDirectionLabel[v])}
+              />
+            </div>
+          )}
           {press.enabled && (
             <div className="grid-2">
               <NumberField

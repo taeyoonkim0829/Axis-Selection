@@ -4,7 +4,7 @@ import type { Axis, Gearbox, Motor } from '../data/types'
 import { curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
 import { moveProfile } from './motionProfile'
-import { defaultSettings, type Requirements } from './types'
+import { defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
 
 const baseReq: Requirements = {
   stroke: 500,
@@ -156,7 +156,7 @@ describe('selection on real data', () => {
   it('press mode: approach, press move and hold carry the press force, the return does not', () => {
     const settings = { ...defaultSettings, friction: { spindle: 0, belt: 0 }, dwellTime: 0.2 }
     const axis: Axis = { ...spindle, noLoadTorque: 0 }
-    const press = { enabled: true, force: 800, distance: 20, speed: 0.02, holdTime: 2 }
+    const press = { ...defaultPress, enabled: true, force: 800, distance: 20, speed: 0.02, holdTime: 2 }
     const ev = evaluateAxis(axis, { ...baseReq, press }, settings)!
 
     expect(ev.press!.profile.moveTime).toBeGreaterThan(20 / 1000 / 0.02)
@@ -175,9 +175,29 @@ describe('selection on real data', () => {
     expect(evaluateDrive(evaluateAxis(axis, baseReq, settings)!, motor, null, settings).checks.some((c) => c.label === '가압 유지 토크')).toBe(false)
   })
 
+  it('vertical pressing: the weight adds to the press force bottom-up and helps top-down', () => {
+    const settings = { ...defaultSettings, friction: { spindle: 0, belt: 0 } }
+    const axis: Axis = { ...spindle, noLoadTorque: 0 }
+    const run = (direction: 'up' | 'down') => {
+      const req: Requirements = { ...baseReq, mounting: 'vertical', press: { ...defaultPress, enabled: true, force: 1000, direction } }
+      const ev = evaluateAxis(axis, req, settings)!
+      return { ev, hold: ev.samples.find((s) => s.v === 0 && s.a === 0 && s.load > 0)!.force, forward: verticalForward(req) }
+    }
+    const up = run('up')
+    const down = run('down')
+    expect([up.forward, down.forward]).toEqual(['up', 'down'])
+    expect(up.hold).toBeCloseTo(1000 + up.ev.movingMass * G)
+    expect(down.hold).toBeCloseTo(1000 - down.ev.movingMass * G)
+    // Top-down, the return lifts the load: the return constant segment pushes the weight up (force + = forward = down).
+    const returnConstant = down.ev.samples.find((s) => s.move === 1 && s.a === 0 && s.v !== 0)!
+    expect(returnConstant.force).toBeCloseTo(-down.ev.movingMass * G)
+    expect(verticalForward({ ...baseReq, mounting: 'vertical' })).toBe('up')
+    expect(verticalForward({ ...baseReq, press: { ...defaultPress, enabled: true } })).toBe(null)
+  })
+
   it('press force counts against ESBF buckling', () => {
     const esbf63 = axes.find((a) => a.id === 'ESBF-BS-63-…-10P')!
-    const press = { enabled: true, force: 5000, distance: 10, speed: 0.01, holdTime: 1 }
+    const press = { ...defaultPress, enabled: true, force: 5000, distance: 10, speed: 0.01, holdTime: 1 }
     const buckling = (stroke: number) =>
       evaluateAxis(esbf63, { ...baseReq, stroke, press }, defaultSettings)!.checks.find((c) => c.label === '압축력 (좌굴)')!
     expect(buckling(400).status).toBe('ok')

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
-import type { Settings } from '../calc/types'
+import type { Settings, VerticalDirection } from '../calc/types'
 import { useT } from '../i18n'
 import { ProfileChart } from './ProfileChart'
 import { fmt } from './format'
@@ -10,7 +10,8 @@ interface Props {
   axis: AxisEvaluation
   drive: DriveEvaluation | null
   settings: Settings
-  vertical: boolean
+  /** direction of the forward move on a vertical axis, null otherwise */
+  vertical: VerticalDirection | null
 }
 
 export function MotionProfile({ axis, drive, settings, vertical }: Props) {

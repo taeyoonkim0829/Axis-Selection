@@ -33,9 +33,26 @@ export interface PressConditions {
   speed: number
   /** s, force held at standstill */
   holdTime: number
+  /** Vertical axis only: pressing upward (bottom-up) or downward (top-down); the forward move goes this way */
+  direction: VerticalDirection
 }
 
-export const defaultPress: PressConditions = { enabled: false, force: 1000, distance: 10, speed: 0.01, holdTime: 1 }
+export type VerticalDirection = 'up' | 'down'
+
+export const defaultPress: PressConditions = {
+  enabled: false,
+  force: 1000,
+  distance: 10,
+  speed: 0.01,
+  holdTime: 1,
+  direction: 'down',
+}
+
+/** Direction of the forward move on a vertical axis: up, or down when pressing top-down; null when not vertical. */
+export function verticalForward(req: Requirements): VerticalDirection | null {
+  if (req.mounting !== 'vertical') return null
+  return req.press?.enabled && req.press.direction === 'down' ? 'down' : 'up'
+}
 
 /** Advanced parameters; defaults follow the Excel calc sheets. */
 export interface Settings {

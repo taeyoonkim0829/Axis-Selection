@@ -3,11 +3,11 @@ import type { AxisEvaluation } from '../calc/axisSelection'
 import type { KitMatch } from '../calc/kitSelection'
 import { accelTimeFor } from '../calc/motionProfile'
 import type { DriveEvaluation } from '../calc/motorSelection'
-import type { Requirements, Settings, Status } from '../calc/types'
+import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { Kit } from '../data/types'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
-import { driveLabel, fmt, kgf, mountingLabel, moveLabel } from './format'
+import { driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
 import { ProfilePlot } from './ProfileChart'
@@ -76,7 +76,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
   const lang = useLang()
   const a = axis.axis
   const g = drive?.gearbox ?? null
-  const vertical = req.mounting === 'vertical'
+  const vertical = verticalForward(req)
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const selection: [string, string, string, string | null, Status | null][] = [
@@ -111,6 +111,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['휴지 시간', q(settings.dwellTime, 's')],
             ...(axis.press
               ? ([
+                  ...(vertical ? [['압착 방향', t(pressDirectionLabel[req.press!.direction])] as Row] : []),
                   ['압착력', `${q(axis.press.force, 'N')} (${kgf(axis.press.force)})`],
                   ['압착 구간', q(axis.press.distance, 'mm')],
                   ['압착 속도', q(req.press!.speed, 'm/s')],

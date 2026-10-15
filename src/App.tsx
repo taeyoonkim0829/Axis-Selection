@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
 import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
-import { defaultPress, defaultSettings, type Requirements, type Settings } from './calc/types'
+import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
 import { LangProvider, storedLang, storeLang, translate, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
@@ -119,7 +119,7 @@ export default function App() {
                 axis={selectedAxis}
                 drive={selectedDrive}
                 settings={deferredSettings}
-                vertical={deferredReq.mounting === 'vertical'}
+                vertical={verticalForward(deferredReq)}
               />
             )}
             <AxisStep

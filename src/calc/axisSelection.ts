@@ -2,7 +2,7 @@
 // guide load comparison value, deflection and life. Motor-independent.
 import type { Axis } from '../data/types'
 import { dwellPhase, moveProfile, samplePhases, type MoveProfile, type Phase } from './motionProfile'
-import { check, worstStatus, type Check, type Requirements, type Settings, type Status } from './types'
+import { check, verticalForward, worstStatus, type Check, type Requirements, type Settings, type Status } from './types'
 
 export const G = 9.81
 /** N/mm², aluminium profile (Excel deflection sheet) */
@@ -11,7 +11,7 @@ const YOUNGS_MODULUS = 70000
 const GUIDE_REFERENCE_LIFE_KM = 5000
 
 export interface AxisSample {
-  /** m/s, signed (vertical: + = up) */
+  /** m/s, signed (+ = forward; vertical: see `verticalForward`) */
   v: number
   /** m/s² */
   a: number
@@ -46,9 +46,9 @@ export interface AxisEvaluation {
   status: Status
   checks: Check[]
   info: InfoItem[]
-  /** Forward move (vertical: up); with pressing the approach move (the press move when there is none) */
+  /** Forward move (vertical: up, or down when pressing top-down); with pressing the approach move (the press move when there is none) */
   profile: MoveProfile
-  /** Return move (vertical: down) */
+  /** Return move */
   backProfile: MoveProfile
   /** Press move and hold at the end of the forward move; null without pressing */
   press: { profile: MoveProfile; distance: number; force: number; holdTime: number } | null
@@ -201,7 +201,8 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const mass = req.payload + axis.slideMass + ((axis.slideMassPer10mm ?? 0) * req.stroke) / 10
   const inertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * req.stroke) / 1000 + axis.inertiaJLPerKg * req.payload
   const toRad = (2 * Math.PI) / (feed / 1000)
-  const gravity = vertical ? mass * G : 0
+  // Weight opposes the forward move when it goes up and helps it when it goes down (top-down pressing).
+  const gravity = vertical ? (verticalForward(req) === 'down' ? -1 : 1) * mass * G : 0
   const resistance = mu * mass * G + settings.guideResistance + settings.externalForce
 
   const driveAt = (v: number, a: number, dir: 1 | -1 | 0, load = 0): DriveState => {

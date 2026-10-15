@@ -2,7 +2,7 @@ import { useMemo, useState, type PointerEvent } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import { tracePhases, type Phase, type TracePoint } from '../calc/motionProfile'
 import { motorTorqueFn, type DriveEvaluation } from '../calc/motorSelection'
-import type { Settings } from '../calc/types'
+import type { Settings, VerticalDirection } from '../calc/types'
 import { useT } from '../i18n'
 import { CollapseTitle } from './common'
 import { fmt, moveLabel } from './format'
@@ -72,7 +72,8 @@ interface Props {
   axis: AxisEvaluation
   drive: DriveEvaluation | null
   settings: Settings
-  vertical: boolean
+  /** direction of the forward move on a vertical axis, null otherwise */
+  vertical: VerticalDirection | null
   open: boolean
   onToggle: () => void
 }

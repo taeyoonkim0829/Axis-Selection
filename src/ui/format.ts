@@ -1,4 +1,4 @@
-import type { Status } from '../calc/types'
+import type { Status, VerticalDirection } from '../calc/types'
 
 export function fmt(value: number | null | undefined, digits = 2): string {
   if (value == null || !Number.isFinite(value)) return '—'
@@ -23,6 +23,10 @@ export const mountingLabel = { floor: '바닥', wall: '벽면', vertical: '수�
 
 export const driveLabel = { belt: '벨트', spindle: '스핀들' } as const
 
-/** Name of one move: forward/return, or up/down on a vertical axis. */
-export const moveLabel = (back: boolean, vertical: boolean) =>
-  back ? (vertical ? '하강' : '복귀') : vertical ? '상승' : '전진'
+export const pressDirectionLabel = { down: '위→아래 (눌러 내림)', up: '아래→위 (밀어 올림)' } as const
+
+/** Name of one move: forward/return, or up/down on a vertical axis (`verticalForward`: direction of the forward move). */
+export const moveLabel = (back: boolean, vertical: VerticalDirection | null) => {
+  if (!vertical) return back ? '복귀' : '전진'
+  return (vertical === 'up') !== back ? '상승' : '하강'
+}
