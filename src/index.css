@@ -1154,6 +1154,10 @@ th.num {
   fill: var(--surface-2);
 }
 
+.chart-press {
+  fill: var(--accent-soft);
+}
+
 .chart-line {
   fill: none;
   stroke: var(--accent);

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { accelerationForTime, accelTimeFor, minAccelTime } from '../calc/motionProfile'
-import type { Mounting, Requirements, Settings } from '../calc/types'
+import { defaultPress, type Mounting, type PressConditions, type Requirements, type Settings } from '../calc/types'
 import { useT } from '../i18n'
 import cogImage from '../../images/center_of_gravity.png'
 import { NumberField, ToggleButton } from './common'
@@ -21,6 +21,9 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
   const set = <K extends keyof Requirements>(key: K, value: Requirements[K]) => onReq({ ...req, [key]: value })
   const setCog = (axis: 'x' | 'y' | 'z', value: number) => onReq({ ...req, cog: { ...req.cog, [axis]: value } })
   const setS = <K extends keyof Settings>(key: K, value: Settings[K]) => onSettings({ ...settings, [key]: value })
+  const press = req.press ?? defaultPress
+  const setPress = <K extends keyof PressConditions>(key: K, value: PressConditions[K]) =>
+    onReq({ ...req, press: { ...press, [key]: value } })
 
   // Acceleration can be entered directly or as the time to reach the velocity; the calculation always uses
   // req.acceleration, so in time mode it is re-derived whenever velocity, time or jerk changes.
@@ -124,6 +127,36 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
             <NumberField label={t('저크')} unit="m/s³" value={req.jerk} onChange={(v) => setMotion({ jerk: v })} />
             <NumberField label={t('휴지 시간')} unit="s" value={settings.dwellTime} onChange={(v) => setS('dwellTime', v)} />
           </div>
+          <div className="field">
+            <span className="field-label">{t('프레싱 모드')}</span>
+            <ToggleButton
+              label={press.enabled ? t('켜짐') : t('꺼짐')}
+              checked={press.enabled}
+              onChange={(v) => setPress('enabled', v)}
+            />
+            <span className="field-hint">{t('전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀')}</span>
+          </div>
+          {press.enabled && (
+            <div className="grid-2">
+              <NumberField label={t('압착력')} unit="N" value={press.force} onChange={(v) => setPress('force', v)} />
+              <NumberField
+                label={t('압착 구간')}
+                unit="mm"
+                value={press.distance}
+                min={0.001}
+                onChange={(v) => setPress('distance', v)}
+                hint={press.distance >= req.stroke ? t('스트로크 전체를 압착') : t('스트로크 끝에서')}
+              />
+              <NumberField
+                label={t('압착 속도')}
+                unit="m/s"
+                value={press.speed}
+                min={0.0001}
+                onChange={(v) => setPress('speed', v)}
+              />
+              <NumberField label={t('가압 유지 시간')} unit="s" value={press.holdTime} onChange={(v) => setPress('holdTime', v)} />
+            </div>
+          )}
         </section>
 
         <section>

@@ -18,7 +18,24 @@ export interface Requirements {
    *  x = travel direction, y = lateral on the slide surface, z = normal to the slide surface. */
   cog: { x: number; y: number; z: number }
   mounting: Mounting
+  /** Pressing at the end of the forward move; absent or disabled = plain point-to-point move */
+  press?: PressConditions
 }
+
+/** Press cycle: approach at the set velocity, press over the last `distance` at `speed`, hold, return. */
+export interface PressConditions {
+  enabled: boolean
+  /** N, pressing force over the press distance and the hold */
+  force: number
+  /** mm, travel at press speed at the end of the stroke */
+  distance: number
+  /** m/s */
+  speed: number
+  /** s, force held at standstill */
+  holdTime: number
+}
+
+export const defaultPress: PressConditions = { enabled: false, force: 1000, distance: 10, speed: 0.01, holdTime: 1 }
 
 /** Advanced parameters; defaults follow the Excel calc sheets. */
 export interface Settings {

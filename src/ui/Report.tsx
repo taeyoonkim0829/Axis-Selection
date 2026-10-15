@@ -109,6 +109,14 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['가속 시간', q(accelTimeFor(req.velocity, req.acceleration, req.jerk), 's')],
             ['저크', req.jerk > 0 ? q(req.jerk, 'm/s³') : t('제한 없음 (사다리꼴)')],
             ['휴지 시간', q(settings.dwellTime, 's')],
+            ...(axis.press
+              ? ([
+                  ['압착력', q(axis.press.force, 'N')],
+                  ['압착 구간', q(axis.press.distance, 'mm')],
+                  ['압착 속도', q(req.press!.speed, 'm/s')],
+                  ['가압 유지 시간', q(axis.press.holdTime, 's')],
+                ] as Row[])
+              : []),
             ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
           ]}
         />
@@ -162,6 +170,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
           <figure key={String(back)} className="profile-chart report-chart">
             <figcaption>
               {t(moveLabel(back, vertical))}
+              {!back && axis.press ? ` + ${t('압착')}` : ''}
               {settings.dwellTime > 0 ? ` + ${t('휴지')}` : ''} ({t('편도, 가로축 시간 s')})
             </figcaption>
             <ProfilePlot axis={axis} drive={drive} settings={settings} view={back ? 'back' : 'forward'} />

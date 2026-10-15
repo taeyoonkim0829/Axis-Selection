@@ -1,6 +1,6 @@
 import { useMemo, useState, type PointerEvent } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
-import { dwellPhase, tracePhases, type Phase, type TracePoint } from '../calc/motionProfile'
+import { tracePhases, type Phase, type TracePoint } from '../calc/motionProfile'
 import { motorTorqueFn, type DriveEvaluation } from '../calc/motorSelection'
 import type { Settings } from '../calc/types'
 import { useT } from '../i18n'
@@ -113,11 +113,28 @@ export function ProfileChart({ axis, drive, settings, vertical, open, onToggle }
 }
 
 /** Phases of the view: each move is followed by its dwell, as in the cycle the checks use. */
-function viewPhases(axis: AxisEvaluation, dwellTime: number, view: ProfileView): Phase[] {
-  const dwell = dwellTime > 0 ? [dwellPhase(dwellTime)] : []
-  const fwd = [...axis.profile.phases, ...dwell]
-  const back = [...axis.backProfile.phases, ...dwell]
-  return view === 'cycle' ? [...fwd, ...back] : view === 'back' ? back : fwd
+function viewPhases(axis: AxisEvaluation, view: ProfileView): Phase[] {
+  return view === 'cycle'
+    ? [...axis.forwardPhases, ...axis.backPhases]
+    : view === 'back'
+      ? axis.backPhases
+      : axis.forwardPhases
+}
+
+type SpanKind = 'dwell' | 'press'
+
+/** Shaded spans [start, end, kind] in s: dwells and the press (press move + hold), adjacent phases merged. */
+function shadedSpans(phases: Phase[]): [number, number, SpanKind][] {
+  const spans: [number, number, SpanKind][] = []
+  let t = 0
+  for (const p of phases) {
+    const kind: SpanKind | null = p.load ? 'press' : p.dir === 0 ? 'dwell' : null
+    const last = spans[spans.length - 1]
+    if (kind && last && last[2] === kind && Math.abs(last[1] - t) < 1e-12) last[1] = t + p.duration
+    else if (kind) spans.push([t, t + p.duration, kind])
+    t += p.duration
+  }
+  return spans
 }
 
 /** Position, velocity, acceleration, jerk and torque over the view; hovering reads out values. */
@@ -134,14 +151,9 @@ export function ProfilePlot({
 }) {
   const t = useT()
   const [hover, setHover] = useState<Point | null>(null)
-  const phases = useMemo(() => viewPhases(axis, settings.dwellTime, view), [axis, settings.dwellTime, view])
+  const phases = useMemo(() => viewPhases(axis, view), [axis, view])
   const moveTime = phases.reduce((s, p) => s + p.duration, 0)
-  // Dwell spans [start, end] in s, shaded on the chart
-  const dwells: [number, number][] = []
-  phases.reduce((t, p) => {
-    if (p.dir === 0) dwells.push([t, t + p.duration])
-    return t + p.duration
-  }, 0)
+  const spans = shadedSpans(phases)
 
   const trace = useMemo(() => {
     const motorTorque = drive ? motorTorqueFn(axis, drive.motor, drive.gearbox, settings) : null
@@ -149,7 +161,7 @@ export function ProfilePlot({
     // Position from the forward move's start: the return move travels back from the stroke end to 0.
     const offset = view === 'back' ? -raw[raw.length - 1].x : 0
     return raw.map((p): Point => {
-      const s = { ...axis.driveAt(p.v, p.a, p.dir), dir: p.dir }
+      const s = { ...axis.driveAt(p.v, p.a, p.dir, p.load), dir: p.dir }
       // Without a motor, show the drive-shaft torque with efficiency applied (as in the axis "구동 토크" check).
       const torque = motorTorque
         ? motorTorque(s)
@@ -199,11 +211,17 @@ export function ProfilePlot({
       onPointerMove={onMove}
       onPointerLeave={() => setHover(null)}
     >
-      {dwells.map(([t0, t1]) => (
+      {spans.map(([t0, t1, kind]) => (
         <g key={t0}>
-          <rect className="chart-dwell" x={x(t0)} width={x(t1) - x(t0)} y={PAD.top} height={plotH - PAD.top - PAD.bottom} />
+          <rect
+            className={kind === 'press' ? 'chart-press' : 'chart-dwell'}
+            x={x(t0)}
+            width={x(t1) - x(t0)}
+            y={PAD.top}
+            height={plotH - PAD.top - PAD.bottom}
+          />
           <text className="chart-tick" x={(x(t0) + x(t1)) / 2} y={PAD.top - 8} textAnchor="middle">
-            {t('휴지')}
+            {t(kind === 'press' ? '압착' : '휴지')}
           </text>
         </g>
       ))}

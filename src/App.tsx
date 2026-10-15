@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
 import { findKits, kitsOf, kitTypeFor, type KitType, type KitWindow } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
-import { defaultSettings, type Requirements, type Settings } from './calc/types'
+import { defaultPress, defaultSettings, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
 import { LangProvider, storedLang, storeLang, translate, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
@@ -23,6 +23,7 @@ const initialRequirements: Requirements = {
   payload: 10,
   cog: { x: 0, y: 0, z: 50 },
   mounting: 'floor',
+  press: defaultPress,
 }
 
 export default function App() {

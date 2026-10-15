@@ -3,6 +3,7 @@ import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
 import { curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
+import { moveProfile } from './motionProfile'
 import { defaultSettings, type Requirements } from './types'
 
 const baseReq: Requirements = {
@@ -150,6 +151,38 @@ describe('selection on real data', () => {
     expect(guided.status).not.toBe('fail')
     expect(checkOf(500).some((c) => c.label === '가이드 하중 비교값 fv')).toBe(false)
     expect(checkOf(500, 'vertical').find((c) => c.label === '로드 횡하중 Fq')!.status).toBe('ok')
+  })
+
+  it('press mode: approach, press move and hold carry the press force, the return does not', () => {
+    const settings = { ...defaultSettings, friction: { spindle: 0, belt: 0 }, dwellTime: 0.2 }
+    const axis: Axis = { ...spindle, noLoadTorque: 0 }
+    const press = { enabled: true, force: 800, distance: 20, speed: 0.02, holdTime: 2 }
+    const ev = evaluateAxis(axis, { ...baseReq, press }, settings)!
+
+    expect(ev.press!.profile.moveTime).toBeGreaterThan(20 / 1000 / 0.02)
+    const approach = moveProfile(0.48, 0.5, 5, 0, 1).moveTime
+    const back = moveProfile(0.5, 0.5, 5, 0, -1).moveTime
+    expect(ev.cycleTime).toBeCloseTo(approach + ev.press!.profile.moveTime + 2 + back + 2 * 0.2)
+
+    const hold = ev.samples.filter((s) => s.v === 0 && s.a === 0 && s.load > 0)
+    expect(hold.reduce((t, s) => t + s.dt, 0)).toBeCloseTo(2)
+    expect(hold[0].force).toBeCloseTo(800)
+    expect(Math.max(...ev.samples.filter((s) => s.move === 1).map((s) => Math.abs(s.force)))).toBeLessThan(800)
+
+    const motor = { ...motors[0], ratedTorque: 0.5, peakTorque: 100 } as Motor
+    const holdCheck = evaluateDrive(ev, motor, null, settings).checks.find((c) => c.label === '가압 유지 토크')!
+    expect(holdCheck.value).toBeCloseTo((800 * axis.spindlePitch!) / 1000 / (2 * Math.PI) / 0.9)
+    expect(evaluateDrive(evaluateAxis(axis, baseReq, settings)!, motor, null, settings).checks.some((c) => c.label === '가압 유지 토크')).toBe(false)
+  })
+
+  it('press force counts against ESBF buckling', () => {
+    const esbf63 = axes.find((a) => a.id === 'ESBF-BS-63-…-10P')!
+    const press = { enabled: true, force: 5000, distance: 10, speed: 0.01, holdTime: 1 }
+    const buckling = (stroke: number) =>
+      evaluateAxis(esbf63, { ...baseReq, stroke, press }, defaultSettings)!.checks.find((c) => c.label === '압축력 (좌굴)')!
+    expect(buckling(400).status).toBe('ok')
+    expect(buckling(1000).status).toBe('fail')
+    expect(esbf63.screwDynamicLoadRating).toBeGreaterThan(0)
   })
 
   it('curveAt interpolates and clamps', () => {

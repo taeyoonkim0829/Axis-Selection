@@ -25,6 +25,8 @@ export interface AxisSample {
   torque: number
   /** N the drive must apply to the slide */
   force: number
+  /** N, process force from pressing (`Phase.load`) */
+  load: number
 }
 
 /** Drive-shaft load for one kinematic state */
@@ -44,12 +46,19 @@ export interface AxisEvaluation {
   status: Status
   checks: Check[]
   info: InfoItem[]
-  /** Forward move (vertical: up) */
+  /** Forward move (vertical: up); with pressing the approach move (the press move when there is none) */
   profile: MoveProfile
   /** Return move (vertical: down) */
   backProfile: MoveProfile
-  /** Drive-shaft load at velocity v [m/s] and acceleration a [m/s²] while moving in direction dir */
-  driveAt: (v: number, a: number, dir: 1 | -1 | 0) => DriveState
+  /** Press move and hold at the end of the forward move; null without pressing */
+  press: { profile: MoveProfile; distance: number; force: number; holdTime: number } | null
+  /** Forward half of the cycle (approach, press, hold, dwell) and return half (return, dwell) */
+  forwardPhases: Phase[]
+  backPhases: Phase[]
+  /** m/s, highest velocity of the cycle */
+  peakVelocity: number
+  /** Drive-shaft load at velocity v [m/s] and acceleration a [m/s²] while moving in direction dir, with process force load [N] */
+  driveAt: (v: number, a: number, dir: 1 | -1 | 0, load?: number) => DriveState
   cycleTime: number
   /** payload + slide, kg */
   movingMass: number
@@ -147,19 +156,44 @@ function lifeNote(km: number, strokeMm: number, cycleTime: number, hoursPerDay: 
   return { note: '약 {years}년', noteArgs: { years: lifeYears(km, strokeMm, cycleTime, hoursPerDay).toFixed(1) } }
 }
 
+/** Press move of the forward stroke, or null when pressing is off or its inputs are not positive. */
+function pressCycle(req: Requirements): AxisEvaluation['press'] {
+  const p = req.press
+  if (!p?.enabled || !(p.distance > 0 && p.speed > 0 && p.force >= 0)) return null
+  const distance = Math.min(p.distance, req.stroke)
+  return {
+    profile: moveProfile(distance / 1000, p.speed, req.acceleration, req.jerk, 1),
+    distance,
+    force: p.force,
+    holdTime: Math.max(0, p.holdTime),
+  }
+}
+
 export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings): AxisEvaluation | null {
   const feed = axisFeed(axis)
   if (!feed || !(req.stroke > 0 && req.velocity > 0 && req.acceleration > 0)) return null
 
   const strokeM = req.stroke / 1000
-  const fwd = moveProfile(strokeM, req.velocity, req.acceleration, req.jerk, 1)
+  const press = pressCycle(req)
+  const approachM = strokeM - (press?.distance ?? 0) / 1000
+  const approach = approachM > 1e-9 ? moveProfile(approachM, req.velocity, req.acceleration, req.jerk, 1) : null
+  const fwd = approach ?? press!.profile
   const back = moveProfile(strokeM, req.velocity, req.acceleration, req.jerk, -1)
   const dwell = settings.dwellTime > 0 ? [dwellPhase(settings.dwellTime)] : []
-  const phases: Phase[] = [...fwd.phases, ...dwell, ...back.phases, ...dwell]
-  const fwdEnd = fwd.phases.length
-  const backStart = fwdEnd + dwell.length
-  const moveOf = (i: number) => (i < fwdEnd ? 0 : i >= backStart && i < backStart + back.phases.length ? 1 : -1)
-  const cycleTime = 2 * (fwd.moveTime + settings.dwellTime)
+  // Pressing: the press move and the hold (pushing at standstill, dir +1) carry the press force.
+  const pressPhases: Phase[] = press
+    ? [
+        ...press.profile.phases.map((p) => ({ ...p, load: press.force })),
+        ...(press.holdTime > 0 ? [{ ...dwellPhase(press.holdTime), dir: 1 as const, load: press.force }] : []),
+      ]
+    : []
+  const forwardMoves = [...(approach?.phases ?? []), ...pressPhases]
+  const forwardPhases = [...forwardMoves, ...dwell]
+  const backPhases = [...back.phases, ...dwell]
+  const phases: Phase[] = [...forwardPhases, ...backPhases]
+  const moves = [...forwardMoves.map(() => 0), ...dwell.map(() => -1), ...back.phases.map(() => 1), ...dwell.map(() => -1)]
+  const cycleTime = phases.reduce((t, p) => t + p.duration, 0)
+  const peakVelocity = Math.max(fwd.peakVelocity, press?.profile.peakVelocity ?? 0)
 
   const vertical = req.mounting === 'vertical'
   const efficiency = settings.efficiency[axis.drive]
@@ -170,13 +204,16 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const gravity = vertical ? mass * G : 0
   const resistance = mu * mass * G + settings.guideResistance + settings.externalForce
 
-  const driveAt = (v: number, a: number, dir: 1 | -1 | 0): DriveState => {
+  const driveAt = (v: number, a: number, dir: 1 | -1 | 0, load = 0): DriveState => {
     const sgn = v !== 0 ? Math.sign(v) : dir
-    const external = gravity + sgn * resistance
+    const external = gravity + sgn * resistance + load
     const torque = inertia * 1e-4 * a * toRad + (external * feed) / (2000 * Math.PI) + sgn * axis.noLoadTorque
     return { omega: v * toRad, alpha: a * toRad, torque, force: mass * a + external }
   }
-  const samples: AxisSample[] = samplePhases(phases, moveOf).map((s) => ({ ...s, ...driveAt(s.v, s.a, s.dir) }))
+  const samples: AxisSample[] = samplePhases(phases, (i) => moves[i]).map((s) => ({
+    ...s,
+    ...driveAt(s.v, s.a, s.dir, s.load),
+  }))
 
   const moving = samples.filter((s) => s.dir !== 0)
   const peakForce = Math.max(...moving.map((s) => Math.abs(s.force)))
@@ -186,7 +223,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
 
   const checks: Check[] = [
     check('스트로크', req.stroke, axis.maxStroke, 'mm'),
-    check('속도', fwd.peakVelocity, axis.maxSpeed, 'm/s'),
+    check('속도', peakVelocity, axis.maxSpeed, 'm/s'),
     check('가속도', fwd.peakAcceleration, axis.maxAcceleration, 'm/s²'),
     check('이송력 Fx', peakForce, axis.maxFeedForce, 'N'),
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
@@ -269,7 +306,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       den += w
     }
     const meanLoad = Math.cbrt(num / den)
-    const km = (axis.screwDynamicLoadRating / (screwLoadFactor(fwd.peakVelocity) * meanLoad)) ** 3 * axis.spindlePitch
+    const km = (axis.screwDynamicLoadRating / (screwLoadFactor(peakVelocity) * meanLoad)) ** 3 * axis.spindlePitch
     info.push({ label: '볼스크류 예상 수명', value: km, unit: 'km', ...lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay) })
   }
 
@@ -280,6 +317,10 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     info,
     profile: fwd,
     backProfile: back,
+    press,
+    forwardPhases,
+    backPhases,
+    peakVelocity,
     driveAt,
     cycleTime,
     movingMass: mass,

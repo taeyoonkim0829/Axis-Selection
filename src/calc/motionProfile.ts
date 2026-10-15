@@ -7,8 +7,10 @@ export interface Phase {
   a0: number
   a1: number
   v0: number
-  /** +1 / -1 travel direction while moving, 0 while dwelling */
+  /** +1 / -1 travel direction while moving, 0 while dwelling; a press hold is +1 at standstill */
   dir: 1 | -1 | 0
+  /** N, process force against the forward direction during this phase (pressing) */
+  load?: number
 }
 
 export interface MoveProfile {
@@ -145,6 +147,8 @@ export interface TracePoint {
   /** m/s³ */
   j: number
   dir: 1 | -1 | 0
+  /** N, `Phase.load` */
+  load: number
 }
 
 /** Evenly spaced time trace of phases, for plotting. Each phase contributes both end points, so steps stay vertical. */
@@ -159,7 +163,7 @@ export function tracePhases(phases: Phase[], points = 400): TracePoint[] {
     const xAt = (t: number) => x0 + p.v0 * t + (p.a0 * t * t) / 2 + (j * t * t * t) / 6
     for (let k = 0; k <= n; k++) {
       const t = (p.duration * k) / n
-      trace.push({ t: start + t, x: xAt(t), ...phaseState(p, t), j, dir: p.dir })
+      trace.push({ t: start + t, x: xAt(t), ...phaseState(p, t), j, dir: p.dir, load: p.load ?? 0 })
     }
     start += p.duration
     x0 = xAt(p.duration)
@@ -175,6 +179,8 @@ export interface Sample {
   dt: number
   /** Index of the move the sample belongs to (-1 while dwelling) */
   move: number
+  /** N, `Phase.load` */
+  load: number
 }
 
 /**
@@ -188,8 +194,9 @@ export function samplePhases(phases: Phase[], moveIndex: (phaseIndex: number) =>
     const move = moveIndex(i)
     const n = Math.max(4, Math.ceil((p.duration / total) * resolution))
     const dt = p.duration / n
-    for (const t of [0, p.duration]) samples.push({ ...phaseState(p, t), dir: p.dir, dt: 0, move })
-    for (let k = 0; k < n; k++) samples.push({ ...phaseState(p, (k + 0.5) * dt), dir: p.dir, dt, move })
+    const load = p.load ?? 0
+    for (const t of [0, p.duration]) samples.push({ ...phaseState(p, t), dir: p.dir, dt: 0, move, load })
+    for (let k = 0; k < n; k++) samples.push({ ...phaseState(p, (k + 0.5) * dt), dir: p.dir, dt, move, load })
   })
   return samples
 }

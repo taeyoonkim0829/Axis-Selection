@@ -49,13 +49,22 @@ export function evaluateDrive(
   // Constant-velocity segments (moving, a = 0): peak torque and time spent above the rated torque
   let constantPeak = 0
   let constantOverTime = 0
+  // Press hold (pushing at standstill): peak torque and time above the rated torque
+  let holdPeak = 0
+  let holdOverTime = 0
+  let holding = false
   const negativeEnergy = [0, 0]
   for (const s of axisEval.samples) {
     const torque = motorTorque(s)
     peak = Math.max(peak, Math.abs(torque))
-    if (s.dir !== 0 && Math.abs(s.a) < 1e-9) {
+    if (s.dir !== 0 && Math.abs(s.a) < 1e-9 && Math.abs(s.v) > 1e-9) {
       constantPeak = Math.max(constantPeak, Math.abs(torque))
       if (Math.abs(torque) > motor.ratedTorque) constantOverTime += s.dt
+    }
+    if (s.dir !== 0 && s.v === 0 && s.a === 0 && s.load > 0) {
+      holding = true
+      holdPeak = Math.max(holdPeak, Math.abs(torque))
+      if (Math.abs(torque) > motor.ratedTorque) holdOverTime += s.dt
     }
     peakOutput = Math.max(peakOutput, Math.abs(s.torque))
     sumSquares += torque * torque * s.dt
@@ -63,14 +72,17 @@ export function evaluateDrive(
     if (s.move >= 0 && power < 0) negativeEnergy[s.move] -= power * s.dt
   }
   const rms = Math.sqrt(sumSquares / axisEval.cycleTime)
-  const maxMotorSpeed = ((axisEval.profile.peakVelocity * 60000) / axisEval.feed) * ratio
+  const maxMotorSpeed = ((axisEval.peakVelocity * 60000) / axisEval.feed) * ratio
   const loadInertia = axisEval.inertia / ratio ** 2 + (gearbox?.inertia ?? 0) + settings.couplingInertia
   const inertiaRatio = loadInertia / motor.inertia
 
   const checks: Check[] = [
     check('최대 토크', peak, motor.peakTorque, 'Nm'),
     check('실효 토크', rms, motor.ratedTorque, 'Nm'),
-    constantTorqueCheck(constantPeak, constantOverTime, motor.ratedTorque, settings.conservative),
+    constantTorqueCheck('등속 구간 토크', constantPeak, constantOverTime, motor.ratedTorque, settings.conservative),
+    ...(holding
+      ? [constantTorqueCheck('가압 유지 토크', holdPeak, holdOverTime, motor.ratedTorque, settings.conservative)]
+      : []),
     // Exceeding the rated speed only warns (torque drops above it).
     maxMotorSpeed > motor.ratedSpeed
       ? {
@@ -122,11 +134,11 @@ export function evaluateDrive(
 }
 
 /**
- * Constant-velocity torque vs the rated torque. A long dwell can hide a long, overloaded constant segment
+ * Constant-velocity (or press hold) torque vs the rated torque. A long dwell can hide a long, overloaded segment
  * in the RMS torque, so this warns (fails in conservative mode) whenever that segment exceeds the rated torque.
  */
-function constantTorqueCheck(value: number, overTime: number, rated: number, conservative: boolean): Check {
-  const c = check('등속 구간 토크', value, rated, 'Nm')
+function constantTorqueCheck(label: string, value: number, overTime: number, rated: number, conservative: boolean): Check {
+  const c = check(label, value, rated, 'Nm')
   if (c.status !== 'fail') return c
   return {
     ...c,

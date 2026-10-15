@@ -55,9 +55,21 @@ export function ProfileNumbers({ axis }: { axis: AxisEvaluation }) {
         <dd>{fmt(p.constantTime, 3)} s</dd>
       </div>
       <div>
-        <dt>{t('이동 시간 (편도)')}</dt>
+        <dt>{t(axis.press ? '접근 시간' : '이동 시간 (편도)')}</dt>
         <dd>{fmt(p.moveTime, 3)} s</dd>
       </div>
+      {axis.press && (
+        <>
+          <div>
+            <dt>{t('압착 시간')}</dt>
+            <dd>{fmt(axis.press.profile.moveTime, 3)} s</dd>
+          </div>
+          <div>
+            <dt>{t('가압 유지')}</dt>
+            <dd>{fmt(axis.press.holdTime, 3)} s</dd>
+          </div>
+        </>
+      )}
       <div>
         <dt>{t('사이클 (왕복)')}</dt>
         <dd>{fmt(axis.cycleTime, 3)} s</dd>
