@@ -1,6 +1,6 @@
 # Product data
 
-The app reads every JSON file in this folder at build time. These files are the source of truth: edit them directly.
+The app reads every JSON file in this folder at build time, except discontinued families excluded in `src/data/index.ts` (Mitsubishi `HF-KP`/`HF-SP`, Apex `AE`); those files are kept for reference. These files are the source of truth: edit them directly.
 
 ```
 data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits
