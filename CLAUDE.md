@@ -20,7 +20,7 @@ The app sizes and selects a Festo Cartesian (linear) axis, plus the matching mot
 
 ## Product data
 
-The JSON files in `data/` are the source of truth and are edited by hand. The original Excel workbooks (Festo E-Drive selection Ver15.04, Motor Kit_Selection) and their export script are retired. Layout: one file per maker and product family, `data/<kind>/<maker>/<family>.json` with kind = `axes`, `motors`, `gearboxes` or `kits`. Each file is `{ "items": [...] }`. `src/data/index.ts` loads every file with `import.meta.glob`, so new files need no code change. Discontinued families are left out there with `!` glob patterns while their files stay in `data/`: Mitsubishi HF-KP/HF-SP and Apex AE (AEB/AER are still loaded). **`data/README.md` lists every field with its unit.** Keep it in sync when adding fields.
+The JSON files in `data/` are the source of truth and are edited by hand. The original Excel workbooks (Festo E-Drive selection Ver15.04, Motor Kit_Selection) and their export script are retired. Layout: one file per maker and product family, `data/<kind>/<maker>/<family>.json` with kind = `axes`, `motors`, `gearboxes` or `kits`. Each file is `{ "items": [...] }`. `src/data/index.ts` loads every file with `import.meta.glob`, so new files need no code change. Discontinued families are left out there with `!` glob patterns while their files stay in `data/`: Mitsubishi HF-KP/HF-SP and Apex PA. **`data/README.md` lists every field with its unit.** Keep it in sync when adding fields.
 
 Data gotchas:
 - Units are mm, kg, N, Nm, kg·cm², m/s, rpm (per field in `data/README.md`).

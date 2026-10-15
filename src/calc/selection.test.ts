@@ -114,9 +114,10 @@ describe('selection on real data', () => {
     expect(drives.every((d) => d.motor.brake)).toBe(true)
   })
 
-  it('leaves out discontinued Mitsubishi HF motors and Apex AE gearboxes', () => {
+  it('leaves out discontinued Mitsubishi HF motors and Apex PA gearboxes', () => {
     expect(motors.some((m) => m.family.startsWith('HF-'))).toBe(false)
-    expect(gearboxes.some((g) => g.family === 'AE')).toBe(false)
+    expect(gearboxes.some((g) => g.family === 'PA')).toBe(false)
+    expect(gearboxes.some((g) => g.family === 'AE')).toBe(true)
   })
 
   it('offers Apex gearboxes to HG-KR/HG-SR (same interface as HF-KP/HF-SP)', () => {

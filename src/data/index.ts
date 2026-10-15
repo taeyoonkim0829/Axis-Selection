@@ -3,14 +3,14 @@ import type { Axis, Gearbox, Kit, Motor } from './types'
 // Product data is maintained directly in these JSON files (see data/README.md):
 // one file per maker and product family, data/<kind>/<maker>/<family>.json
 // Files excluded with `!` stay in data/ but are not offered in the app (discontinued: Mitsubishi HF-KP/HF-SP,
-// Apex AE).
+// Apex PA).
 type DataFile = { items: unknown[] }
 const axisFiles = import.meta.glob<DataFile>('../../data/axes/*/*.json', { eager: true, import: 'default' })
 const motorFiles = import.meta.glob<DataFile>(['../../data/motors/*/*.json', '!../../data/motors/Mitsubishi/HF-*.json'], {
   eager: true,
   import: 'default',
 })
-const gearboxFiles = import.meta.glob<DataFile>(['../../data/gearboxes/*/*.json', '!../../data/gearboxes/Apex/AE.json'], {
+const gearboxFiles = import.meta.glob<DataFile>(['../../data/gearboxes/*/*.json', '!../../data/gearboxes/Apex/PA.json'], {
   eager: true,
   import: 'default',
 })
