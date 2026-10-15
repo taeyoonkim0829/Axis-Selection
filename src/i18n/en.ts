@@ -123,7 +123,6 @@ export const en: Record<string, string> = {
   '로드 횡하중 Fq': 'Lateral force on piston rod Fq',
   '외부 가이드 사용 — 검토 생략': 'External guide used; not checked',
   '가압 유지 토크': 'Press hold torque',
-  '프레싱 모드': 'Pressing mode',
   '전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀':
     'At the end of the forward move, presses over the press distance at press speed, holds, then returns',
   '압착력': 'Press force',
@@ -141,6 +140,11 @@ export const en: Record<string, string> = {
   '입력값을 바꾸면 다시 계산합니다. 같은 오류가 계속되면 페이지를 새로고침하세요.':
     'Changing an input recalculates. If the same error keeps appearing, reload the page.',
   '다시 시도': 'Try again',
+  '어플리케이션 선택': 'Application',
+  '어플리케이션': 'Application',
+  '일반': 'General',
+  '프레싱': 'Pressing',
+  '스트로크를 왕복 이송': 'Moves back and forth over the stroke',
   '볼스크류 수명': 'Ball screw life',
   '예상 수명 {min} km 미만': 'Expected life under {min} km',
   '연결 방식': 'Connection',

@@ -109,6 +109,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['가속 시간', q(accelTimeFor(req.velocity, req.acceleration, req.jerk), 's')],
             ['저크', req.jerk > 0 ? q(req.jerk, 'm/s³') : t('제한 없음 (사다리꼴)')],
             ['휴지 시간', q(settings.dwellTime, 's')],
+            ['어플리케이션', t(axis.press ? '프레싱' : '일반')],
             ...(axis.press
               ? ([
                   ...(vertical ? [['압착 방향', t(pressDirectionLabel[req.press!.direction])] as Row] : []),

@@ -493,6 +493,20 @@ h3 {
   gap: 22px;
 }
 
+/* 어플리케이션 선택: 일반 / 프레싱, the press inputs below the switch */
+.application-hint {
+  margin: 6px 0 12px;
+}
+
+.application-hint:last-child {
+  margin-bottom: 0;
+}
+
+.application .grid-2 + .field,
+.application .field + .grid-2 {
+  margin-top: 0;
+}
+
 .settings summary {
   font-size: 15px;
   margin-bottom: 0;

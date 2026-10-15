@@ -127,53 +127,6 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
             <NumberField label={t('저크')} unit="m/s³" value={req.jerk} onChange={(v) => setMotion({ jerk: v })} />
             <NumberField label={t('휴지 시간')} unit="s" value={settings.dwellTime} onChange={(v) => setS('dwellTime', v)} />
           </div>
-          <div className="field">
-            <span className="field-label">{t('프레싱 모드')}</span>
-            <ToggleButton
-              label={press.enabled ? t('켜짐') : t('꺼짐')}
-              checked={press.enabled}
-              onChange={(v) => setPress('enabled', v)}
-            />
-            <span className="field-hint">{t('전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀')}</span>
-          </div>
-          {press.enabled && req.mounting === 'vertical' && (
-            <div className="field">
-              <span className="field-label">{t('압착 방향')}</span>
-              <RadioGroup
-                options={['down', 'up'] as const}
-                value={press.direction}
-                onChange={(v) => setPress('direction', v)}
-                label={(v) => t(pressDirectionLabel[v])}
-              />
-            </div>
-          )}
-          {press.enabled && (
-            <div className="grid-2">
-              <NumberField
-                label={t('압착력')}
-                unit="N"
-                value={press.force}
-                onChange={(v) => setPress('force', v)}
-                hint={kgf(press.force)}
-              />
-              <NumberField
-                label={t('압착 구간')}
-                unit="mm"
-                value={press.distance}
-                min={0.001}
-                onChange={(v) => setPress('distance', v)}
-                hint={press.distance >= req.stroke ? t('스트로크 전체를 압착') : t('스트로크 끝에서')}
-              />
-              <NumberField
-                label={t('압착 속도')}
-                unit="m/s"
-                value={press.speed}
-                min={0.0001}
-                onChange={(v) => setPress('speed', v)}
-              />
-              <NumberField label={t('가압 유지 시간')} unit="s" value={press.holdTime} onChange={(v) => setPress('holdTime', v)} />
-            </div>
-          )}
         </section>
 
         <section>
@@ -198,6 +151,67 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
           </details>
         </section>
       </div>
+
+      <section className="panel application">
+        <h2>{t('어플리케이션 선택')}</h2>
+        <div className="segmented" role="radiogroup">
+          {(['general', 'press'] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              role="radio"
+              aria-checked={press.enabled === (a === 'press')}
+              className={press.enabled === (a === 'press') ? 'active' : ''}
+              onClick={() => setPress('enabled', a === 'press')}
+            >
+              {t(a === 'press' ? '프레싱' : '일반')}
+            </button>
+          ))}
+        </div>
+        <p className="field-hint application-hint">
+          {press.enabled
+            ? t('전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀')
+            : t('스트로크를 왕복 이송')}
+        </p>
+        {press.enabled && req.mounting === 'vertical' && (
+          <div className="field">
+            <span className="field-label">{t('압착 방향')}</span>
+            <RadioGroup
+              options={['down', 'up'] as const}
+              value={press.direction}
+              onChange={(v) => setPress('direction', v)}
+              label={(v) => t(pressDirectionLabel[v])}
+            />
+          </div>
+        )}
+        {press.enabled && (
+          <div className="grid-2">
+            <NumberField
+              label={t('압착력')}
+              unit="N"
+              value={press.force}
+              onChange={(v) => setPress('force', v)}
+              hint={kgf(press.force)}
+            />
+            <NumberField
+              label={t('압착 구간')}
+              unit="mm"
+              value={press.distance}
+              min={0.001}
+              onChange={(v) => setPress('distance', v)}
+              hint={press.distance >= req.stroke ? t('스트로크 전체를 압착') : t('스트로크 끝에서')}
+            />
+            <NumberField
+              label={t('압착 속도')}
+              unit="m/s"
+              value={press.speed}
+              min={0.0001}
+              onChange={(v) => setPress('speed', v)}
+            />
+            <NumberField label={t('가압 유지 시간')} unit="s" value={press.holdTime} onChange={(v) => setPress('holdTime', v)} />
+          </div>
+        )}
+      </section>
 
       <details className="panel settings">
         <summary>{t('상세 설정')}</summary>
