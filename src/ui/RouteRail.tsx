@@ -70,7 +70,7 @@ function Sign({
         <span className="sign-no">{no}</span>
         <span className="sign-body">
           <span className="sign-name">{name}</span>
-          <span className={`sign-value${value ? '' : ' sign-empty'}`}>{value ?? empty ?? t('선택 안 됨')}</span>
+          <span className={`sign-value${value ? '' : ' sign-empty'}`} title={value ?? undefined}>{value ?? empty ?? t('선택 안 됨')}</span>
           {(status || detail) && (
             <span className="sign-detail">
               {status && <span className={`sign-status sign-status-${status}`}>{t(statusLabel[status])}</span>}

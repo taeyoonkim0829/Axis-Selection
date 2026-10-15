@@ -150,7 +150,8 @@ h3 {
   flex: 1;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Columns grow with their content (a long part number gets more room), then share what is left */
+  grid-template-columns: repeat(4, minmax(0, auto));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -243,7 +244,10 @@ h3 {
   font-size: 20px;
   font-weight: 600;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  /* One line in both languages; the full name is in the title and in the step */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sign-empty {
@@ -255,15 +259,23 @@ h3 {
 
 .sign-detail {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 2px 8px;
   margin-top: 3px;
   font-size: 12px;
   color: var(--sign-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sign-detail > :last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sign-status {
+  flex: none;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -378,6 +390,15 @@ h3 {
 @media (max-width: 1280px) {
   .rail-brand {
     display: none;
+  }
+
+  .sign-btn {
+    gap: 10px;
+    padding: 14px 12px 14px 18px;
+  }
+
+  .sign-value {
+    font-size: 17px;
   }
 }
 
@@ -1049,6 +1070,11 @@ th.num {
   white-space: normal;
 }
 
+/* Keep a value and its unit together ("6,000 rpm") */
+.check-table td.num {
+  white-space: nowrap;
+}
+
 .check-table td:first-child {
   min-width: 9em;
 }
@@ -1335,7 +1361,7 @@ th.num {
 }
 
 .report-spec th {
-  width: 22%;
+  width: 25%;
   box-shadow: none;
   background: var(--surface-2);
   color: var(--muted);
@@ -1345,7 +1371,7 @@ th.num {
 }
 
 .report-spec td {
-  width: 28%;
+  width: 25%;
   font-family: var(--din);
   font-variant-numeric: tabular-nums;
 }

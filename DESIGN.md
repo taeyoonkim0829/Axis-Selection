@@ -159,7 +159,7 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 
 ## Components
 
-- **Route sign (rail)**: numbered box + step name (12px) + part number (20px) + verdict dot and the tightest check (`속도 100%`). The whole sign is a button that scrolls to its step; the step in view gets the yellow box and a 5px yellow underline.
+- **Route sign (rail)**: numbered box + step name (12px) + part number (20px) + verdict dot and the tightest check (`속도 100%`). The whole sign is a button that scrolls to its step; the step in view gets the yellow box and a 5px yellow underline. Part number and detail stay on one line in both languages (ellipsis, full name in the title); the four columns size to their content, and below 1280px the part number drops to 17px.
 - **Step panel**: header strip with a blue 28px number box, title, counts and toggles; body with filters, then table, then evidence (세부사항).
 - **Verdict badge**: coloured 8px dot + word, never a filled pill.
 - **Ratio cell**: percentage in the data face + 44px bar (ok under 80%, warn, fail).
