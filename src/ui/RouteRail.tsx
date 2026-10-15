@@ -124,8 +124,8 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
           <Sign
             no={3}
             name={t('감속기')}
-            value={drive ? (g ? g.model : t('직결')) : null}
-            detail={drive ? (g ? `${g.maker} · ${g.ratio}:1` : t('감속기 없음')) : undefined}
+            value={drive ? (g ? g.model : t('감속기 미사용')) : null}
+            detail={g ? `${g.maker} · ${g.ratio}:1` : undefined}
             active={active === 2}
           />
           <Sign

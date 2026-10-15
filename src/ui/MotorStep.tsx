@@ -76,7 +76,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
           options={['direct', 'gearbox'] as const}
           value={settings.useGearbox ? 'gearbox' : 'direct'}
           onChange={(v) => onSettings({ ...settings, useGearbox: v === 'gearbox' })}
-          label={(v) => t(v === 'gearbox' ? '감속기 사용' : '직결 (감속기 없음)')}
+          label={(v) => t(v === 'gearbox' ? '감속기 사용' : '감속기 미사용')}
         />
       </div>
       <div className="step-filters">
@@ -106,7 +106,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
       {rows.length === 0 ? (
         <p className="empty">
           {settings.useGearbox
-            ? t('조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 직결을 선택해 보세요.')
+            ? t('조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 감속기 미사용을 선택해 보세요.')
             : t('조건을 만족하는 모터가 없습니다. 감속기 사용을 선택하거나 다른 축을 선택해 보세요.')}
         </p>
       ) : (

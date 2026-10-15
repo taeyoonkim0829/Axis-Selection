@@ -85,7 +85,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
     [
       t('감속기'),
       g?.maker ?? '—',
-      drive ? (g ? `${g.model} (${g.ratio}:1)` : t('직결 (감속기 없음)')) : '—',
+      drive ? (g ? `${g.model} (${g.ratio}:1)` : t('감속기 미사용')) : '—',
       g?.partNumber ?? null,
       null,
     ],
@@ -125,7 +125,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['지지 간격', settings.supportSpan > 0 ? q(settings.supportSpan, 'mm') : t('양 끝만 지지')],
             ['일 가동 시간', q(settings.hoursPerDay, 'h')],
             ['브레이크', settings.requireBrake ? t('필요') : t('선택')],
-            ['감속기', settings.useGearbox ? t('감속기 사용') : t('직결 (감속기 없음)')],
+            ['감속기', settings.useGearbox ? t('감속기 사용') : t('감속기 미사용')],
             ['보수적 판정', settings.conservative ? t('켜짐 (등속 구간 정격 토크 초과 시 부적합)') : t('꺼짐')],
           ]}
         />
@@ -229,7 +229,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             <h3>
               {g
                 ? t('운전 결과 (감속기 {model} {ratio}:1 포함)', { model: g.model, ratio: g.ratio })
-                : t('운전 결과 (직결)')}
+                : t('운전 결과 (감속기 미사용)')}
             </h3>
             <SpecTable
               rows={[
@@ -275,7 +275,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
                 </p>
               </>
             ) : (
-              <p className="report-note">{t('감속기를 사용하지 않습니다 (직결: 축 - 연결키트 - 모터).')}</p>
+              <p className="report-note">{t('감속기를 사용하지 않습니다 (축 - 연결키트 - 모터).')}</p>
             )}
             {gearboxOptions.length > 1 && (
               <>
@@ -304,7 +304,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
                           </td>
                           <td>{d.gearbox?.maker ?? '—'}</td>
                           <td className="model">
-                            {d.gearbox ? d.gearbox.model : t('직결')}
+                            {d.gearbox ? d.gearbox.model : t('감속기 미사용')}
                             {picked && ` (${t('선정')})`}
                           </td>
                           <td className="num">{d.gearbox ? `${d.gearbox.ratio}:1` : '—'}</td>

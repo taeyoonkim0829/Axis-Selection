@@ -8,8 +8,7 @@ export const en: Record<string, string> = {
   '모터': 'Motor',
   '감속기': 'Gearbox',
   '연결키트': 'Mounting kit',
-  '직결': 'Direct drive',
-  '감속기 없음': 'No gearbox',
+  '감속기 미사용': 'No gearbox',
   '선택 안 됨': 'Not selected',
   '해당 키트 없음': 'No matching kit',
   '축 {axis} · {motor}': 'Axis {axis} · {motor}',
@@ -163,12 +162,12 @@ export const en: Record<string, string> = {
   // Step 3: gearbox
   '감속기 사용': 'With gearbox',
   '추천 감속기': 'Recommended gearbox',
-  '조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 직결을 선택해 보세요.':
-    'No motor meets the conditions. Only motors with gearbox data are checked. Try another axis or direct drive.',
+  '조건을 만족하는 모터가 없습니다. 감속기 데이터가 있는 모터만 검토합니다. 다른 축이나 감속기 미사용을 선택해 보세요.':
+    'No motor meets the conditions. Only motors with gearbox data are checked. Try another axis or No gearbox.',
   '조건을 만족하는 모터가 없습니다. 감속기 사용을 선택하거나 다른 축을 선택해 보세요.':
     'No motor meets the conditions. Try With gearbox or another axis.',
-  '감속기 없이 직결(축-키트-모터)로 검토합니다. 감속기가 필요하면 2단계에서 감속기 사용을 선택하세요.':
-    'Checked as direct drive (axis-kit-motor) without a gearbox. If a gearbox is needed, choose With gearbox in step 2.',
+  '감속기 미사용(축-키트-모터)으로 검토합니다. 감속기가 필요하면 2단계에서 감속기 사용을 선택하세요.':
+    'Checked without a gearbox (axis-kit-motor). If a gearbox is needed, choose With gearbox in step 2.',
   '2단계에서 추천한 감속기(통과하는 가장 낮은 감속비)가 적용되어 있습니다. 다른 감속기를 누르면 바꿀 수 있습니다.':
     'The gearbox recommended in step 2 (the lowest passing ratio) is applied. Click another gearbox to change it.',
   '감속기 선정': 'Gearbox selection',
@@ -217,7 +216,6 @@ export const en: Record<string, string> = {
   '선정 모델': 'Selected models',
   '구분': 'Part',
   '주문번호': 'Part no.',
-  '직결 (감속기 없음)': 'Direct drive (no gearbox)',
   '편도, 가로축 시간 s': 'one way, horizontal axis time in s',
   '축 선정 세부사항': 'Axis selection details',
   '제품군': 'Product family',
@@ -243,7 +241,7 @@ export const en: Record<string, string> = {
   '허용 관성비': 'Allowable inertia ratio',
   '허용 회생 전력': 'Allowable regenerative power',
   '운전 결과 (감속기 {model} {ratio}:1 포함)': 'Operating results (with gearbox {model} {ratio}:1)',
-  '운전 결과 (직결)': 'Operating results (direct drive)',
+  '운전 결과 (감속기 미사용)': 'Operating results (no gearbox)',
   '회생 전력 (사이클 평균)': 'Regenerative power (cycle average)',
   '감속기 세부사항': 'Gearbox details',
   '단수': 'Stages',
@@ -257,8 +255,7 @@ export const en: Record<string, string> = {
   '인터페이스 코드 (출력측)': 'Interface code (output side)',
   '감속기 관련 검토(최대 출력 토크, 최대 입력 회전수)는 4장 모터 검토 항목에 포함됩니다.':
     'The gearbox checks (max. output torque, max. input speed) are part of the motor checks in chapter 4.',
-  '감속기를 사용하지 않습니다 (직결: 축 - 연결키트 - 모터).':
-    'No gearbox is used (direct drive: axis - mounting kit - motor).',
+  '감속기를 사용하지 않습니다 (축 - 연결키트 - 모터).': 'No gearbox is used (axis - mounting kit - motor).',
   '{model} 호환 감속기 비교': 'Gearboxes compatible with {model}',
   '선정': 'selected',
   '연결키트 세부사항': 'Mounting kit details',
