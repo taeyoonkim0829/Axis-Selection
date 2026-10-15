@@ -6,6 +6,9 @@ import cogImage from '../../images/center_of_gravity.png'
 import { NumberField, ToggleButton } from './common'
 import { fmt, mountingLabel } from './format'
 
+/** N per kgf (standard gravity) */
+const KGF = 9.80665
+
 type AccelMode = 'acceleration' | 'time'
 const accelModeLabel: Record<AccelMode, string> = { acceleration: '가속도', time: '가속 시간' }
 
@@ -138,7 +141,13 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
           </div>
           {press.enabled && (
             <div className="grid-2">
-              <NumberField label={t('압착력')} unit="N" value={press.force} onChange={(v) => setPress('force', v)} />
+              <NumberField
+                label={t('압착력')}
+                unit="N"
+                value={press.force}
+                onChange={(v) => setPress('force', v)}
+                hint={`≈ ${fmt(press.force / KGF, 1)} kgf`}
+              />
               <NumberField
                 label={t('압착 구간')}
                 unit="mm"
