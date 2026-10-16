@@ -9,7 +9,7 @@ import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
 import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
-import { axisDetailChecks, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
+import { axisDetailChecks, cableRoleLabel, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
@@ -84,9 +84,26 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
   const vertical = verticalForward(req)
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
-  const selection: [string, string, string, string | null, Status | null][] = [
+  type SelectionRow = [string, string, string, string | null, Status | null]
+  const selection: SelectionRow[] = [
     [t('직교 축'), 'Festo', axis.order.model, axis.order.partNumber, axis.status],
-    [t('모터'), drive?.motor.maker ?? '—', drive?.motor.model ?? t('선택 안 됨'), null, drive?.status ?? null],
+    [
+      t('모터'),
+      drive?.motor.maker ?? '—',
+      drive ? (drive.motor.orderCode ?? drive.motor.model) : t('선택 안 됨'),
+      drive?.motor.partNumber ?? null,
+      drive?.status ?? null,
+    ],
+    // Festo drive package: drive, cables, external braking resistor
+    ...(drive?.controller?.controller
+      ? ([[t('서보 드라이브'), 'Festo', drive.controller.controller.model, drive.controller.controller.partNumber, drive.controller.status]] as SelectionRow[])
+      : []),
+    ...(drive?.controller?.cables ?? []).map(
+      (c): SelectionRow => [t(cableRoleLabel[c.role]), 'Festo', c.type, c.partNumber, null],
+    ),
+    ...(drive?.controller?.resistor.item && drive.controller.resistor.required
+      ? ([[t('제동저항'), 'Festo', drive.controller.resistor.item.model, drive.controller.resistor.item.partNumber, null]] as SelectionRow[])
+      : []),
     [
       t('감속기'),
       g?.maker ?? '—',
@@ -243,6 +260,12 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
                   translateData(lang, [drive.motor.series, drive.motor.description].filter(Boolean).join(' · ')) || '—',
                 ],
                 ['브레이크', drive.motor.brake ? t('있음') : t('없음')],
+                ...(drive.motor.orderCode
+                  ? ([
+                      ['주문 형식', drive.motor.orderCode],
+                      ['주문번호', drive.motor.partNumber ?? '—'],
+                    ] as Row[])
+                  : []),
                 ['정격 출력', q(drive.motor.ratedPower, 'W', 0)],
                 ['정격 / 최대 토크', `${fmt(drive.motor.ratedTorque, 3)} / ${fmt(drive.motor.peakTorque, 3)} Nm`],
                 ['정격 / 최대 회전수', `${fmt(drive.motor.ratedSpeed, 0)} / ${fmt(drive.motor.maxSpeed, 0)} rpm`],

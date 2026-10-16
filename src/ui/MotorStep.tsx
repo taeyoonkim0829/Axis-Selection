@@ -226,6 +226,14 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                 />
               )}
               <dl className="info">
+                {selected.motor.orderCode && (
+                  <div>
+                    <dt>{t('주문 형식 / 주문번호')}</dt>
+                    <dd>
+                      {selected.motor.orderCode} / {selected.motor.partNumber ?? '—'}
+                    </dd>
+                  </div>
+                )}
                 <div>
                   <dt>{t('시리즈')}</dt>
                   <dd>{translateData(lang, [selected.motor.series, selected.motor.description].filter(Boolean).join(' · ')) || '—'}</dd>

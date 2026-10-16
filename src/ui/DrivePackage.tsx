@@ -1,15 +1,8 @@
 import type { CableChoice, ControllerSelection } from '../calc/controllerSelection'
 import { useT } from '../i18n'
 import { CheckTable, NumberField } from './common'
-import { fmt } from './format'
+import { cableRoleLabel, fmt } from './format'
 import { KitNotes } from './KitStep'
-
-const roleLabel: Record<CableChoice['role'], string> = {
-  motor: '모터 케이블',
-  encoder: '엔코더 케이블',
-  adapter: '엔코더 어댑터',
-  brake: '브레이크 케이블',
-}
 
 const orderLabel: Record<Exclude<CableChoice['order'], 'standard'>, string> = {
   variable: '가변 길이',
@@ -65,7 +58,7 @@ export function DrivePackage({
             </tr>
             {cables.map((c) => (
               <tr key={c.role}>
-                <td>{t(roleLabel[c.role])}</td>
+                <td>{t(cableRoleLabel[c.role])}</td>
                 <td className="model">{c.type}</td>
                 <td>{c.partNumber ?? '—'}</td>
                 <td className="muted">

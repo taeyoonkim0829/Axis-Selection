@@ -1,4 +1,5 @@
 import type { AxisEvaluation } from '../calc/axisSelection'
+import type { CableChoice } from '../calc/controllerSelection'
 import type { Status, VerticalDirection } from '../calc/types'
 
 /** Axis checks for the detail tables: the stroke is the user's own input, shown only when it exceeds the axis. */
@@ -34,4 +35,11 @@ export const pressDirectionLabel = { down: '위→아래 (눌러 내림)', up: '
 export const moveLabel = (back: boolean, vertical: VerticalDirection | null) => {
   if (!vertical) return back ? '복귀' : '전진'
   return (vertical === 'up') !== back ? '상승' : '하강'
+}
+
+export const cableRoleLabel: Record<CableChoice['role'], string> = {
+  motor: '모터 케이블',
+  encoder: '엔코더 케이블',
+  adapter: '엔코더 어댑터',
+  brake: '브레이크 케이블',
 }

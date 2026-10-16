@@ -34,7 +34,9 @@
       "amplifier": null,
       "interfaceCode": "68C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-68-HA-HS-S1M-T",
+      "partNumber": "8215345"
     },
     {
       "id": "EMMH-AS-68-H-HS-B",
@@ -70,7 +72,9 @@
       "amplifier": null,
       "interfaceCode": "68C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-68-HA-HS-S1MB-T",
+      "partNumber": "8215347"
     },
     {
       "id": "EMMH-AS-68-M-HS",
@@ -106,7 +110,9 @@
       "amplifier": null,
       "interfaceCode": "68C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-68-MA-HS-S1M-T",
+      "partNumber": "8215341"
     },
     {
       "id": "EMMH-AS-68-M-HS-B",
@@ -142,7 +148,9 @@
       "amplifier": null,
       "interfaceCode": "68C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-68-MA-HS-S1MB-T",
+      "partNumber": "8215343"
     },
     {
       "id": "EMMH-AS-88-H-HS",
@@ -178,7 +186,9 @@
       "amplifier": null,
       "interfaceCode": "88C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-88-HA-HS-S1M-T",
+      "partNumber": "8215353"
     },
     {
       "id": "EMMH-AS-88-H-HS-B",
@@ -214,7 +224,9 @@
       "amplifier": null,
       "interfaceCode": "88C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-88-HA-HS-S1MB-T",
+      "partNumber": "8215355"
     },
     {
       "id": "EMMH-AS-88-M-HS",
@@ -250,7 +262,9 @@
       "amplifier": null,
       "interfaceCode": "88C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-88-MA-HS-S1M-T",
+      "partNumber": "8215349"
     },
     {
       "id": "EMMH-AS-88-M-HS-B",
@@ -286,7 +300,9 @@
       "amplifier": null,
       "interfaceCode": "88C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-88-MA-HS-S1MB-T",
+      "partNumber": "8215351"
     },
     {
       "id": "EMMH-AS-108-H-HS",
@@ -322,7 +338,9 @@
       "amplifier": null,
       "interfaceCode": "108C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-108-HA-HS-S1M-T",
+      "partNumber": "8215361"
     },
     {
       "id": "EMMH-AS-108-H-HS-B",
@@ -358,7 +376,9 @@
       "amplifier": null,
       "interfaceCode": "108C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-108-HA-HS-S1MB-T",
+      "partNumber": "8215363"
     },
     {
       "id": "EMMH-AS-108-M-HS",
@@ -394,7 +414,9 @@
       "amplifier": null,
       "interfaceCode": "108C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-108-MA-HS-S1M-T",
+      "partNumber": "8215357"
     },
     {
       "id": "EMMH-AS-108-M-HS-B",
@@ -430,7 +452,9 @@
       "amplifier": null,
       "interfaceCode": "108C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-108-MA-HS-S1MB-T",
+      "partNumber": "8215359"
     },
     {
       "id": "EMMH-AS-138-H-HS",
@@ -466,7 +490,9 @@
       "amplifier": null,
       "interfaceCode": "138C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-138-HA-HS-S1M-T",
+      "partNumber": "8215369"
     },
     {
       "id": "EMMH-AS-138-H-HS-B",
@@ -502,7 +528,9 @@
       "amplifier": null,
       "interfaceCode": "138C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-138-HA-HS-S1MB-T",
+      "partNumber": "8215371"
     },
     {
       "id": "EMMH-AS-138-M-HS",
@@ -538,7 +566,9 @@
       "amplifier": null,
       "interfaceCode": "138C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-138-MA-HS-S1M-T",
+      "partNumber": "8215365"
     },
     {
       "id": "EMMH-AS-138-M-HS-B",
@@ -574,7 +604,9 @@
       "amplifier": null,
       "interfaceCode": "138C",
       "winding": "HS",
-      "controller": "CMMT-AS-11A"
+      "controller": "CMMT-AS-11A",
+      "orderCode": "EMMH-AS-138-MA-HS-S1MB-T",
+      "partNumber": "8215367"
     }
   ]
 }

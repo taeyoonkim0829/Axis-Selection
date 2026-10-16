@@ -34,7 +34,9 @@
       "amplifier": null,
       "interfaceCode": "40P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-40-01-S30S",
+      "partNumber": "8097163"
     },
     {
       "id": "EMMB-AS-40-01-B",
@@ -70,7 +72,9 @@
       "amplifier": null,
       "interfaceCode": "40P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-40-01-S30SB",
+      "partNumber": "8097164"
     },
     {
       "id": "EMMB-AS-60-02",
@@ -106,7 +110,9 @@
       "amplifier": null,
       "interfaceCode": "60P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-60-02-S30S",
+      "partNumber": "8097171"
     },
     {
       "id": "EMMB-AS-60-02-B",
@@ -142,7 +148,9 @@
       "amplifier": null,
       "interfaceCode": "60P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-60-02-S30SB",
+      "partNumber": "8097172"
     },
     {
       "id": "EMMB-AS-60-04",
@@ -178,7 +186,9 @@
       "amplifier": null,
       "interfaceCode": "60P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-60-04-S30S",
+      "partNumber": "8097179"
     },
     {
       "id": "EMMB-AS-60-04-B",
@@ -214,7 +224,9 @@
       "amplifier": null,
       "interfaceCode": "60P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-60-04-S30SB",
+      "partNumber": "8097180"
     },
     {
       "id": "EMMB-AS-80-07",
@@ -250,7 +262,9 @@
       "amplifier": null,
       "interfaceCode": "80P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-80-07-S30S",
+      "partNumber": "8097187"
     },
     {
       "id": "EMMB-AS-80-07-B",
@@ -286,7 +300,9 @@
       "amplifier": null,
       "interfaceCode": "80P",
       "winding": null,
-      "controller": "CMMT-AS-3A"
+      "controller": "CMMT-AS-3A",
+      "orderCode": "EMMB-AS-80-07-S30SB",
+      "partNumber": "8097188"
     }
   ]
 }

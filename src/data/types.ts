@@ -116,6 +116,9 @@ export interface Motor {
   openLoop?: boolean
   /** [rpm, Nm] max. torque at 48 V DC (steppers) */
   torqueCurve?: [number, number][] | null
+  /** Festo: order type of the base configuration (smooth shaft, single-turn encoder …) and its part number */
+  orderCode?: string | null
+  partNumber?: string | null
 }
 
 /** Festo servo drive (CMMT-AS, CMMT-ST) */

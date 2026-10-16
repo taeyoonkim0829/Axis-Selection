@@ -35,7 +35,9 @@
       "interfaceCode": "40P",
       "winding": "ES",
       "controller": "CMMT-ST",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-EC-40-M-ES-R1SC",
+      "partNumber": "8171404"
     },
     {
       "id": "EMMT-EC-40-M-ES-B",
@@ -72,7 +74,9 @@
       "interfaceCode": "40P",
       "winding": "ES",
       "controller": "CMMT-ST",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-EC-40-M-ES-R1SCB",
+      "partNumber": "8171406"
     },
     {
       "id": "EMMT-AS-40-M-LS",
@@ -109,7 +113,9 @@
       "interfaceCode": "40P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-40-M-LS-R2S",
+      "partNumber": "8171416"
     },
     {
       "id": "EMMT-AS-40-M-LS-B",
@@ -146,7 +152,9 @@
       "interfaceCode": "40P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-40-M-LS-R2SB",
+      "partNumber": "8171418"
     },
     {
       "id": "EMMT-EC-40-S-ES",
@@ -183,7 +191,9 @@
       "interfaceCode": "40P",
       "winding": "ES",
       "controller": "CMMT-ST",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-EC-40-S-ES-R1SC",
+      "partNumber": "8171400"
     },
     {
       "id": "EMMT-EC-40-S-ES-B",
@@ -220,7 +230,9 @@
       "interfaceCode": "40P",
       "winding": "ES",
       "controller": "CMMT-ST",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-EC-40-S-ES-R1SCB",
+      "partNumber": "8171402"
     },
     {
       "id": "EMMT-AS-40-S-LS",
@@ -257,7 +269,9 @@
       "interfaceCode": "40P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-40-S-LS-R2S",
+      "partNumber": "8171412"
     },
     {
       "id": "EMMT-AS-40-S-LS-B",
@@ -294,7 +308,9 @@
       "interfaceCode": "40P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-40-S-LS-R2SB",
+      "partNumber": "8171414"
     },
     {
       "id": "EMMT-AS-60-L-HS",
@@ -331,7 +347,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-L-HS-RS",
+      "partNumber": "5242216"
     },
     {
       "id": "EMMT-AS-60-L-HS-B",
@@ -368,7 +386,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-L-HS-RSB",
+      "partNumber": "5242218"
     },
     {
       "id": "EMMT-AS-60-L-LS",
@@ -405,7 +425,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-L-LS-RS",
+      "partNumber": "5242212"
     },
     {
       "id": "EMMT-AS-60-L-LS-B",
@@ -442,7 +464,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-L-LS-RSB",
+      "partNumber": "5242214"
     },
     {
       "id": "EMMT-AS-60-M-HS",
@@ -479,7 +503,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-M-HS-RS",
+      "partNumber": "5242208"
     },
     {
       "id": "EMMT-AS-60-M-HS-B",
@@ -516,7 +542,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-M-HS-RSB",
+      "partNumber": "5242210"
     },
     {
       "id": "EMMT-AS-60-M-LS",
@@ -553,7 +581,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-M-LS-RS",
+      "partNumber": "5242204"
     },
     {
       "id": "EMMT-AS-60-M-LS-B",
@@ -590,7 +620,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-M-LS-RSB",
+      "partNumber": "5242206"
     },
     {
       "id": "EMMT-AS-60-S-HS",
@@ -627,7 +659,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C2-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C2-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-S-HS-RS",
+      "partNumber": "5242200"
     },
     {
       "id": "EMMT-AS-60-S-HS-B",
@@ -664,7 +698,9 @@
       "interfaceCode": "60P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C2-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C2-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-60-S-HS-RSB",
+      "partNumber": "5242202"
     },
     {
       "id": "EMMT-AS-60-S-LS",
@@ -701,7 +737,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C2-3A-MP-S1"
+      "preferredController": "CMMT-AS-C2-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-S-LS-RS",
+      "partNumber": "5242196"
     },
     {
       "id": "EMMT-AS-60-S-LS-B",
@@ -738,7 +776,9 @@
       "interfaceCode": "60P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C2-3A-MP-S1"
+      "preferredController": "CMMT-AS-C2-3A-MP-S1",
+      "orderCode": "EMMT-AS-60-S-LS-RSB",
+      "partNumber": "5242198"
     },
     {
       "id": "EMMT-AS-80-H-HS",
@@ -775,7 +815,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-H-HS-RS",
+      "partNumber": "610909"
     },
     {
       "id": "EMMT-AS-80-H-HS-B",
@@ -812,7 +854,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-H-HS-RSB",
+      "partNumber": "610908"
     },
     {
       "id": "EMMT-AS-80-L-HS",
@@ -849,7 +893,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-L-HS-RS",
+      "partNumber": "5255445"
     },
     {
       "id": "EMMT-AS-80-L-HS-B",
@@ -886,7 +932,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-L-HS-RSB",
+      "partNumber": "5255447"
     },
     {
       "id": "EMMT-AS-80-L-LS",
@@ -923,7 +971,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-L-LS-RS",
+      "partNumber": "5255441"
     },
     {
       "id": "EMMT-AS-80-L-LS-B",
@@ -960,7 +1010,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-L-LS-RSB",
+      "partNumber": "5255443"
     },
     {
       "id": "EMMT-AS-80-M-HS",
@@ -997,7 +1049,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-M-HS-RS",
+      "partNumber": "5255437"
     },
     {
       "id": "EMMT-AS-80-M-HS-B",
@@ -1034,7 +1088,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-M-HS-RSB",
+      "partNumber": "5255439"
     },
     {
       "id": "EMMT-AS-80-M-LS",
@@ -1071,7 +1127,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-M-LS-RS",
+      "partNumber": "5255433"
     },
     {
       "id": "EMMT-AS-80-M-LS-B",
@@ -1108,7 +1166,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-M-LS-RSB",
+      "partNumber": "5255435"
     },
     {
       "id": "EMMT-AS-80-S-HS",
@@ -1145,7 +1205,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-S-HS-RS",
+      "partNumber": "5255429"
     },
     {
       "id": "EMMT-AS-80-S-HS-B",
@@ -1182,7 +1244,9 @@
       "interfaceCode": "80P",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C3-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-80-S-HS-RSB",
+      "partNumber": "5255431"
     },
     {
       "id": "EMMT-AS-80-S-LS",
@@ -1219,7 +1283,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-S-LS-RS",
+      "partNumber": "5255425"
     },
     {
       "id": "EMMT-AS-80-S-LS-B",
@@ -1256,7 +1322,9 @@
       "interfaceCode": "80P",
       "winding": "LS",
       "controller": "CMMT-AS-3A",
-      "preferredController": "CMMT-AS-C4-3A-MP-S1"
+      "preferredController": "CMMT-AS-C4-3A-MP-S1",
+      "orderCode": "EMMT-AS-80-S-LS-RSB",
+      "partNumber": "5255427"
     },
     {
       "id": "EMMT-AS-100-H-HS",
@@ -1293,7 +1361,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-100-H-HS-RS",
+      "partNumber": "8182017"
     },
     {
       "id": "EMMT-AS-100-H-HS-B",
@@ -1330,7 +1400,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-100-H-HS-RSB",
+      "partNumber": "8182015"
     },
     {
       "id": "EMMT-AS-100-L-HS",
@@ -1367,7 +1439,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-L-HS-RS",
+      "partNumber": "5255534"
     },
     {
       "id": "EMMT-AS-100-L-HS-B",
@@ -1404,7 +1478,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-L-HS-RSB",
+      "partNumber": "5255536"
     },
     {
       "id": "EMMT-AS-100-M-HS",
@@ -1441,7 +1517,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-M-HS-RS",
+      "partNumber": "5255530"
     },
     {
       "id": "EMMT-AS-100-M-HS-B",
@@ -1478,7 +1556,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-M-HS-RSB",
+      "partNumber": "5255532"
     },
     {
       "id": "EMMT-AS-100-S-HS",
@@ -1515,7 +1595,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-S-HS-RS",
+      "partNumber": "5255519"
     },
     {
       "id": "EMMT-AS-100-S-HS-B",
@@ -1552,7 +1634,9 @@
       "interfaceCode": "100A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C5-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-100-S-HS-RSB",
+      "partNumber": "5255528"
     },
     {
       "id": "EMMT-AS-150-L-HS",
@@ -1589,7 +1673,9 @@
       "interfaceCode": "150A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-150-L-HS-R3S",
+      "partNumber": "8148324"
     },
     {
       "id": "EMMT-AS-150-L-HS-B",
@@ -1626,7 +1712,9 @@
       "interfaceCode": "150A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-150-L-HS-R3SB",
+      "partNumber": "8148327"
     },
     {
       "id": "EMMT-AS-150-L-HT",
@@ -1663,7 +1751,9 @@
       "interfaceCode": "150A",
       "winding": "HT",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-150-L-HT-R2S",
+      "partNumber": "8148318"
     },
     {
       "id": "EMMT-AS-150-L-HT-B",
@@ -1700,7 +1790,9 @@
       "interfaceCode": "150A",
       "winding": "HT",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-150-L-HT-R2SB",
+      "partNumber": "8148321"
     },
     {
       "id": "EMMT-AS-150-M-HS",
@@ -1737,7 +1829,9 @@
       "interfaceCode": "150A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-150-M-HS-R2S",
+      "partNumber": "8148270"
     },
     {
       "id": "EMMT-AS-150-M-HS-B",
@@ -1774,7 +1868,9 @@
       "interfaceCode": "150A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C7-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-150-M-HS-R2SB",
+      "partNumber": "8148273"
     },
     {
       "id": "EMMT-AS-150-M-HV",
@@ -1811,7 +1907,9 @@
       "interfaceCode": "150A",
       "winding": "HV",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-150-M-HV-R3S",
+      "partNumber": "8148276"
     },
     {
       "id": "EMMT-AS-150-M-HV-B",
@@ -1848,7 +1946,9 @@
       "interfaceCode": "150A",
       "winding": "HV",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-150-M-HV-R3SB",
+      "partNumber": "8148279"
     },
     {
       "id": "EMMT-AS-190-L-HT",
@@ -1885,7 +1985,9 @@
       "interfaceCode": "190A",
       "winding": "HT",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-190-L-HT-R3S",
+      "partNumber": "8148390"
     },
     {
       "id": "EMMT-AS-190-L-HT-B",
@@ -1922,7 +2024,9 @@
       "interfaceCode": "190A",
       "winding": "HT",
       "controller": "CMMT-AS-11A",
-      "preferredController": null
+      "preferredController": null,
+      "orderCode": "EMMT-AS-190-L-HT-R3SB",
+      "partNumber": "8148393"
     },
     {
       "id": "EMMT-AS-190-M-HS",
@@ -1959,7 +2063,9 @@
       "interfaceCode": "190A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-190-M-HS-R3S",
+      "partNumber": "8148366"
     },
     {
       "id": "EMMT-AS-190-M-HS-B",
@@ -1996,7 +2102,9 @@
       "interfaceCode": "190A",
       "winding": "HS",
       "controller": "CMMT-AS-11A",
-      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1"
+      "preferredController": "CMMT-AS-C12-11A-P3-MP-S1",
+      "orderCode": "EMMT-AS-190-M-HS-R3SB",
+      "partNumber": "8148369"
     }
   ]
 }

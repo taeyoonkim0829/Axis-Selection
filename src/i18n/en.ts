@@ -386,6 +386,8 @@ export const en: Record<string, string> = {
   '회생 평균 {avg} W · 최대 {peak} W · 1회 {energy} Ws': 'Regeneration avg. {avg} W · peak {peak} W · per braking {energy} Ws',
   '필요 전류: 실효 {rms} A · 최대 {peak} A': 'Required current: RMS {rms} A · peak {peak} A',
   '드라이브': 'Drive',
+  '주문 형식 / 주문번호': 'Order type / part no.',
+  '주문 형식': 'Order type',
 }
 
 /** Replacements for the Korean words in product data (motor series and descriptions, axis categories), in order. */
