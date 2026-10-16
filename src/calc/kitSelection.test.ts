@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import { evaluateAxis } from './axisSelection'
-import { evaluateKit, findKits, kitTypeFor, orderKits } from './kitSelection'
+import { evaluateKit, findKits, orderKits } from './kitSelection'
 import { evaluateDrive } from './motorSelection'
 import { defaultSettings, type Requirements } from './types'
 
@@ -36,20 +36,14 @@ describe('findKits', () => {
     expect(m.kits).toEqual([])
   })
 
-  it('defaults to a parallel kit only for axes exported with one', () => {
-    expect(kitTypeFor(axis('ELGD-BS-KF-60-…10P'))).toBe('axial')
-    expect(kitTypeFor(axis('ELGD-BS-KF-80-…10P_parallel kit'))).toBe('parallel')
-  })
-
-  it('lists the axis kit type first, then plain before inspection window', () => {
+  it('lists axial before parallel, then plain before inspection window', () => {
     const m = findKits(axis('ELGD-BS-KF-60-…10P'), motor('HG-KR43'), null, kits)
-    expect(orderKits(m.kits, 'axial').map((k) => k.product)).toEqual([
+    expect(orderKits(m.kits).map((k) => k.product)).toEqual([
       'EAMM-A-T42-60P',
       'GD060A060M1A-1000',
       'EAMM-U-65-T42-60P-87',
       'GD060U060M1A-1000',
     ])
-    expect(orderKits(m.kits, 'parallel')[0].product).toBe('EAMM-U-65-T42-60P-87')
   })
 })
 
@@ -84,18 +78,18 @@ describe('evaluateKit', () => {
     )
   })
 
-  it('does not count a parallel kit twice when the axis data already includes it', () => {
-    const run = (id: string) => {
-      const ev = evaluateAxis(axis(id), req, defaultSettings)!
+  it('checks the lower ELGD feed force with a parallel kit', () => {
+    const run = (id: string, type: 'axial' | 'parallel') => {
+      const ev = evaluateAxis(axis(id), { ...req, velocity: 0.1, acceleration: 30, payload: 30 }, defaultSettings)!
       const drive = evaluateDrive(ev, motor('HG-KR43'), null, defaultSettings)
-      const kit = findKits(ev.axis, drive.motor, null, kits).kits.find((k) => k.type === 'parallel' && !k.window)!
-      return { drive, r: evaluateKit(ev, drive, kit, defaultSettings) }
+      const kit = findKits(ev.axis, drive.motor, null, kits).kits.find((k) => k.type === type && !k.window)!
+      return evaluateKit(ev, drive, kit, defaultSettings).checks.find((c) => c.label === '이송력 Fx (병렬 키트)')
     }
-    const { drive, r } = run('ELGD-BS-KF-80-…10P_parallel kit')
-    expect(checkOf(r, '관성비 (키트 포함)').value).toBeCloseTo(drive.inertiaRatio)
-    expect(checkOf(r, '최대 토크 (키트 포함)').value).toBeCloseTo(drive.peakTorque)
-    const plain = run('ELGD-BS-KF-80-…10P')
-    expect(checkOf(plain.r, '관성비 (키트 포함)').value).toBeGreaterThan(plain.drive.inertiaRatio)
+    // ELGD-80-20P: 2650 N with an axial kit, 873 N with a parallel kit (data sheet p.6)
+    expect(run('ELGD-BS-KF-80-…20P', 'parallel')).toMatchObject({ limit: 873, status: 'fail' })
+    expect(run('ELGD-BS-KF-80-…20P', 'axial')).toBeUndefined()
+    // ELGD-60 takes the same force either way
+    expect(run('ELGD-BS-KF-60-…10P', 'parallel')).toBeUndefined()
   })
 
   it('flags kits without data sheet values instead of guessing', () => {

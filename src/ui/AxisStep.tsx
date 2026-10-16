@@ -129,10 +129,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
                   <td>
                     <StatusBadge status={e.status} />
                   </td>
-                  <td className="model">
-                    {e.order.model}
-                    {e.axis.parallelKit && <span className="tag">{t('병렬 키트')}</span>}
-                  </td>
+                  <td className="model">{e.order.model}</td>
                   <td>{t(driveLabel[e.axis.drive])}</td>
                   <td className="num">{fmt(e.axisMass, 1)} kg</td>
                   <td>
@@ -161,7 +158,6 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
         <div className="detail">
           <CollapseTitle open={detailOpen} onToggle={() => setDetailOpen(!detailOpen)}>
             {t('{model} 세부사항', { model: selected.order.model })}
-            {selected.axis.parallelKit && <span className="tag">{t('병렬 키트')}</span>}
           </CollapseTitle>
           {detailOpen && (
             <>

@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
-import { evaluateKit, findKits, kitTypeFor, orderKits } from './calc/kitSelection'
+import { evaluateKit, findKits, orderKits } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
@@ -124,10 +124,9 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
     gearboxOptions[0] ??
     null
 
-  const axisKitType = selectedAxis ? kitTypeFor(selectedAxis.axis) : 'axial'
   const kitMatch =
     selectedAxis && selectedDrive ? findKits(selectedAxis.axis, selectedDrive.motor, selectedDrive.gearbox, kits) : null
-  const kitRows = orderKits(kitMatch?.kits ?? [], axisKitType)
+  const kitRows = orderKits(kitMatch?.kits ?? [])
   const kitEvals =
     selectedAxis && selectedDrive ? kitRows.map((k) => evaluateKit(selectedAxis, selectedDrive, k, deferredSettings)) : []
   // The user's pick, else the first listed kit that passes, else the first listed kit
@@ -221,7 +220,6 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             <KitStep
               match={kitMatch}
               rows={kitEvals}
-              axisType={axisKitType}
               selectedId={selectedKit?.id ?? null}
               onSelect={setKitId}
             />

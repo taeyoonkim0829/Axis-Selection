@@ -230,9 +230,6 @@ export const en: Record<string, string> = {
   '직렬 키트': 'Axial kit',
   '병렬 키트': 'Parallel kit',
   '견시창': 'Inspection window',
-  '선택한 축 데이터는 직렬 연결 기준입니다. 병렬 키트를 쓸 경우 1단계에서 같은 축의 병렬 키트(_parallel kit) 데이터가 있으면 그 축으로 검토하세요.':
-    'The selected axis data assumes an axial connection. For a parallel kit, check the same axis with parallel kit data (_parallel kit) in step 1 if it exists.',
-  '선택한 축 데이터는 병렬 키트 기준입니다.': 'The selected axis data assumes a parallel kit.',
   '이 축의 인터페이스 코드가 없습니다. 축 데이터(JSON)의 interfaceCode를 입력하세요.':
     'This axis has no interface code. Enter interfaceCode in the axis data (JSON).',
   '이 감속기의 인터페이스 코드가 없습니다. 감속기 데이터(JSON)의 interfaceCode를 입력하세요.':
@@ -311,6 +308,7 @@ export const en: Record<string, string> = {
   '조건에 맞는 연결키트가 없습니다.': 'No mounting kit matches the conditions.',
   '키트 데이터 없음 — 확인 필요': 'No kit data — to be checked',
   '키트 전달 토크': 'Kit transferable torque',
+  '이송력 Fx (병렬 키트)': 'Feed force Fx (parallel kit)',
   '키트 최대 회전수': 'Kit max. speed',
   '모터 최대 토크 (키트 기준)': 'Motor peak torque (at the kit)',
   '드라이브 토크(전류) 제한을 키트 전달 토크 이하로 설정하세요':

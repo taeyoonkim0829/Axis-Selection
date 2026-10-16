@@ -10,7 +10,6 @@ export interface Axis {
   variant: '' | 'HD' | 'WD'
   size: number | null
   drive: DriveKind
-  parallelKit: boolean
   slide: 'GK' | 'GV'
   longSlide: boolean
   model: string
@@ -20,6 +19,8 @@ export interface Axis {
   speedLimitStroke: number | null
   maxStroke: number
   maxFeedForce: number
+  /** N, ELGD-BS: max. feed force with a parallel kit (data sheet p.6), when lower than with an axial kit */
+  maxFeedForceParallel?: number | null
   noLoadTorque: number
   maxDrivingTorque: number | null
   maxSpeed: number

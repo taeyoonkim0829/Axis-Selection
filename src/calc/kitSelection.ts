@@ -17,13 +17,6 @@ export interface KitMatch {
   special: Kit[]
 }
 
-/**
- * Default kit type for an axis. Axes exported with a parallel kit ("_parallel kit") include its effect
- * in their data, so they take a parallel kit; any other axis is evaluated as an axial (inline) build.
- */
-export function kitTypeFor(axis: Axis): KitType {
-  return axis.parallelKit ? 'parallel' : 'axial'
-}
 
 export function findKits(axis: Axis, motor: Motor, gearbox: Gearbox | null, all: Kit[]): KitMatch {
   const axisCode = axis.interfaceCode
@@ -61,8 +54,6 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   const eta = axisEval.efficiency
   const kitInertia = (kit.inertia ?? 0) * 1e-4 // kg·m²
   const noLoad = kit.noLoadTorque ?? 0
-  // Axis data exported with a parallel kit already holds the kit's inertia and no-load torque.
-  const inAxisData = axisEval.axis.parallelKit && kit.type === 'parallel'
   const motorTorque = motorTorqueFn(axisEval, motor, gearbox, settings)
 
   let kitPeak = 0
@@ -74,7 +65,7 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
     const own = kitInertia * s.alpha + sgn * noLoad
     kitPeak = Math.max(kitPeak, Math.abs(input + own))
     // Motor side: the kit's inertia and no-load torque load the motor through the gearbox, not the screw.
-    const t = motorTorque(s) + (inAxisData ? 0 : own / ratio / (gearbox?.efficiency ? gearbox.efficiency / 100 : 1))
+    const t = motorTorque(s) + own / ratio / (gearbox?.efficiency ? gearbox.efficiency / 100 : 1)
     motorPeak = Math.max(motorPeak, Math.abs(t))
     sumSquares += t * t * s.dt
   }
@@ -82,7 +73,7 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   const kitSpeed = drive.maxMotorSpeed / ratio
   // The kit replaces the coupling inertia setting when it sits on the motor shaft (no gearbox).
   const extraInertia = (kit.inertia ?? 0) / ratio ** 2 - (gearbox ? 0 : settings.couplingInertia)
-  const inertiaRatio = drive.inertiaRatio + (kit.inertia != null && !inAxisData ? extraInertia / motor.inertia : 0)
+  const inertiaRatio = drive.inertiaRatio + (kit.inertia != null ? extraInertia / motor.inertia : 0)
   // Motor (and gearbox) peak torque that can reach the kit, e.g. in a crash or a stop at the current limit
   const motorMax = motor.peakTorque * ratio * (gearbox?.efficiency ? gearbox.efficiency / 100 : 1)
 
@@ -91,6 +82,12 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
     check('키트 전달 토크', kitPeak, kit.transmissibleTorque, 'Nm', kit.transmissibleTorque == null ? noData : undefined),
     check('키트 최대 회전수', kitSpeed, kit.maxSpeed, 'rpm', kit.maxSpeed == null ? noData : undefined),
   ]
+  // ELGD-BS takes less feed force with a parallel kit (data sheet); the axis step checked the axial value.
+  const parallelFx = kit.type === 'parallel' ? axisEval.axis.maxFeedForceParallel : null
+  const fx = axisEval.checks.find((c) => c.label === '이송력 Fx')
+  if (parallelFx != null && fx && (fx.limit == null || parallelFx < fx.limit)) {
+    checks.push(check('이송력 Fx (병렬 키트)', fx.value, parallelFx, 'N'))
+  }
   if (kit.transmissibleTorque != null && motorMax > kit.transmissibleTorque) {
     checks.push({
       ...check('모터 최대 토크 (키트 기준)', motorMax, kit.transmissibleTorque, 'Nm'),
@@ -126,8 +123,8 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   return { kit, status: worstStatus(checks), checks, notes }
 }
 
-/** All kits in one list: the axis's kit type first, then without inspection window before with one. */
-export function orderKits(kits: Kit[], axisType: KitType): Kit[] {
-  const rank = (k: Kit) => (k.type === axisType ? 0 : 2) + (k.window ? 1 : 0)
+/** All kits in one list: axial before parallel, then without inspection window before with one. */
+export function orderKits(kits: Kit[]): Kit[] {
+  const rank = (k: Kit) => (k.type === 'axial' ? 0 : 2) + (k.window ? 1 : 0)
   return kits.toSorted((a, b) => rank(a) - rank(b))
 }

@@ -8,18 +8,15 @@ interface Props {
   match: KitMatch | null
   /** Standard kits of the match, ordered by `orderKits`, with their checks */
   rows: KitEvaluation[]
-  /** Kit type the selected axis data assumes */
-  axisType: KitType
   selectedId: string | null
   onSelect: (id: string) => void
 }
 
 const typeLabel: Record<KitType, string> = { axial: '직렬', parallel: '병렬' }
 
-export function KitStep({ match, rows, axisType, selectedId, onSelect }: Props) {
+export function KitStep({ match, rows, selectedId, onSelect }: Props) {
   const t = useT()
   const selectedEval = rows.find((e) => e.kit.id === selectedId)
-  const selected = selectedEval?.kit
 
   return (
     <section className="panel step" id="step-kit">
@@ -44,14 +41,7 @@ export function KitStep({ match, rows, axisType, selectedId, onSelect }: Props) 
         <>
           <KitTable match={match} rows={rows} selectedId={selectedId} onSelect={onSelect} />
           {selectedEval && <KitDetail evaluation={selectedEval} />}
-          {selected && selected.type !== axisType && (
-            <p className="muted small-print">
-              {selected.type === 'parallel'
-                ? t('선택한 축 데이터는 직렬 연결 기준입니다. 병렬 키트를 쓸 경우 1단계에서 같은 축의 병렬 키트(_parallel kit) 데이터가 있으면 그 축으로 검토하세요.')
-                : t('선택한 축 데이터는 병렬 키트 기준입니다.')}
-            </p>
-          )}
-          {match.special.length > 0 && <SpecialKits kits={orderKits(match.special, axisType)} />}
+          {match.special.length > 0 && <SpecialKits kits={orderKits(match.special)} />}
         </>
       )}
     </section>

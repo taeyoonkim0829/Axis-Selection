@@ -284,9 +284,6 @@ describe('selection on real data', () => {
     expect(fx('ELGD-BS-KF-60-…5P', 1000).noteArgs).toEqual({ stroke: 1000, max: 1550 })
     // The long slide buckles earlier
     expect(fx('ELGD-BS-KF-60-…5P-L', 600).limit!).toBeLessThan(fx('ELGD-BS-KF-60-…5P', 600).limit!)
-    // A parallel kit keeps its own, lower maximum until the curve falls below it
-    expect(fx('ELGD-BS-KF-80-…20P_parallel kit', 500).limit).toBe(873)
-    expect(fx('ELGD-BS-KF-80-…20P_parallel kit', 2000).limit).toBeCloseTo(308, -1)
   })
 
   it('curveAt interpolates and clamps', () => {
