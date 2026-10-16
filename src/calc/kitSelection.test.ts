@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
-import { findKits, kitTypeFor, orderKits } from './kitSelection'
+import { evaluateAxis } from './axisSelection'
+import { evaluateKit, findKits, kitTypeFor, orderKits } from './kitSelection'
+import { evaluateDrive } from './motorSelection'
+import { defaultSettings, type Requirements } from './types'
 
 const axis = (id: string) => axes.find((a) => a.id === id)!
 const motor = (id: string) => motors.find((m) => m.id === id)!
@@ -47,5 +50,57 @@ describe('findKits', () => {
       'GD060U060M1A-1000',
     ])
     expect(orderKits(m.kits, 'parallel')[0].product).toBe('EAMM-U-65-T42-60P-87')
+  })
+})
+
+describe('evaluateKit', () => {
+  const req: Requirements = { stroke: 500, velocity: 0.5, acceleration: 5, jerk: 0, payload: 10, cog: { x: 0, y: 0, z: 0 }, mounting: 'floor' }
+  const evaluate = (product: string, velocity = 0.5) => {
+    const ev = evaluateAxis(axis('ELGD-BS-KF-60-…10P'), { ...req, velocity }, defaultSettings)!
+    const drive = evaluateDrive(ev, motor('HG-KR43'), null, defaultSettings)
+    const kit = findKits(ev.axis, drive.motor, null, kits).kits.find((k) => k.product === product)!
+    return { ev, drive, result: evaluateKit(ev, drive, kit, defaultSettings) }
+  }
+  const checkOf = (r: ReturnType<typeof evaluateKit>, label: string) => r.checks.find((c) => c.label === label)!
+
+  it('checks the transferable torque and speed from the data sheet', () => {
+    const { ev, result } = evaluate('EAMM-A-T42-60P')
+    const torque = checkOf(result, '키트 전달 토크')
+    expect(torque.limit).toBe(10)
+    // the axis input torque plus the kit's own inertia
+    expect(torque.value).toBeGreaterThanOrEqual(ev.checks.find((c) => c.label === '구동 토크')!.value)
+    expect(checkOf(result, '키트 최대 회전수').value).toBeCloseTo(3000)
+    expect(result.status).not.toBe('fail')
+  })
+
+  it('fails above the kit speed and warns when the motor can exceed the kit torque', () => {
+    const fast = evaluate('EAMM-U-65-T42-60P-87', 0.6).result
+    expect(checkOf(fast, '키트 최대 회전수').status).toBe('fail') // 3600 rpm > 3000 rpm
+    const { drive, result } = evaluate('EAMM-U-65-T42-60P-87')
+    expect(drive.motor.peakTorque).toBeGreaterThan(3)
+    expect(checkOf(result, '모터 최대 토크 (키트 기준)').status).toBe('warn')
+    expect(result.notes.map((n) => n.text)).toContain(
+      '벨트 장력이 모터와 축의 베어링에 반경 하중을 줍니다. 하중이 크면 카운터 베어링 EAMG(클램핑 슬리브 EAMH-…-P 포함)를 검토하세요.',
+    )
+  })
+
+  it('does not count a parallel kit twice when the axis data already includes it', () => {
+    const run = (id: string) => {
+      const ev = evaluateAxis(axis(id), req, defaultSettings)!
+      const drive = evaluateDrive(ev, motor('HG-KR43'), null, defaultSettings)
+      const kit = findKits(ev.axis, drive.motor, null, kits).kits.find((k) => k.type === 'parallel' && !k.window)!
+      return { drive, r: evaluateKit(ev, drive, kit, defaultSettings) }
+    }
+    const { drive, r } = run('ELGD-BS-KF-80-…10P_parallel kit')
+    expect(checkOf(r, '관성비 (키트 포함)').value).toBeCloseTo(drive.inertiaRatio)
+    expect(checkOf(r, '최대 토크 (키트 포함)').value).toBeCloseTo(drive.peakTorque)
+    const plain = run('ELGD-BS-KF-80-…10P')
+    expect(checkOf(plain.r, '관성비 (키트 포함)').value).toBeGreaterThan(plain.drive.inertiaRatio)
+  })
+
+  it('flags kits without data sheet values instead of guessing', () => {
+    const { result } = evaluate('GD060A060M1A-1000')
+    expect(checkOf(result, '키트 전달 토크')).toMatchObject({ status: 'ok', limit: null, note: '키트 데이터 없음 — 확인 필요' })
+    expect(result.notes[0].text).toMatch(/데이터시트에 없는 키트/)
   })
 })

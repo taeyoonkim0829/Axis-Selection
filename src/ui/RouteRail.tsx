@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Check, Status } from '../calc/types'
-import type { Kit } from '../data/types'
+import type { KitEvaluation } from '../calc/kitSelection'
 import { koSubjectParticle, langSwitchLabel, useT, type Lang } from '../i18n'
 import { pct, statusLabel } from './format'
 
 interface Props {
   axis: AxisEvaluation | null
   drive: DriveEvaluation | null
-  kit: Kit | null
+  kit: KitEvaluation | null
   /** Builds the PDF and opens it in a new tab */
   onExport: () => void
   /** true while the PDF is being made */
@@ -88,6 +88,7 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
   const active = useActiveStep()
   const axisTight = axis && tightest(axis.checks)
   const driveTight = drive && tightest(drive.checks)
+  const kitTight = kit && tightest(kit.checks)
   const g = drive?.gearbox
 
   const dialog = useRef<HTMLDialogElement>(null)
@@ -131,9 +132,10 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
           <Sign
             no={4}
             name={t('연결키트')}
-            value={kit?.product ?? null}
+            value={kit?.kit.product ?? null}
+            status={kit?.status}
             empty={drive ? t('해당 키트 없음') : undefined}
-            detail={kit ? t('축 {axis} · {motor}', { axis: kit.axisCode, motor: kit.motorCode }) : undefined}
+            detail={kit ? (kitTight ? `${t(kitTight.label)} ${pct(kitTight.ratio)}` : t('축 {axis} · {motor}', { axis: kit.kit.axisCode, motor: kit.kit.motorCode })) : undefined}
             active={active === 3}
           />
         </ol>

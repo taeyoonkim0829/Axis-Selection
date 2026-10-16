@@ -1,5 +1,8 @@
-// Motor–axis mounting kit lookup by mechanical interface code.
+// Motor–axis mounting kit lookup by mechanical interface code, and the kit checks.
 import type { Axis, Gearbox, Kit, Motor } from '../data/types'
+import type { AxisEvaluation } from './axisSelection'
+import { motorTorqueFn, type DriveEvaluation } from './motorSelection'
+import { check, worstStatus, type Check, type Settings, type Status } from './types'
 
 export type KitType = Kit['type']
 
@@ -33,6 +36,94 @@ export function findKits(axis: Axis, motor: Motor, gearbox: Gearbox | null, all:
     kits: matches.filter((k) => !k.special),
     special: matches.filter((k) => k.special),
   }
+}
+
+/** Something to look at beyond the checks; Korean source text with `{name}` placeholders */
+export interface KitNote {
+  text: string
+  args?: Record<string, string | number>
+}
+
+export interface KitEvaluation {
+  kit: Kit
+  status: Status
+  checks: Check[]
+  notes: KitNote[]
+}
+
+/**
+ * Kit checks for the selected axis and drive. The kit sits at the axis drive shaft (after the gearbox), so it
+ * carries the axis input torque plus its own inertia and no-load torque, at the axis shaft speed.
+ */
+export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, kit: Kit, settings: Settings): KitEvaluation {
+  const { motor, gearbox } = drive
+  const ratio = gearbox?.ratio ?? 1
+  const eta = axisEval.efficiency
+  const kitInertia = (kit.inertia ?? 0) * 1e-4 // kg·m²
+  const noLoad = kit.noLoadTorque ?? 0
+  // Axis data exported with a parallel kit already holds the kit's inertia and no-load torque.
+  const inAxisData = axisEval.axis.parallelKit && kit.type === 'parallel'
+  const motorTorque = motorTorqueFn(axisEval, motor, gearbox, settings)
+
+  let kitPeak = 0
+  let motorPeak = 0
+  let sumSquares = 0
+  for (const s of axisEval.samples) {
+    const input = s.torque * s.omega >= 0 ? s.torque / eta : s.torque * eta
+    const sgn = s.omega !== 0 ? Math.sign(s.omega) : s.dir
+    const own = kitInertia * s.alpha + sgn * noLoad
+    kitPeak = Math.max(kitPeak, Math.abs(input + own))
+    // Motor side: the kit's inertia and no-load torque load the motor through the gearbox, not the screw.
+    const t = motorTorque(s) + (inAxisData ? 0 : own / ratio / (gearbox?.efficiency ? gearbox.efficiency / 100 : 1))
+    motorPeak = Math.max(motorPeak, Math.abs(t))
+    sumSquares += t * t * s.dt
+  }
+  const motorRms = Math.sqrt(sumSquares / axisEval.cycleTime)
+  const kitSpeed = drive.maxMotorSpeed / ratio
+  // The kit replaces the coupling inertia setting when it sits on the motor shaft (no gearbox).
+  const extraInertia = (kit.inertia ?? 0) / ratio ** 2 - (gearbox ? 0 : settings.couplingInertia)
+  const inertiaRatio = drive.inertiaRatio + (kit.inertia != null && !inAxisData ? extraInertia / motor.inertia : 0)
+  // Motor (and gearbox) peak torque that can reach the kit, e.g. in a crash or a stop at the current limit
+  const motorMax = motor.peakTorque * ratio * (gearbox?.efficiency ? gearbox.efficiency / 100 : 1)
+
+  const noData = '키트 데이터 없음 — 확인 필요'
+  const checks: Check[] = [
+    check('키트 전달 토크', kitPeak, kit.transmissibleTorque, 'Nm', kit.transmissibleTorque == null ? noData : undefined),
+    check('키트 최대 회전수', kitSpeed, kit.maxSpeed, 'rpm', kit.maxSpeed == null ? noData : undefined),
+  ]
+  if (kit.transmissibleTorque != null && motorMax > kit.transmissibleTorque) {
+    checks.push({
+      ...check('모터 최대 토크 (키트 기준)', motorMax, kit.transmissibleTorque, 'Nm'),
+      status: 'warn',
+      note: '드라이브 토크(전류) 제한을 키트 전달 토크 이하로 설정하세요',
+    })
+  }
+  if (kit.inertia != null) {
+    checks.push(
+      check('최대 토크 (키트 포함)', motorPeak, motor.peakTorque, 'Nm'),
+      check('실효 토크 (키트 포함)', motorRms, motor.ratedTorque, 'Nm'),
+      check('관성비 (키트 포함)', inertiaRatio, motor.allowableInertiaRatio ?? settings.defaultInertiaRatio, '배'),
+    )
+  }
+
+  const notes: KitNote[] = []
+  if (kit.transmissibleTorque == null) {
+    notes.push({ text: 'EAMM-A/EAMM-U 데이터시트에 없는 키트입니다. 전달 토크, 최대 회전수, 관성을 제작사 자료로 확인하세요.' })
+  }
+  if (kit.dataSource) notes.push({ text: '키트 데이터는 현행 모델 {source}의 값입니다.', args: { source: kit.dataSource } })
+  if (/-S1(-|$)/.test(kit.product)) {
+    notes.push({ text: 'IP65 실링(-S1)은 모터와 플랜지 사이의 방열을 줄입니다. 모터 디레이팅을 확인하세요.' })
+  }
+  if (kit.type === 'parallel') {
+    notes.push({
+      text: '벨트 장력이 모터와 축의 베어링에 반경 하중을 줍니다. 하중이 크면 카운터 베어링 EAMG(클램핑 슬리브 EAMH-…-P 포함)를 검토하세요.',
+    })
+    if (/^EAMM-U-(110|145)-/.test(kit.product)) notes.push({ text: '벨트 장력 조정에는 클램핑 부품 EADT를 사용하세요.' })
+  }
+  if (motor.maker !== 'Festo') {
+    notes.push({ text: '타사 모터: 키트 매뉴얼의 타사 모터 인터페이스 표에서 축 지름·축 길이·플랜지가 맞는지 확인하세요.' })
+  }
+  return { kit, status: worstStatus(checks), checks, notes }
 }
 
 /** All kits in one list: the axis's kit type first, then without inspection window before with one. */

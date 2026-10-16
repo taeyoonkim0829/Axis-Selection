@@ -308,9 +308,32 @@ export const en: Record<string, string> = {
   '감속기 (출력측) 인터페이스 코드': 'Gearbox (output side) interface code',
   '모터 인터페이스 코드': 'Motor interface code',
   '종류': 'Type',
-  '연결키트의 관성, 전달 토크 등은 데이터에 아직 없어 계산에 포함되지 않았습니다.':
-    'Kit inertia, transmissible torque and the like are not in the data yet, so they are not part of the calculation.',
   '조건에 맞는 연결키트가 없습니다.': 'No mounting kit matches the conditions.',
+  '키트 데이터 없음 — 확인 필요': 'No kit data — to be checked',
+  '키트 전달 토크': 'Kit transferable torque',
+  '키트 최대 회전수': 'Kit max. speed',
+  '모터 최대 토크 (키트 기준)': 'Motor peak torque (at the kit)',
+  '드라이브 토크(전류) 제한을 키트 전달 토크 이하로 설정하세요':
+    'Set the drive torque (current) limit to the kit transferable torque or below',
+  '최대 토크 (키트 포함)': 'Peak torque (incl. kit)',
+  '실효 토크 (키트 포함)': 'RMS torque (incl. kit)',
+  '관성비 (키트 포함)': 'Inertia ratio (incl. kit)',
+  'EAMM-A/EAMM-U 데이터시트에 없는 키트입니다. 전달 토크, 최대 회전수, 관성을 제작사 자료로 확인하세요.':
+    'This kit is not in the EAMM-A/EAMM-U data sheets. Check its transferable torque, max. speed and inertia with the manufacturer.',
+  '키트 데이터는 현행 모델 {source}의 값입니다.': 'The kit data are those of the current model {source}.',
+  'IP65 실링(-S1)은 모터와 플랜지 사이의 방열을 줄입니다. 모터 디레이팅을 확인하세요.':
+    'The IP65 seal (-S1) reduces the heat dissipation between motor and flange. Check the motor derating.',
+  '벨트 장력이 모터와 축의 베어링에 반경 하중을 줍니다. 하중이 크면 카운터 베어링 EAMG(클램핑 슬리브 EAMH-…-P 포함)를 검토하세요.':
+    'The belt tension puts a radial load on the motor and axis bearings. Under high loads consider the counter bearing EAMG (with clamping sleeve EAMH-…-P).',
+  '벨트 장력 조정에는 클램핑 부품 EADT를 사용하세요.': 'Use the clamping component EADT to set the belt tension.',
+  '타사 모터: 키트 매뉴얼의 타사 모터 인터페이스 표에서 축 지름·축 길이·플랜지가 맞는지 확인하세요.':
+    "Third-party motor: check shaft diameter, shaft length and flange against the kit manual's third-party motor interface table.",
+  '전달 토크': 'Transferable torque',
+  '전달 토크 {torque} · 관성 {inertia} · 최대 회전수 {speed}': 'Transferable torque {torque} · inertia {inertia} · max. speed {speed}',
+  '무부하 토크 {torque}': 'No-load torque {torque}',
+  '추가 검토사항': 'Further checks',
+  '관성 모멘트': 'Mass moment of inertia',
+  '무부하 토크': 'No-load torque',
 }
 
 /** Replacements for the Korean words in product data (motor series and descriptions, axis categories), in order. */

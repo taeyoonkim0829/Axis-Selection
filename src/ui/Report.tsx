@@ -4,9 +4,10 @@ import type { KitMatch } from '../calc/kitSelection'
 import { accelTimeFor } from '../calc/motionProfile'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
-import type { Kit } from '../data/types'
+import type { KitEvaluation } from '../calc/kitSelection'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
+import { KitNotes } from './KitStep'
 import { axisDetailChecks, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
@@ -20,7 +21,7 @@ interface Props {
   /** Direct drive plus every compatible gearbox for the selected motor */
   gearboxOptions: DriveEvaluation[]
   kitMatch: KitMatch | null
-  kit: Kit | null
+  kit: KitEvaluation | null
   /** Motion profile view selected on screen */
   profileView: ProfileView
 }
@@ -73,7 +74,8 @@ function Chapter({ no, title, children }: { no: number; title: string; children:
   )
 }
 
-export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, kit, profileView }: Props) {
+export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, kit: kitEval, profileView }: Props) {
+  const kit = kitEval?.kit ?? null
   const t = useT()
   const lang = useLang()
   const a = axis.axis
@@ -91,7 +93,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
       g?.partNumber ?? null,
       null,
     ],
-    [t('연결키트'), kit ? 'Festo' : '—', kit?.product ?? (drive ? t('해당 키트 없음') : '—'), kit?.partNumber ?? null, null],
+    [t('연결키트'), kit ? 'Festo' : '—', kit?.product ?? (drive ? t('해당 키트 없음') : '—'), kit?.partNumber ?? null, kitEval?.status ?? null],
   ]
   const noMotor = <p className="empty">{t('모터를 선택하지 않았습니다.')}</p>
 
@@ -378,11 +380,14 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
                     ['종류', t(kit.type === 'axial' ? '직렬 키트' : '병렬 키트')],
                     ['견시창', kit.window ? t('있음') : t('없음')],
                     kit.type === 'axial' ? ['커플링', kit.coupling ?? '—'] : ['풀리 품번', kit.pulley ?? '—'],
+                    ['전달 토크', kit.transmissibleTorque != null ? q(kit.transmissibleTorque, 'Nm') : '—'],
+                    ['관성 모멘트', kit.inertia != null ? q(kit.inertia, 'kg·cm²') : '—'],
+                    ['최대 회전수', kit.maxSpeed != null ? q(kit.maxSpeed, 'rpm') : '—'],
+                    ...(kit.noLoadTorque != null ? ([['무부하 토크', q(kit.noLoadTorque, 'Nm')]] as Row[]) : []),
                   ]}
                 />
-                <p className="muted small-print">
-                  {t('연결키트의 관성, 전달 토크 등은 데이터에 아직 없어 계산에 포함되지 않았습니다.')}
-                </p>
+                {kitEval && <CheckTable checks={kitEval.checks} />}
+                {kitEval && kitEval.notes.length > 0 && <KitNotes notes={kitEval.notes} />}
               </>
             ) : (
               <p className="report-note">{t('조건에 맞는 연결키트가 없습니다.')}</p>

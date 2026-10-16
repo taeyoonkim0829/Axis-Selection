@@ -160,18 +160,22 @@ export interface Kit {
   /** SA = custom-made in Korea; codes come from the kit name, ask TEC before using */
   special: boolean
   sa?: { projectNo: string | null; motorMaker: string | null; motorModel: string | null } | null
-  // Not filled in yet
+  // From the EAMM-A / EAMM-U data sheets; null for kits not in them (e.g. the BF…/EB… kits, older K… kits)
   /** kg·cm² */
   inertia: number | null
-  /** Nm */
+  /** Nm, max. permissible transferable torque */
   transmissibleTorque: number | null
-  /** i, parallel kits */
+  /** i (1 for every EAMM-U) */
   ratio: number | null
   efficiency: number | null
   /** rpm */
   maxSpeed: number | null
+  /** Nm, parallel kits: no-load driving torque */
+  noLoadTorque?: number | null
   /** kg */
   mass: number | null
   /** mm */
   length: number | null
+  /** data sheet row the values come from when it is the kit's current generation (…-G2) */
+  dataSource?: string | null
 }

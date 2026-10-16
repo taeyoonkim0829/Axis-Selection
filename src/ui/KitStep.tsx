@@ -1,12 +1,13 @@
-import { orderKits, type KitMatch, type KitType } from '../calc/kitSelection'
+import { orderKits, type KitEvaluation, type KitMatch, type KitNote, type KitType } from '../calc/kitSelection'
 import type { Kit } from '../data/types'
 import { useT } from '../i18n'
+import { CheckTable, Ratio, StatusBadge } from './common'
 
 interface Props {
   /** null until a motor is selected */
   match: KitMatch | null
-  /** Standard kits of the match, ordered by `orderKits` */
-  rows: Kit[]
+  /** Standard kits of the match, ordered by `orderKits`, with their checks */
+  rows: KitEvaluation[]
   /** Kit type the selected axis data assumes */
   axisType: KitType
   selectedId: string | null
@@ -17,7 +18,8 @@ const typeLabel: Record<KitType, string> = { axial: '직렬', parallel: '병렬'
 
 export function KitStep({ match, rows, axisType, selectedId, onSelect }: Props) {
   const t = useT()
-  const selected = rows.find((k) => k.id === selectedId)
+  const selectedEval = rows.find((e) => e.kit.id === selectedId)
+  const selected = selectedEval?.kit
 
   return (
     <section className="panel step" id="step-kit">
@@ -41,6 +43,7 @@ export function KitStep({ match, rows, axisType, selectedId, onSelect }: Props) 
       ) : (
         <>
           <KitTable match={match} rows={rows} selectedId={selectedId} onSelect={onSelect} />
+          {selectedEval && <KitDetail evaluation={selectedEval} />}
           {selected && selected.type !== axisType && (
             <p className="muted small-print">
               {selected.type === 'parallel'
@@ -62,7 +65,7 @@ function KitTable({
   onSelect,
 }: {
   match: KitMatch
-  rows: Kit[]
+  rows: KitEvaluation[]
   selectedId: string | null
   onSelect: (id: string) => void
 }) {
@@ -90,14 +93,17 @@ function KitTable({
       <table className="data-table">
         <thead>
           <tr>
+            <th>{t('판정')}</th>
             <th>{t('연결 방식')}</th>
             <th>{t('품명')}</th>
             <th>{t('견시창')}</th>
             <th>{t('커플링 / 풀리 품번')}</th>
+            <th>{t('전달 토크')}</th>
+            <th>{t('회전수')}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((k) => (
+          {rows.map(({ kit: k, status, checks }) => (
             <tr
               key={k.id}
               className={k.id === selectedId ? 'selected' : ''}
@@ -105,14 +111,66 @@ function KitTable({
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && onSelect(k.id)}
             >
+              <td>
+                <StatusBadge status={status} />
+              </td>
               <td>{t(typeLabel[k.type])}</td>
               <td className="model">{k.product}</td>
               <td>{k.window ? 'O' : 'X'}</td>
               <td>{(k.type === 'axial' ? k.coupling : k.pulley) ?? '—'}</td>
+              <td>
+                <Ratio ratio={checks.find((c) => c.label === '키트 전달 토크')?.ratio ?? null} />
+              </td>
+              <td>
+                <Ratio ratio={checks.find((c) => c.label === '키트 최대 회전수')?.ratio ?? null} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+/** Kit checks and the points to look at beyond them */
+function KitDetail({ evaluation }: { evaluation: KitEvaluation }) {
+  const t = useT()
+  const { kit, checks, notes } = evaluation
+  return (
+    <div className="detail">
+      <h4>{t('{model} 세부사항', { model: kit.product })}</h4>
+      <CheckTable checks={checks} />
+      <KitSpecs kit={kit} />
+      {notes.length > 0 && <KitNotes notes={notes} />}
+    </div>
+  )
+}
+
+export function KitSpecs({ kit }: { kit: Kit }) {
+  const t = useT()
+  const fmtOr = (v: number | null | undefined, unit: string) => (v == null ? '—' : `${v} ${unit}`)
+  return (
+    <p className="muted small-print">
+      {t('전달 토크 {torque} · 관성 {inertia} · 최대 회전수 {speed}', {
+        torque: fmtOr(kit.transmissibleTorque, 'Nm'),
+        inertia: fmtOr(kit.inertia, 'kg·cm²'),
+        speed: fmtOr(kit.maxSpeed, 'rpm'),
+      })}
+      {kit.noLoadTorque != null && ` · ${t('무부하 토크 {torque}', { torque: `${kit.noLoadTorque} Nm` })}`}
+    </p>
+  )
+}
+
+export function KitNotes({ notes }: { notes: KitNote[] }) {
+  const t = useT()
+  return (
+    <div className="kit-notes">
+      <h4>{t('추가 검토사항')}</h4>
+      <ul>
+        {notes.map((n) => (
+          <li key={n.text}>{t(n.text, n.args)}</li>
+        ))}
+      </ul>
     </div>
   )
 }

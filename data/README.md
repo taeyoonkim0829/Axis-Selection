@@ -104,4 +104,7 @@ A kit fits when `axisCode` equals the axis's `interfaceCode` and `motorCode` equ
 | `window` | `true` = inspection window type (견시창) |
 | `coupling` (axial) / `pulley` (parallel) | coupling type / separately ordered pulley part number |
 | `special`, `sa` | SA (custom-made) kit, with project number and target motor; reference only |
-| `inertia` / `transmissibleTorque` / `ratio` / `efficiency` / `maxSpeed` / `mass` / `length` | kg·cm² / Nm / i / – / rpm / kg / mm. Not filled in yet |
+| `inertia` / `transmissibleTorque` / `ratio` / `maxSpeed` / `mass` | kg·cm² / Nm / i / rpm / kg, from the "General technical data" tables of the Festo data sheets EAMM-A (2026/07, p.75–84) and EAMM-U (2026/07, p.23–28, 49, 59–60): mass moment of inertia kgmm² ÷ 100, weight g ÷ 1000, `ratio` 1 (every EAMM-U is i = 1). Merged table cells hold for every row down to the next value. `(-S1)` rows cover both names; the misprint EAMM-A-87-T46-85AA-… in the parallel table is read as EAMM-U. `null` for kits not in the data sheets (BF…/EB…/GD… inspection-window kits, older K… kits) |
+| `noLoadTorque` | Nm, parallel kits: no-load driving torque |
+| `dataSource` | the data sheet row used when the kit's own name is not listed but its current generation is (`EAMM-A-L38-60G` → `EAMM-A-L38-60G-G2`, same interface codes); `null` otherwise |
+| `efficiency` / `length` | not filled in |

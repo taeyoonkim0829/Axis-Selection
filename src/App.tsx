@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
-import { findKits, kitTypeFor, orderKits } from './calc/kitSelection'
+import { evaluateKit, findKits, kitTypeFor, orderKits } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
@@ -128,7 +128,12 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const kitMatch =
     selectedAxis && selectedDrive ? findKits(selectedAxis.axis, selectedDrive.motor, selectedDrive.gearbox, kits) : null
   const kitRows = orderKits(kitMatch?.kits ?? [], axisKitType)
-  const selectedKit = kitRows.find((k) => k.id === kitId) ?? kitRows[0] ?? null
+  const kitEvals =
+    selectedAxis && selectedDrive ? kitRows.map((k) => evaluateKit(selectedAxis, selectedDrive, k, deferredSettings)) : []
+  // The user's pick, else the first listed kit that passes, else the first listed kit
+  const selectedKitEval =
+    kitEvals.find((e) => e.kit.id === kitId) ?? kitEvals.find((e) => e.status !== 'fail') ?? kitEvals[0] ?? null
+  const selectedKit = selectedKitEval?.kit ?? null
 
   // PDF export: the report is mounted off screen only while the PDF is being made.
   const [exporting, setExporting] = useState(false)
@@ -161,7 +166,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
         <RouteRail
           axis={selectedAxis}
           drive={selectedDrive}
-          kit={selectedKit}
+          kit={selectedKitEval}
           onExport={startExport}
           exporting={exporting}
           lang={lang}
@@ -215,7 +220,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             />
             <KitStep
               match={kitMatch}
-              rows={kitRows}
+              rows={kitEvals}
               axisType={axisKitType}
               selectedId={selectedKit?.id ?? null}
               onSelect={setKitId}
@@ -233,7 +238,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             drive={selectedDrive}
             gearboxOptions={gearboxOptions}
             kitMatch={kitMatch}
-            kit={selectedKit}
+            kit={selectedKitEval}
             profileView={profileView}
           />
         </div>

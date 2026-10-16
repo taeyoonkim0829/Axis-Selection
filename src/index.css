@@ -1149,9 +1149,22 @@ th.num {
   margin-top: 16px;
 }
 
-.gearbox-pick h4 {
+.gearbox-pick h4,
+.detail h4 {
   margin: 0 0 8px;
   font-size: 13px;
+}
+
+/* 추가 검토사항: points to look at beyond the kit checks */
+.kit-notes {
+  margin-top: 14px;
+}
+
+.kit-notes ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* ---------- motion profile chart ---------- */
