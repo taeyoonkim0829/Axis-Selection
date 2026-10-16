@@ -82,7 +82,7 @@ export interface AxisEvaluation {
 
 /** What to order for an axis and a required stroke. */
 export interface AxisOrder {
-  /** Type code with the ordered stroke filled in (ESBF), else the data model name */
+  /** Type code with the ordered stroke filled in, else the data model name */
   model: string
   partNumber: string | null
   /** mm, the ordered stroke; null when the axis is not ordered by stroke here */
@@ -92,23 +92,37 @@ export interface AxisOrder {
 }
 
 /**
- * ESBF comes in standard strokes with their own order numbers: the required stroke is rounded up to the
- * next one. Longer strokes are configured in the modular product system (stroke rounded up to a whole mm,
- * ordered by module number). Other axes keep their data model name.
+ * Standard strokes have their own order numbers: the required stroke is rounded up to the next one. Other
+ * strokes are configured in the modular product system and ordered by module number: a whole mm within its
+ * variable range, else the next of its fixed strokes (ELGT-BS has only fixed ones). Axes without order data
+ * keep their data model name.
  */
 export function axisOrder(axis: Axis, stroke: number): AxisOrder {
-  if (!axis.strokePartNumbers) return { model: axis.model, partNumber: null, stroke: null, modular: false }
-  const standard = Object.keys(axis.strokePartNumbers)
+  const template = axis.typeCode ?? axis.model
+  if (!template.includes('…') || !(axis.strokePartNumbers || axis.moduleNumber)) {
+    return { model: axis.model, partNumber: null, stroke: null, modular: false }
+  }
+  const parts = axis.strokePartNumbers ?? {}
+  const standard = Object.keys(parts)
     .map(Number)
     .sort((a, b) => a - b)
     .find((s) => s >= stroke)
-  const ordered = standard ?? Math.ceil(stroke)
+  const ordered = standard ?? moduleStroke(axis.moduleStrokes, stroke)
   return {
-    model: axis.model.replace('…', String(ordered)),
-    partNumber: standard != null ? axis.strokePartNumbers[String(standard)] : (axis.moduleNumber ?? null),
+    model: template.replace('…', String(ordered)),
+    partNumber: standard != null ? parts[String(standard)] : (axis.moduleNumber ?? null),
     stroke: ordered,
     modular: standard == null,
   }
+}
+
+/** Smallest stroke the modular product system takes for the required one (rounded up to a whole mm otherwise). */
+function moduleStroke(strokes: Axis['moduleStrokes'], stroke: number) {
+  const whole = Math.ceil(stroke)
+  if (!strokes) return whole
+  const [min, max] = strokes.variable ?? [Infinity, -Infinity]
+  if (whole <= max) return Math.max(whole, min)
+  return strokes.fixed.toSorted((a, b) => a - b).find((s) => s >= stroke) ?? whole
 }
 
 export function axisFeed(axis: Axis): number | null {

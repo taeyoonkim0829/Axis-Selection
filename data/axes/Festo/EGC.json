@@ -53,7 +53,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L27"
+      "interfaceCode": "L27",
+      "typeCode": "EGC-50-…-TB-KF-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556812",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1900
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-70-...-TB-KF-GK",
@@ -108,7 +118,25 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L38"
+      "interfaceCode": "L38",
+      "typeCode": "EGC-70-…-TB-KF-0H-GK",
+      "strokePartNumbers": {
+        "300": "3012492",
+        "400": "3012493",
+        "500": "3012494",
+        "600": "3012495",
+        "800": "3012496",
+        "1000": "3012497",
+        "1200": "3012498"
+      },
+      "moduleNumber": "556813",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          5000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-80-...-TB-KF-GK",
@@ -163,7 +191,24 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L48"
+      "interfaceCode": "L48",
+      "typeCode": "EGC-80-…-TB-KF-0H-GK",
+      "strokePartNumbers": {
+        "400": "575832",
+        "500": "3013354",
+        "600": "3013355",
+        "800": "3013356",
+        "1000": "3013357",
+        "1200": "3013359"
+      },
+      "moduleNumber": "556814",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-120-…-TB-KF-GK",
@@ -218,7 +263,25 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L62"
+      "interfaceCode": "L62",
+      "typeCode": "EGC-120-…-TB-KF-0H-GK",
+      "strokePartNumbers": {
+        "400": "3013364",
+        "500": "3013365",
+        "600": "3013366",
+        "800": "3013367",
+        "1000": "3013368",
+        "1200": "3013369",
+        "1500": "3013370"
+      },
+      "moduleNumber": "556815",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-185-...-TB-KF-GK",
@@ -273,7 +336,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L95"
+      "interfaceCode": "L95",
+      "typeCode": "EGC-185-…-TB-KF-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556817",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-70-...-BS-10P-KF-GK",
@@ -336,7 +409,34 @@
         "800",
         "1000"
       ],
-      "interfaceCode": "S38"
+      "interfaceCode": "S38",
+      "typeCode": "EGC-70-…-BS-10P-KF-0H-ML-GK",
+      "strokePartNumbers": {
+        "100": "3013388",
+        "200": "3013389",
+        "300": "3013390",
+        "400": "3013391",
+        "500": "3013392",
+        "600": "3013393"
+      },
+      "moduleNumber": "556807",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          980
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          1000
+        ]
+      }
     },
     {
       "id": "EGC-80-...-BS-10P-KF-GK",
@@ -403,7 +503,40 @@
         1800,
         2000
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-80-…-BS-10P-KF-0H-ML-GK",
+      "strokePartNumbers": {
+        "100": "3013532",
+        "200": "3013533",
+        "300": "3013534",
+        "400": "3013535",
+        "500": "3013536",
+        "600": "3013537",
+        "800": "3013538"
+      },
+      "moduleNumber": "556808",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1980
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1000,
+          1400,
+          1500,
+          1800,
+          2000
+        ]
+      }
     },
     {
       "id": "EGC-80-...-BS-20P-KF-GK",
@@ -470,7 +603,40 @@
         1800,
         2000
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-80-…-BS-20P-KF-0H-ML-GK",
+      "strokePartNumbers": {
+        "100": "3013539",
+        "200": "3013540",
+        "300": "3013541",
+        "400": "3013542",
+        "500": "3013543",
+        "600": "3013544",
+        "800": "3013545"
+      },
+      "moduleNumber": "556808",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1980
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1000,
+          1400,
+          1500,
+          1800,
+          2000
+        ]
+      }
     },
     {
       "id": "EGC-120-...-BS-10P-KF-GK",
@@ -536,7 +702,40 @@
         2000,
         2500
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-120-…-BS-10P-KF-0H-ML-GK",
+      "strokePartNumbers": {
+        "100": "3013571",
+        "200": "3013572",
+        "300": "3013573",
+        "400": "3013574",
+        "500": "3013575",
+        "600": "3013576",
+        "800": "3013577"
+      },
+      "moduleNumber": "556809",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2480
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1000,
+          1400,
+          1500,
+          2000,
+          2500
+        ]
+      }
     },
     {
       "id": "EGC-120-...-BS-25P-KF-GK",
@@ -602,7 +801,40 @@
         2000,
         2500
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-120-…-BS-25P-KF-0H-ML-GK",
+      "strokePartNumbers": {
+        "100": "3013578",
+        "200": "3013579",
+        "300": "3013580",
+        "400": "3013581",
+        "500": "3013582",
+        "600": "3013583",
+        "800": "3013584"
+      },
+      "moduleNumber": "556809",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2480
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1000,
+          1400,
+          1500,
+          2000,
+          2500
+        ]
+      }
     },
     {
       "id": "EGC-185-...-BS-40P-KF-GK",
@@ -666,7 +898,26 @@
         2500,
         3000
       ],
-      "interfaceCode": "S95"
+      "interfaceCode": "S95",
+      "typeCode": "EGC-185-…-BS-40P-KF-0H-ML-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556811",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2980
+        ],
+        "fixed": [
+          300,
+          500,
+          600,
+          1000,
+          1500,
+          2000,
+          2500,
+          3000
+        ]
+      }
     },
     {
       "id": "EGC-HD-125-…-BS-10P-GK",
@@ -730,7 +981,26 @@
         700,
         900
       ],
-      "interfaceCode": "S38"
+      "interfaceCode": "S38",
+      "typeCode": "EGC-HD-125-…-BS-10P-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556819",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          900
+        ]
+      }
     },
     {
       "id": "EGC-HD-160-…-BS-10P-GK",
@@ -796,7 +1066,31 @@
         1700,
         1900
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-HD-160-…-BS-10P-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556820",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1700,
+          1900
+        ]
+      }
     },
     {
       "id": "EGC-HD-160-…-BS-20P-GK",
@@ -862,7 +1156,31 @@
         1700,
         1900
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-HD-160-…-BS-20P-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556820",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1700,
+          1900
+        ]
+      }
     },
     {
       "id": "EGC-HD-220-…-BS-10P-GK",
@@ -928,7 +1246,30 @@
         1900,
         2400
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-HD-220-…-BS-10P-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556821",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2380
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1900,
+          2400
+        ]
+      }
     },
     {
       "id": "EGC-HD-220-…-BS-25P-GK",
@@ -994,7 +1335,30 @@
         1900,
         2400
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-HD-220-…-BS-25P-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556821",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2380
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1900,
+          2400
+        ]
+      }
     },
     {
       "id": "EGC-HD-125-…-TB-GK",
@@ -1049,7 +1413,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "M43"
+      "interfaceCode": "M43",
+      "typeCode": "EGC-HD-125-…-TB-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556823",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          3000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-HD-160-…-TB-GK",
@@ -1104,7 +1478,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "M48"
+      "interfaceCode": "M48",
+      "typeCode": "EGC-HD-160-…-TB-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556824",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          5000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-HD-220-…-TB-GK",
@@ -1159,7 +1543,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "M80"
+      "interfaceCode": "M80",
+      "typeCode": "EGC-HD-220-…-TB-0H-GK",
+      "strokePartNumbers": null,
+      "moduleNumber": "556825",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          4750
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-70-...-TB-KF-GV",
@@ -1214,7 +1608,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L38"
+      "interfaceCode": "L38",
+      "typeCode": "EGC-70-…-TB-KF-0H-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556813",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          5000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-80-...-TB-KF-GV",
@@ -1269,7 +1673,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L48"
+      "interfaceCode": "L48",
+      "typeCode": "EGC-80-…-TB-KF-0H-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556814",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-120-…-TB-KF-GV",
@@ -1324,7 +1738,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L62"
+      "interfaceCode": "L62",
+      "typeCode": "EGC-120-…-TB-KF-0H-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556815",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8400
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-185-...-TB-KF-GV",
@@ -1379,7 +1803,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L95"
+      "interfaceCode": "L95",
+      "typeCode": "EGC-185-…-TB-KF-0H-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556817",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8400
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "EGC-70-...-BS-10P-KF-GV",
@@ -1441,7 +1875,26 @@
         "500.600.700",
         "900"
       ],
-      "interfaceCode": "S38"
+      "interfaceCode": "S38",
+      "typeCode": "EGC-70-…-BS-10P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556807",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          900
+        ]
+      }
     },
     {
       "id": "EGC-80-...-BS-10P-KF-GV",
@@ -1507,7 +1960,31 @@
         1700,
         1900
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-80-…-BS-10P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556808",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1700,
+          1900
+        ]
+      }
     },
     {
       "id": "EGC-80-...-BS-20P-KF-GV",
@@ -1573,7 +2050,31 @@
         1700,
         1900
       ],
-      "interfaceCode": "S48"
+      "interfaceCode": "S48",
+      "typeCode": "EGC-80-…-BS-20P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556808",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1880
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1700,
+          1900
+        ]
+      }
     },
     {
       "id": "EGC-120-...-BS-10P-KF-GV",
@@ -1639,7 +2140,31 @@
         1900,
         2400
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-120-…-BS-10P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556809",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2380
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1900,
+          2400
+        ]
+      }
     },
     {
       "id": "EGC-120-...-BS-25P-KF-GV",
@@ -1705,7 +2230,31 @@
         1900,
         2400
       ],
-      "interfaceCode": "S62"
+      "interfaceCode": "S62",
+      "typeCode": "EGC-120-…-BS-25P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556809",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2380
+        ],
+        "fixed": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900,
+          1300,
+          1400,
+          1900,
+          2400
+        ]
+      }
     },
     {
       "id": "EGC-185-...-BS-40P-KF-GV",
@@ -1769,7 +2318,26 @@
         2400,
         2900
       ],
-      "interfaceCode": "S95"
+      "interfaceCode": "S95",
+      "typeCode": "EGC-185-…-BS-40P-KF-0H-ML-GV",
+      "strokePartNumbers": null,
+      "moduleNumber": "556811",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2880
+        ],
+        "fixed": [
+          200,
+          400,
+          500,
+          900,
+          1400,
+          1900,
+          2400,
+          2900
+        ]
+      }
     }
   ]
 }

@@ -61,7 +61,25 @@
         600,
         800
       ],
-      "interfaceCode": "T42-60"
+      "interfaceCode": "T42-60",
+      "typeCode": "ELGD-BS-KF-60-…-0H-5P",
+      "strokePartNumbers": {
+        "100": "8192253",
+        "200": "8192254",
+        "300": "8192255",
+        "400": "8192256",
+        "500": "8192257",
+        "600": "8192258",
+        "800": "8192259"
+      },
+      "moduleNumber": "8176874",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-60-…10P",
@@ -124,7 +142,25 @@
         600,
         800
       ],
-      "interfaceCode": "T42-60"
+      "interfaceCode": "T42-60",
+      "typeCode": "ELGD-BS-KF-60-…-0H-10P",
+      "strokePartNumbers": {
+        "100": "8192260",
+        "200": "8192261",
+        "300": "8192262",
+        "400": "8192263",
+        "500": "8192264",
+        "600": "8192265",
+        "800": "8192266"
+      },
+      "moduleNumber": "8176874",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…5P",
@@ -188,7 +224,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-5P",
+      "strokePartNumbers": {
+        "100": "8192267",
+        "200": "8192268",
+        "300": "8192269",
+        "400": "8192270",
+        "500": "8192271",
+        "600": "8192272",
+        "800": "8192273",
+        "1000": "8192274"
+      },
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…10P",
@@ -252,7 +307,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-10P",
+      "strokePartNumbers": {
+        "100": "8192275",
+        "200": "8192276",
+        "300": "8192277",
+        "400": "8192278",
+        "500": "8192279",
+        "600": "8192280",
+        "800": "8192281",
+        "1000": "8192282"
+      },
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…10P_parallel kit",
@@ -316,7 +390,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-10P",
+      "strokePartNumbers": {
+        "100": "8192275",
+        "200": "8192276",
+        "300": "8192277",
+        "400": "8192278",
+        "500": "8192279",
+        "600": "8192280",
+        "800": "8192281",
+        "1000": "8192282"
+      },
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…20P",
@@ -380,7 +473,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-20P",
+      "strokePartNumbers": {
+        "100": "8192283",
+        "200": "8192284",
+        "300": "8192285",
+        "400": "8192286",
+        "500": "8192287",
+        "600": "8192288",
+        "800": "8192289",
+        "1000": "8192290"
+      },
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…20P_parallel kit",
@@ -444,7 +556,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-20P",
+      "strokePartNumbers": {
+        "100": "8192283",
+        "200": "8192284",
+        "300": "8192285",
+        "400": "8192286",
+        "500": "8192287",
+        "600": "8192288",
+        "800": "8192289",
+        "1000": "8192290"
+      },
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…5P",
@@ -507,7 +638,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-5P",
+      "strokePartNumbers": {
+        "200": "8192291",
+        "300": "8192292",
+        "400": "8192293",
+        "500": "8192294",
+        "600": "8192295",
+        "800": "8192296",
+        "1000": "8192297"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…5P_parallel kit",
@@ -570,7 +719,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-5P",
+      "strokePartNumbers": {
+        "200": "8192291",
+        "300": "8192292",
+        "400": "8192293",
+        "500": "8192294",
+        "600": "8192295",
+        "800": "8192296",
+        "1000": "8192297"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…10P",
@@ -633,7 +800,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-10P",
+      "strokePartNumbers": {
+        "200": "8192298",
+        "300": "8192299",
+        "400": "8192300",
+        "500": "8192301",
+        "600": "8192302",
+        "800": "8192303",
+        "1000": "8192304"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…10P_parallel kit",
@@ -696,7 +881,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-10P",
+      "strokePartNumbers": {
+        "200": "8192298",
+        "300": "8192299",
+        "400": "8192300",
+        "500": "8192301",
+        "600": "8192302",
+        "800": "8192303",
+        "1000": "8192304"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…30P",
@@ -759,7 +962,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-30P",
+      "strokePartNumbers": {
+        "200": "8192305",
+        "300": "8192306",
+        "400": "8192307",
+        "500": "8192308",
+        "600": "8192309",
+        "800": "8192310",
+        "1000": "8192311"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…30P_parallel kit",
@@ -822,7 +1043,25 @@
         800,
         1000
       ],
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-30P",
+      "strokePartNumbers": {
+        "200": "8192305",
+        "300": "8192306",
+        "400": "8192307",
+        "500": "8192308",
+        "600": "8192309",
+        "800": "8192310",
+        "1000": "8192311"
+      },
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-60-…5P-L",
@@ -877,7 +1116,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T42-60"
+      "interfaceCode": "T42-60",
+      "typeCode": "ELGD-BS-KF-60-…-0H-5P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176874",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-60-…10P-L",
@@ -932,7 +1181,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T42-60"
+      "interfaceCode": "T42-60",
+      "typeCode": "ELGD-BS-KF-60-…-0H-10P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176874",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…5P-L",
@@ -987,7 +1246,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-5P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…10P-L",
@@ -1042,7 +1311,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-10P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…10P-L_parallel kit",
@@ -1097,7 +1376,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-10P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…20P-L",
@@ -1152,7 +1441,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-20P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-80-…20P-L_parallel kit",
@@ -1207,7 +1506,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "T46-80"
+      "interfaceCode": "T46-80",
+      "typeCode": "ELGD-BS-KF-80-…-0H-20P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176875",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…5P-L",
@@ -1262,7 +1571,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-5P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…5P-L_parallel kit",
@@ -1317,7 +1636,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-5P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…10P-L",
@@ -1372,7 +1701,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-10P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…10P-L_parallel kit",
@@ -1427,7 +1766,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-10P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…30P-L",
@@ -1482,7 +1831,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-30P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-120-…30P-L_parallel kit",
@@ -1537,7 +1896,17 @@
       "pulleyDensity": null,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "S60"
+      "interfaceCode": "S60",
+      "typeCode": "ELGD-BS-KF-120-…-0H-30P-L",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176876",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          2500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-60",
@@ -1603,7 +1972,28 @@
         1800,
         2000
       ],
-      "interfaceCode": "N48"
+      "interfaceCode": "N48",
+      "typeCode": "ELGD-TB-KF-60-…-0H-PU2",
+      "strokePartNumbers": {
+        "200": "8192344",
+        "300": "8192345",
+        "500": "8192346",
+        "600": "8192347",
+        "800": "8192348",
+        "1000": "8192349",
+        "1200": "8192350",
+        "1500": "8192351",
+        "1800": "8192352",
+        "2000": "8192353"
+      },
+      "moduleNumber": "8176884",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-80",
@@ -1669,7 +2059,28 @@
         1800,
         2000
       ],
-      "interfaceCode": "L48"
+      "interfaceCode": "L48",
+      "typeCode": "ELGD-TB-KF-80-…-0H-PU2",
+      "strokePartNumbers": {
+        "200": "8192354",
+        "300": "8192355",
+        "500": "8192356",
+        "600": "8192357",
+        "800": "8192358",
+        "1000": "8192359",
+        "1200": "8192360",
+        "1500": "8192361",
+        "1800": "8192362",
+        "2000": "8192363"
+      },
+      "moduleNumber": "8176885",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-120",
@@ -1735,7 +2146,28 @@
         1800,
         2000
       ],
-      "interfaceCode": "N80"
+      "interfaceCode": "N80",
+      "typeCode": "ELGD-TB-KF-120-…-0H-PU2",
+      "strokePartNumbers": {
+        "200": "8192364",
+        "300": "8192365",
+        "500": "8192366",
+        "600": "8192367",
+        "800": "8192368",
+        "1000": "8192369",
+        "1200": "8192370",
+        "1500": "8192371",
+        "1800": "8192372",
+        "2000": "8192373"
+      },
+      "moduleNumber": "8176886",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-60-…-L",
@@ -1790,7 +2222,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "N48"
+      "interfaceCode": "N48",
+      "typeCode": "ELGD-TB-KF-60-…-0H-L-PU2",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176884",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-80-…-L",
@@ -1845,7 +2287,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "L48"
+      "interfaceCode": "L48",
+      "typeCode": "ELGD-TB-KF-80-…-0H-L-PU2",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176885",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-120-…-L",
@@ -1900,7 +2352,17 @@
       "pulleyDensity": 0.008,
       "allowableDeflection": 0.5,
       "standardStrokes": null,
-      "interfaceCode": "N80"
+      "interfaceCode": "N80",
+      "typeCode": "ELGD-TB-KF-120-…-0H-L-PU2",
+      "strokePartNumbers": null,
+      "moduleNumber": "8176886",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-100-…5P-L",
@@ -1964,7 +2426,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-100"
+      "interfaceCode": "T42-100",
+      "typeCode": "ELGD-BS-KF-WD-100-…-0H-5P-L",
+      "strokePartNumbers": {
+        "100": "8192312",
+        "200": "8192313",
+        "300": "8192314",
+        "400": "8192315",
+        "500": "8192316",
+        "600": "8192317",
+        "800": "8192318",
+        "1000": "8192319"
+      },
+      "moduleNumber": "8176878",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-100-…5P-L_parallel kit",
@@ -2028,7 +2509,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-100"
+      "interfaceCode": "T42-100",
+      "typeCode": "ELGD-BS-KF-WD-100-…-0H-5P-L",
+      "strokePartNumbers": {
+        "100": "8192312",
+        "200": "8192313",
+        "300": "8192314",
+        "400": "8192315",
+        "500": "8192316",
+        "600": "8192317",
+        "800": "8192318",
+        "1000": "8192319"
+      },
+      "moduleNumber": "8176878",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-100-…10P-L",
@@ -2092,7 +2592,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-100"
+      "interfaceCode": "T42-100",
+      "typeCode": "ELGD-BS-KF-WD-100-…-0H-10P-L",
+      "strokePartNumbers": {
+        "100": "8192320",
+        "200": "8192321",
+        "300": "8192322",
+        "400": "8192323",
+        "500": "8192324",
+        "600": "8192325",
+        "800": "8192326",
+        "1000": "8192327"
+      },
+      "moduleNumber": "8176878",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-100-…10P-L_parallel kit",
@@ -2156,7 +2675,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-100"
+      "interfaceCode": "T42-100",
+      "typeCode": "ELGD-BS-KF-WD-100-…-0H-10P-L",
+      "strokePartNumbers": {
+        "100": "8192320",
+        "200": "8192321",
+        "300": "8192322",
+        "400": "8192323",
+        "500": "8192324",
+        "600": "8192325",
+        "800": "8192326",
+        "1000": "8192327"
+      },
+      "moduleNumber": "8176878",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1000
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-120-…5P-L",
@@ -2220,7 +2758,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-120"
+      "interfaceCode": "T42-120",
+      "typeCode": "ELGD-BS-KF-WD-120-…-0H-5P-L",
+      "strokePartNumbers": {
+        "100": "8192328",
+        "200": "8192329",
+        "300": "8192330",
+        "400": "8192331",
+        "500": "8192332",
+        "600": "8192333",
+        "800": "8192334",
+        "1000": "8192335"
+      },
+      "moduleNumber": "8176879",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-BS-KF-WD-120-…10P-L",
@@ -2284,7 +2841,26 @@
         800,
         1000
       ],
-      "interfaceCode": "T42-120"
+      "interfaceCode": "T42-120",
+      "typeCode": "ELGD-BS-KF-WD-120-…-0H-10P-L",
+      "strokePartNumbers": {
+        "100": "8192336",
+        "200": "8192337",
+        "300": "8192338",
+        "400": "8192339",
+        "500": "8192340",
+        "600": "8192341",
+        "800": "8192342",
+        "1000": "8192343"
+      },
+      "moduleNumber": "8176879",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          1500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-WD-100-…-L",
@@ -2350,7 +2926,28 @@
         1800,
         2000
       ],
-      "interfaceCode": "L38"
+      "interfaceCode": "L38",
+      "typeCode": "ELGD-TB-KF-WD-100-…-0H-L-PU2",
+      "strokePartNumbers": {
+        "200": "8192374",
+        "300": "8192375",
+        "500": "8192376",
+        "600": "8192377",
+        "800": "8192378",
+        "1000": "8192379",
+        "1200": "8192380",
+        "1500": "8192381",
+        "1800": "8192382",
+        "2000": "8192383"
+      },
+      "moduleNumber": "8176888",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     },
     {
       "id": "ELGD-TB-KF-WD-120-…-L",
@@ -2416,7 +3013,28 @@
         1800,
         2000
       ],
-      "interfaceCode": "N48"
+      "interfaceCode": "N48",
+      "typeCode": "ELGD-TB-KF-WD-120-…-0H-L-PU2",
+      "strokePartNumbers": {
+        "200": "8192384",
+        "300": "8192385",
+        "500": "8192386",
+        "600": "8192387",
+        "800": "8192388",
+        "1000": "8192389",
+        "1200": "8192390",
+        "1500": "8192391",
+        "1800": "8192392",
+        "2000": "8192393"
+      },
+      "moduleNumber": "8176889",
+      "moduleStrokes": {
+        "variable": [
+          50,
+          8500
+        ],
+        "fixed": []
+      }
     }
   ]
 }

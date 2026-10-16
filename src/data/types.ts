@@ -56,10 +56,14 @@ export interface Axis {
   maxSwitchingCycles?: number | null
   allowableDeflection: number | null
   standardStrokes: number[] | string[] | null
-  /** ESBF: order number per standard stroke (mm as key); `model` has … where the stroke goes */
+  /** Order type code with … where the stroke goes (ELGT-BS, ELGD, EGC); `model` when missing (ESBF) */
+  typeCode?: string | null
+  /** order number per standard stroke (mm as key) */
   strokePartNumbers?: Record<string, string> | null
-  /** ESBF: module number for other strokes (modular product system) */
+  /** module number for other strokes (modular product system) */
   moduleNumber?: string | null
+  /** mm, strokes the modular product system takes: any whole mm in `variable` [min, max], plus the `fixed` ones */
+  moduleStrokes?: { variable: [number, number] | null; fixed: number[] } | null
   /** mechanical interface code for mounting kits; null when unknown */
   interfaceCode: string | null
 }

@@ -233,10 +233,27 @@ describe('selection on real data', () => {
     expect(axisOrder(esbf63, 250)).toEqual({ model: 'ESBF-BS-63-300-10P', partNumber: '574098', stroke: 300, modular: false })
     expect(axisOrder(esbf63, 100).partNumber).toBe('574096')
     expect(axisOrder(esbf63, 512.3)).toEqual({ model: 'ESBF-BS-63-513-10P', partNumber: '574090', stroke: 513, modular: true })
-    expect(axisOrder(spindle, 250)).toEqual({ model: spindle.model, partNumber: null, stroke: null, modular: false })
+    const elgtTb = axes.find((a) => a.id === 'ELGT-TB-120')!
+    expect(axisOrder(elgtTb, 250)).toEqual({ model: elgtTb.model, partNumber: null, stroke: null, modular: false })
     // Mass follows the ordered stroke: 250 mm is built as 300 mm.
     const ev = evaluateAxis(esbf63, { ...baseReq, stroke: 250 }, defaultSettings)!
     expect(ev.axisMass).toBeCloseTo(3.165 + 0.087 * 30)
+  })
+
+  it('orders ELGT, ELGD and EGC by type code: standard stroke, else the modular product system', () => {
+    const order = (id: string, stroke: number) => axisOrder(axes.find((a) => a.id === id)!, stroke)
+    expect(order('ELGT-BS-120-…10P', 250)).toEqual({ model: 'ELGT-BS-120-300-10P', partNumber: '8124451', stroke: 300, modular: false })
+    // ELGT modular strokes come in fixed steps
+    expect(order('ELGT-BS-120-…10P', 1050)).toEqual({ model: 'ELGT-BS-120-1100-10P', partNumber: '8121225', stroke: 1100, modular: true })
+    expect(order('ELGD-BS-KF-60-…10P', 120).model).toBe('ELGD-BS-KF-60-200-0H-10P')
+    expect(order('ELGD-BS-KF-60-…10P', 120).partNumber).toBe('8192261')
+    // Long slide: no standard strokes, any whole mm
+    expect(order('ELGD-BS-KF-80-…10P-L', 512.3)).toEqual({ model: 'ELGD-BS-KF-80-513-0H-10P-L', partNumber: '8176875', stroke: 513, modular: true })
+    expect(order('ELGD-TB-KF-WD-100-…-L', 2100).model).toBe('ELGD-TB-KF-WD-100-2100-0H-L-PU2')
+    expect(order('EGC-80-...-TB-KF-GK', 300).model).toBe('EGC-80-400-TB-KF-0H-GK')
+    // Above the variable range only the fixed strokes are left: EGC-70-BS takes 50…980 or 1000
+    expect(order('EGC-70-...-BS-10P-KF-GK', 990)).toEqual({ model: 'EGC-70-1000-BS-10P-KF-0H-ML-GK', partNumber: '556807', stroke: 1000, modular: true })
+    expect(order('EGC-HD-160-…-BS-20P-GK', 30).model).toBe('EGC-HD-160-50-BS-20P-0H-GK')
   })
 
   it('curveAt interpolates and clamps', () => {

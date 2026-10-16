@@ -31,7 +31,9 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `Iy`, `Iz` | mm⁴ |
 | `baseLength` (at 0 stroke), `slideLength`, `allowableDeflection` | mm |
 | `screwDynamicLoadRating` | N |
-| `strokePartNumbers` / `moduleNumber` | ESBF only: order number per standard stroke (100, 200, 300, 400 mm; documentation p.24–25) / module number for other strokes (modular product system, p.26). `model` has … where the stroke goes |
+| `typeCode` | order type code with … where the stroke goes, with the base options (no stroke reserve `0H`, ELGD-TB `PU2`, EGC-BS motor left `ML`), e.g. `ELGD-BS-KF-60-…-0H-5P`. Missing on ESBF (its `model` has the …) and ELGT-TB (no documentation yet) |
+| `strokePartNumbers` / `moduleNumber` | order number per standard stroke (mm as key) / module number for other strokes (modular product system). ESBF: documentation 203032 p.24–26. ELGT-BS, ELGD, EGC: the Festo data sheets (2026/09–10), ordering data and modular ordering tables. Long-slide ELGD (`-L`), EGC GV and EGC-HD have no standard strokes |
+| `moduleStrokes` | mm, strokes the modular product system takes: `variable` [min, max] (any whole mm) and `fixed` extra strokes, from the ordering tables (EGC-BS/EGC-HD-BS: "Standard" and "Variable" rows; ELGT-BS: fixed strokes only). Missing on ESBF: any whole mm |
 | `maxSwitchingCycles` | ESBF only: the screw life also ends after this many switching cycles (round trips), 10 million for ESBF-BS (documentation p.16) |
 | `pulleyDensity` | kg/cm³ |
 | `standardStrokes` | mm |
