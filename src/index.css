@@ -1445,3 +1445,24 @@ th.num {
 .report .empty {
   padding: 12px;
 }
+
+/* Drive package in the report: the report's 11px text; part names only 2pt larger */
+.report .drive-package {
+  margin: 0;
+}
+
+.report .drive-package .data-table th,
+.report .drive-package .data-table td,
+.report .drive-package .small-print,
+.report .kit-notes ul {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.report .kit-notes h4 {
+  font-size: 13px;
+}
+
+.report .drive-package .data-table td.model {
+  font-size: calc(11px + 2pt);
+}

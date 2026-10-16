@@ -238,7 +238,6 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             settings={deferredSettings}
             axis={selectedAxis}
             drive={selectedDrive}
-            gearboxOptions={gearboxOptions}
             kitMatch={kitMatch}
             kit={selectedKitEval}
             profileView={profileView}

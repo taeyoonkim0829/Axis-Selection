@@ -2,16 +2,15 @@ import { useState, type ReactNode } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { KitMatch } from '../calc/kitSelection'
 import { accelTimeFor } from '../calc/motionProfile'
-import { gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
+import { gearboxChecks, gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
 import { translateData, useLang, useT } from '../i18n'
-import { CheckTable, Ratio, StatusBadge } from './common'
+import { CheckTable, StatusBadge } from './common'
 import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
 import { axisDetailChecks, cableRoleLabel, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
-import { SpeedRatio } from './MotorStep'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
 
 interface Props {
@@ -20,7 +19,6 @@ interface Props {
   axis: AxisEvaluation
   drive: DriveEvaluation | null
   /** Direct drive plus every compatible gearbox for the selected motor */
-  gearboxOptions: DriveEvaluation[]
   kitMatch: KitMatch | null
   kit: KitEvaluation | null
   /** Motion profile view selected on screen */
@@ -75,7 +73,7 @@ function Chapter({ no, title, children }: { no: number; title: string; children:
   )
 }
 
-export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, kit: kitEval, profileView }: Props) {
+export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, profileView }: Props) {
   const kit = kitEval?.kit ?? null
   const t = useT()
   const lang = useLang()
@@ -158,8 +156,9 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             ['일 가동 시간', q(settings.hoursPerDay, 'h')],
             ['브레이크', settings.requireBrake ? t('필요') : t('선택')],
             ['감속기', settings.useGearbox ? t('감속기 사용') : t('감속기 미사용')],
-            ['ESBF 외부 가이드', settings.externalGuide ? t('사용 (로드 횡하중 검토 생략)') : t('미사용')],
-            ['보수적 판정', settings.conservative ? t('켜짐 (등속 구간 정격 토크 초과 시 부적합)') : t('꺼짐')],
+            ...(axis.axis.family === 'ESBF'
+              ? ([['ESBF 외부 가이드', settings.externalGuide ? t('사용 (로드 횡하중 검토 생략)') : t('미사용')]] as Row[])
+              : []),
           ]}
         />
 
@@ -292,10 +291,15 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             />
             <h3>{t('검토 항목')}</h3>
             <CheckTable checks={drive.checks} />
-            {drive.controller && <DrivePackage selection={drive.controller} cableLength={settings.cableLength} />}
           </>
         )}
       </Chapter>
+
+      {drive?.controller && (
+        <Chapter no={4} title={t('드라이브 · 케이블 · 제동저항')}>
+          <DrivePackage selection={drive.controller} cableLength={settings.cableLength} hideTitle />
+        </Chapter>
+      )}
 
       <Chapter no={5} title={t('감속기 세부사항')}>
         {!drive ? (
@@ -321,62 +325,11 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
                     ['인터페이스 코드 (출력측)', g.interfaceCode ?? '—'],
                   ]}
                 />
-                <p className="muted small-print">
-                  {t('감속기 관련 검토(최대 출력 토크, 최대 입력 회전수)는 4장 모터 검토 항목에 포함됩니다.')}
-                </p>
+                <h3>{t('검토 항목')}</h3>
+                <CheckTable checks={gearboxChecks(drive)} />
               </>
             ) : (
               <p className="report-note">{t('감속기를 사용하지 않습니다 (축 - 연결키트 - 모터).')}</p>
-            )}
-            {gearboxOptions.length > 1 && (
-              <>
-                <h3>{t('{model} 호환 감속기 비교', { model: drive.motor.model })}</h3>
-                <table className="report-table">
-                  <thead>
-                    <tr>
-                      <th>{t('판정')}</th>
-                      <th>{t('메이커')}</th>
-                      <th>{t('모델명')}</th>
-                      <th className="num">{t('감속비')}</th>
-                      <th>{t('최대 토크')}</th>
-                      <th>{t('실효 토크')}</th>
-                      <th>{t('회전수')}</th>
-                      <th>{t('관성비')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {gearboxOptions.map((d) => {
-                      const inertia = d.checks.find((c) => c.label === '관성비')
-                      const picked = (d.gearbox?.id ?? null) === (g?.id ?? null)
-                      return (
-                        <tr key={d.gearbox?.id ?? 'direct'} className={picked ? 'report-picked' : undefined}>
-                          <td>
-                            <StatusBadge status={d.status} />
-                          </td>
-                          <td>{d.gearbox?.maker ?? '—'}</td>
-                          <td className="model">
-                            {d.gearbox ? d.gearbox.model : t('감속기 미사용')}
-                            {picked && ` (${t('선정')})`}
-                          </td>
-                          <td className="num">{d.gearbox ? `${d.gearbox.ratio}:1` : '—'}</td>
-                          <td>
-                            <Ratio ratio={d.peakTorque / d.motor.peakTorque} />
-                          </td>
-                          <td>
-                            <Ratio ratio={d.rmsTorque / d.motor.ratedTorque} />
-                          </td>
-                          <td>
-                            <SpeedRatio drive={d} />
-                          </td>
-                          <td>
-                            <Ratio ratio={inertia?.ratio ?? null} />
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </>
             )}
           </>
         )}

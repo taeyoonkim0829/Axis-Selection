@@ -43,10 +43,14 @@ export function motorTorqueFn(axisEval: AxisEvaluation, motor: Motor, gearbox: G
   }
 }
 
-/** Verdict of the gearbox itself (its max. output torque and input speed checks); null without a gearbox. */
+/** The gearbox's own checks (max. output torque, max. input speed); empty without a gearbox. */
+export function gearboxChecks(drive: DriveEvaluation): Check[] {
+  return drive.gearbox ? drive.checks.filter((c) => c.label === '감속기 최대 토크' || c.label === '감속기 최대 입력 회전수') : []
+}
+
+/** Verdict of the gearbox itself; null without a gearbox. */
 export function gearboxStatus(drive: DriveEvaluation): Status | null {
-  if (!drive.gearbox) return null
-  return worstStatus(drive.checks.filter((c) => c.label === '감속기 최대 토크' || c.label === '감속기 최대 입력 회전수'))
+  return drive.gearbox ? worstStatus(gearboxChecks(drive)) : null
 }
 
 /** Open-loop steppers (no encoder) lose steps when overloaded: the curve is divided by this safety factor. */

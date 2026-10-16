@@ -15,17 +15,20 @@ export function DrivePackage({
   selection,
   cableLength,
   onCableLength,
+  hideTitle,
 }: {
   selection: ControllerSelection
   cableLength: number
   /** omitted in the report */
   onCableLength?: (length: number) => void
+  /** the report's chapter heading names it already */
+  hideTitle?: boolean
 }) {
   const t = useT()
   const { controller, preferred, cables, resistor } = selection
   return (
     <div className="drive-package">
-      <h4>{t('드라이브 · 케이블 · 제동저항')}</h4>
+      {!hideTitle && <h4>{t('드라이브 · 케이블 · 제동저항')}</h4>}
       {onCableLength && (
         <div className="drive-package-length">
           <NumberField label={t('모터 케이블 길이')} unit="m" value={cableLength} min={0.5} step={0.5} onChange={onCableLength} />
