@@ -16,7 +16,7 @@ interface Props {
 }
 
 const families: AxisFamily[] = ['ELGT', 'ELGD', 'EGC', 'ESBF']
-const drives: DriveKind[] = ['belt', 'spindle']
+const drives: DriveKind[] = ['spindle', 'belt']
 
 const ratioOf = (e: AxisEvaluation, label: string) => e.checks.find((c) => c.label === label)?.ratio ?? null
 /** Feed force column: the tighter of Fx and, for electric cylinders, the buckling limit */

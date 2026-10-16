@@ -97,7 +97,7 @@ export const defaultSettings: Settings = {
   supportSpan: 0,
   defaultInertiaRatio: 10,
   families: ['ELGT', 'ELGD', 'EGC', 'ESBF'],
-  drives: ['belt', 'spindle'],
+  drives: ['spindle', 'belt'],
   makers: ['Festo'],
   excludedMotorFamilies: [],
   requireBrake: false,

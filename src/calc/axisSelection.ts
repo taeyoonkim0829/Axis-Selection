@@ -292,7 +292,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       unit: 'mm',
       ratio: req.stroke / axis.speedLimitStroke,
       status: 'warn',
-      note: '이 스트로크부터 스핀들 최대 속도가 줄어듭니다. 카탈로그의 속도-스트로크 선도를 확인하세요.',
+      note: '이 스트로크부터 볼스크류 최대 속도가 줄어듭니다. 카탈로그의 속도-스트로크 선도를 확인하세요.',
     })
   }
 

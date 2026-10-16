@@ -128,8 +128,8 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
         <h3>{t('상세 설정')}</h3>
         <SpecTable
           rows={[
-            ['구동 효율 (스핀들 / 벨트)', `${fmt(settings.efficiency.spindle)} / ${fmt(settings.efficiency.belt)}`],
-            ['마찰 계수 (스핀들 / 벨트)', `${fmt(settings.friction.spindle)} / ${fmt(settings.friction.belt)}`],
+            ['구동 효율 (볼스크류 / 벨트)', `${fmt(settings.efficiency.spindle)} / ${fmt(settings.efficiency.belt)}`],
+            ['마찰 계수 (볼스크류 / 벨트)', `${fmt(settings.friction.spindle)} / ${fmt(settings.friction.belt)}`],
             ['외부 반력 Fc', q(settings.externalForce, 'N')],
             ['가이드 저항 FG', q(settings.guideResistance, 'N')],
             ['커플링 관성', q(settings.couplingInertia, 'kg·cm²', 4)],

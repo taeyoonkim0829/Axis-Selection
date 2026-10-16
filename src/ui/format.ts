@@ -21,7 +21,7 @@ export const statusLabel: Record<Status, string> = { ok: '적합', warn: '주의
 
 export const mountingLabel = { floor: '바닥', wall: '벽면', vertical: '수직' } as const
 
-export const driveLabel = { belt: '벨트', spindle: '스핀들' } as const
+export const driveLabel = { belt: '벨트', spindle: '볼스크류' } as const
 
 export const pressDirectionLabel = { down: '위→아래 (눌러 내림)', up: '아래→위 (밀어 올림)' } as const
 

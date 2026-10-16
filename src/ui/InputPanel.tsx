@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { accelerationForTime, accelTimeFor, minAccelTime } from '../calc/motionProfile'
-import { defaultPress, type Mounting, type PressConditions, type Requirements, type Settings } from '../calc/types'
+import { defaultPress, defaultSettings, type Mounting, type PressConditions, type Requirements, type Settings } from '../calc/types'
 import { useT } from '../i18n'
 import cogImage from '../../images/center_of_gravity.png'
 import { NumberField, RadioGroup, ToggleButton } from './common'
@@ -44,7 +44,20 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
   const setMounting = (mounting: Mounting) => {
     onReq({ ...req, mounting })
     // A vertical axis must not drop the load on power loss.
-    if ((mounting === 'vertical') !== settings.requireBrake) setS('requireBrake', mounting === 'vertical')
+    const next = { ...settings, requireBrake: mounting === 'vertical' }
+    // Pressing on the floor or a wall: an external guide carries the payload by default; vertical: none.
+    if (press.enabled) next.externalGuide = mounting !== 'vertical'
+    onSettings(next)
+  }
+
+  // Pressing defaults to ball screw axes and ESBF (external guide unless vertical); 일반 restores every axis.
+  const setApplication = (pressing: boolean) => {
+    setPress('enabled', pressing)
+    onSettings(
+      pressing
+        ? { ...settings, drives: ['spindle'], families: ['ESBF'], externalGuide: req.mounting !== 'vertical' }
+        : { ...settings, drives: defaultSettings.drives, families: defaultSettings.families, externalGuide: defaultSettings.externalGuide },
+    )
   }
 
   return (
@@ -162,7 +175,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
               role="radio"
               aria-checked={press.enabled === (a === 'press')}
               className={press.enabled === (a === 'press') ? 'active' : ''}
-              onClick={() => setPress('enabled', a === 'press')}
+              onClick={() => press.enabled !== (a === 'press') && setApplication(a === 'press')}
             >
               {t(a === 'press' ? '프레싱' : '일반')}
             </button>
@@ -217,7 +230,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
         <summary>{t('상세 설정')}</summary>
         <div className="grid-2">
           <NumberField
-            label={t('구동 효율 (스핀들)')}
+            label={t('구동 효율 (볼스크류)')}
             value={settings.efficiency.spindle}
             min={0.01}
             onChange={(v) => setS('efficiency', { ...settings.efficiency, spindle: v })}
@@ -229,7 +242,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
             onChange={(v) => setS('efficiency', { ...settings.efficiency, belt: v })}
           />
           <NumberField
-            label={t('마찰 계수 (스핀들)')}
+            label={t('마찰 계수 (볼스크류)')}
             value={settings.friction.spindle}
             onChange={(v) => setS('friction', { ...settings.friction, spindle: v })}
           />
