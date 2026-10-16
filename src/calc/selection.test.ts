@@ -274,6 +274,21 @@ describe('selection on real data', () => {
     expect(speed('ESBF-BS-32-…-5P', 250).limit).toBe(0.55)
   })
 
+  it('limits the ELGD-BS feed force by screw buckling above a stroke', () => {
+    const fx = (id: string, stroke: number) =>
+      evaluateAxis(axes.find((a) => a.id === id)!, { ...baseReq, stroke, velocity: 0.1 }, defaultSettings)!.checks.find((c) => c.label === '이송력 Fx')!
+    expect(fx('ELGD-BS-KF-60-…5P', 400).limit).toBe(1550)
+    expect(fx('ELGD-BS-KF-60-…5P', 400).note).toBeUndefined()
+    // ELGD-60: about 340 N left at 1000 mm (data sheet p.16)
+    expect(fx('ELGD-BS-KF-60-…5P', 1000).limit).toBeCloseTo(338, -1)
+    expect(fx('ELGD-BS-KF-60-…5P', 1000).noteArgs).toEqual({ stroke: 1000, max: 1550 })
+    // The long slide buckles earlier
+    expect(fx('ELGD-BS-KF-60-…5P-L', 600).limit!).toBeLessThan(fx('ELGD-BS-KF-60-…5P', 600).limit!)
+    // A parallel kit keeps its own, lower maximum until the curve falls below it
+    expect(fx('ELGD-BS-KF-80-…20P_parallel kit', 500).limit).toBe(873)
+    expect(fx('ELGD-BS-KF-80-…20P_parallel kit', 2000).limit).toBeCloseTo(308, -1)
+  })
+
   it('curveAt interpolates and clamps', () => {
     const curve: [number, number][] = [[0, 10], [100, 10], [200, 4]]
     expect(curveAt(curve, 50)).toBe(10)

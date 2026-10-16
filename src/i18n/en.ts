@@ -121,6 +121,8 @@ export const en: Record<string, string> = {
   '압축력 (좌굴)': 'Pressure force (buckling)',
   '로드 길이 {stroke} mm 기준, 전진 = 로드가 나가는 방향': 'For a rod length of {stroke} mm; forward = rod extending',
   '스트로크 {stroke} mm의 속도-스트로크 선도 기준 (최대 {max} m/s)': 'From the speed-stroke curve at a stroke of {stroke} mm (max. {max} m/s)',
+  '스트로크 {stroke} mm의 좌굴 한계 (모터 쪽으로 미는 힘, 최대 {max} N)':
+    'Buckling limit at a stroke of {stroke} mm (force pushing towards the motor, max. {max} N)',
   '로드 횡하중 Fq': 'Lateral force on piston rod Fq',
   '외부 가이드 사용 — 검토 생략': 'External guide used; not checked',
   '가압 구간 토크': 'Pressing torque',

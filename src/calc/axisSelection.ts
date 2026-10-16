@@ -158,6 +158,21 @@ function speedCheck(axis: Axis, velocity: number, stroke: number): Check {
   }
 }
 
+/**
+ * Peak feed force vs the max feed force. On ELGD-BS a force pushing the screw towards the motor is limited by
+ * buckling above a stroke (data sheet curve, read at the built stroke). Which move pushes towards the motor
+ * depends on where the motor sits, so the larger force of both directions is checked.
+ */
+function feedForceCheck(axis: Axis, force: number, stroke: number): Check {
+  const buckling = axis.feedForceCurve ? curveAt(axis.feedForceCurve, stroke) : Infinity
+  if (!(buckling < axis.maxFeedForce)) return check('이송력 Fx', force, axis.maxFeedForce, 'N')
+  return {
+    ...check('이송력 Fx', force, buckling, 'N'),
+    note: '스트로크 {stroke} mm의 좌굴 한계 (모터 쪽으로 미는 힘, 최대 {max} N)',
+    noteArgs: { stroke: Math.round(stroke), max: axis.maxFeedForce },
+  }
+}
+
 export function curveAt(curve: [number, number][], x: number): number {
   if (x <= curve[0][0]) return curve[0][1]
   for (let i = 1; i < curve.length; i++) {
@@ -298,7 +313,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     check('스트로크', req.stroke, axis.maxStroke, 'mm'),
     speedCheck(axis, peakVelocity, builtStroke),
     check('가속도', fwd.peakAcceleration, axis.maxAcceleration, 'm/s²'),
-    check('이송력 Fx', peakForce, axis.maxFeedForce, 'N'),
+    feedForceCheck(axis, peakForce, builtStroke),
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
   ]
 

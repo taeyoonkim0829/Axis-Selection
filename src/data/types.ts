@@ -32,6 +32,8 @@ export interface Axis {
   slideMassPer10mm?: number | null
   /** ball screw axes: [working stroke mm, max. speed m/s], read from the data sheet speed-stroke curve */
   speedCurve?: [number, number][] | null
+  /** ELGD-BS: [working stroke mm, max. feed force N] towards the motor (screw buckling), read from the data sheet curve */
+  feedForceCurve?: [number, number][] | null
   /** ESBF: [rod length mm, max. pressure force N] — buckling limit, read from the data sheet curve */
   pressureForceCurve?: [number, number][] | null
   /** ESBF: [stroke mm, max. lateral force on the piston rod N], read from the data sheet curve; replaces the guide check */
