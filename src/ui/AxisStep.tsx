@@ -5,7 +5,7 @@ import type { AxisFamily, DriveKind } from '../data/types'
 import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { useT } from '../i18n'
-import { driveLabel, fmt } from './format'
+import { axisDetailChecks, driveLabel, fmt } from './format'
 
 interface Props {
   results: AxisEvaluation[]
@@ -161,7 +161,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           </CollapseTitle>
           {detailOpen && (
             <>
-              <CheckTable checks={selected.checks} />
+              <CheckTable checks={axisDetailChecks(selected)} />
               <dl className="info">
                 {selected.info.map((i) => (
                   <div key={i.label}>

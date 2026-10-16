@@ -1,4 +1,9 @@
+import type { AxisEvaluation } from '../calc/axisSelection'
 import type { Status, VerticalDirection } from '../calc/types'
+
+/** Axis checks for the detail tables: the stroke is the user's own input, shown only when it exceeds the axis. */
+export const axisDetailChecks = (axis: AxisEvaluation) =>
+  axis.checks.filter((c) => c.label !== '스트로크' || c.status !== 'ok')
 
 export function fmt(value: number | null | undefined, digits = 2): string {
   if (value == null || !Number.isFinite(value)) return '—'

@@ -7,7 +7,7 @@ import { verticalForward, type Requirements, type Settings, type Status } from '
 import type { Kit } from '../data/types'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
-import { driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
+import { axisDetailChecks, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { SpeedRatio } from './MotorStep'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
@@ -211,7 +211,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
           ]}
         />
         <h3>{t('검토 항목')}</h3>
-        <CheckTable checks={axis.checks} />
+        <CheckTable checks={axisDetailChecks(axis)} />
         {axis.info.length > 0 && (
           <>
             <h3>{t('참고값')}</h3>
