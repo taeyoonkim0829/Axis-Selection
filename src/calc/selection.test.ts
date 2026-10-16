@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
 import { axisOrder, curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
-import { evaluateDrive, gearboxOptionsFor, selectMotors } from './motorSelection'
+import { evaluateDrive, gearboxOptionsFor, gearboxStatus, selectMotors } from './motorSelection'
 import { moveProfile } from './motionProfile'
 import { defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
 
@@ -81,6 +81,10 @@ describe('torque calculation', () => {
     const speed = evaluateDrive(ev, motor, base, defaultSettings).maxMotorSpeed
     expect(speedCheck(speed * 1.1).status).toBe('ok')
     expect(speedCheck(speed * 0.9).status).toBe('fail')
+    // the gearbox's own verdict (report): only its checks count; none without a gearbox
+    expect(gearboxStatus(evaluateDrive(ev, motor, { ...base, maxInputSpeed: speed * 0.9 }, defaultSettings))).toBe('fail')
+    expect(gearboxStatus(evaluateDrive(ev, motor, { ...base, maxInputSpeed: speed * 1.1, maxTorque: 1e6 }, defaultSettings))).toBe('ok')
+    expect(gearboxStatus(evaluateDrive(ev, motor, null, defaultSettings))).toBeNull()
   })
 
   it('vertical axis needs holding torque during dwell', () => {

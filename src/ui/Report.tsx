@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { KitMatch } from '../calc/kitSelection'
 import { accelTimeFor } from '../calc/motionProfile'
-import type { DriveEvaluation } from '../calc/motorSelection'
+import { gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
 import { translateData, useLang, useT } from '../i18n'
@@ -109,7 +109,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
       g?.maker ?? '—',
       drive ? (g ? `${g.model} (${g.ratio}:1)` : t('감속기 미사용')) : '—',
       g?.partNumber ?? null,
-      null,
+      drive ? gearboxStatus(drive) : null,
     ],
     [t('연결키트'), kit ? 'Festo' : '—', kit?.product ?? (drive ? t('해당 키트 없음') : '—'), kit?.partNumber ?? null, kitEval?.status ?? null],
   ]
