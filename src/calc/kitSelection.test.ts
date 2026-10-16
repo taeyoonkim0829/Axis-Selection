@@ -73,6 +73,8 @@ describe('evaluateKit', () => {
     const { drive, result } = evaluate('EAMM-U-65-T42-60P-87')
     expect(drive.motor.peakTorque).toBeGreaterThan(3)
     expect(checkOf(result, '모터 최대 토크 (키트 기준)').status).toBe('warn')
+    // advice only: the kit itself still passes
+    expect(result.status).toBe('ok')
     expect(result.notes.map((n) => n.text)).toContain(
       '벨트 장력이 모터와 축의 베어링에 반경 하중을 줍니다. 하중이 크면 카운터 베어링 EAMG(클램핑 슬리브 EAMH-…-P 포함)를 검토하세요.',
     )

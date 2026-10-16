@@ -37,6 +37,9 @@ export interface KitNote {
   args?: Record<string, string | number>
 }
 
+/** Advisory check: shown as 주의 in the details, not part of the kit's verdict */
+export const MOTOR_MAX_LABEL = '모터 최대 토크 (키트 기준)'
+
 export interface KitEvaluation {
   kit: Kit
   status: Status
@@ -90,7 +93,7 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   }
   if (kit.transmissibleTorque != null && motorMax > kit.transmissibleTorque) {
     checks.push({
-      ...check('모터 최대 토크 (키트 기준)', motorMax, kit.transmissibleTorque, 'Nm'),
+      ...check(MOTOR_MAX_LABEL, motorMax, kit.transmissibleTorque, 'Nm'),
       status: 'warn',
       note: '드라이브 토크(전류) 제한을 키트 전달 토크 이하로 설정하세요',
     })
@@ -120,7 +123,8 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   if (motor.maker !== 'Festo') {
     notes.push({ text: '타사 모터: 키트 매뉴얼의 타사 모터 인터페이스 표에서 축 지름·축 길이·플랜지가 맞는지 확인하세요.' })
   }
-  return { kit, status: worstStatus(checks), checks, notes }
+  // The motor's torque reserve above the kit is advice (set a torque limit): it shows in the details only.
+  return { kit, status: worstStatus(checks.filter((c) => c.label !== MOTOR_MAX_LABEL)), checks, notes }
 }
 
 /**

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Check, Status } from '../calc/types'
-import type { KitEvaluation } from '../calc/kitSelection'
+import { MOTOR_MAX_LABEL, type KitEvaluation } from '../calc/kitSelection'
 import { koSubjectParticle, langSwitchLabel, useT, type Lang } from '../i18n'
 import { pct, statusLabel } from './format'
 
@@ -88,7 +88,8 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
   const active = useActiveStep()
   const axisTight = axis && tightest(axis.checks)
   const driveTight = drive && tightest(drive.checks)
-  const kitTight = kit && tightest(kit.checks)
+  // the advisory motor-torque check is not part of the kit verdict, so not its headline either
+  const kitTight = kit && tightest(kit.checks.filter((c) => c.label !== MOTOR_MAX_LABEL))
   const g = drive?.gearbox
 
   const dialog = useRef<HTMLDialogElement>(null)
