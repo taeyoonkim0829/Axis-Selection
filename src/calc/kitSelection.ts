@@ -123,6 +123,21 @@ export function evaluateKit(axisEval: AxisEvaluation, drive: DriveEvaluation, ki
   return { kit, status: worstStatus(checks), checks, notes }
 }
 
+/**
+ * Every kit matching the drive, checked, with the recommended one: the first in list order that does not fail,
+ * preferring kits with data sheet values.
+ * The drive's status then includes the kit: the recommended kit's verdict, or `warn` when no kit matches.
+ */
+export function attachKit(axisEval: AxisEvaluation, drive: DriveEvaluation, all: Kit[], settings: Settings): DriveEvaluation {
+  const match = findKits(axisEval.axis, drive.motor, drive.gearbox, all)
+  const evaluated = orderKits(match.kits).map((k) => evaluateKit(axisEval, drive, k, settings))
+  // Prefer a kit the data sheet values could verify over one without data
+  const passing = evaluated.filter((e) => e.status !== 'fail')
+  const kit = passing.find((e) => e.kit.transmissibleTorque != null) ?? passing[0] ?? evaluated[0] ?? null
+  const kitStatus: Status = kit ? kit.status : 'warn'
+  return { ...drive, kits: evaluated, kit, driveStatus: drive.status, status: worstStatus([{ status: drive.status }, { status: kitStatus }]) }
+}
+
 /** All kits in one list: axial before parallel, then without inspection window before with one. */
 export function orderKits(kits: Kit[]): Kit[] {
   const rank = (k: Kit) => (k.type === 'axial' ? 0 : 2) + (k.window ? 1 : 0)

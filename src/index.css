@@ -1155,6 +1155,20 @@ th.num {
   font-size: 13px;
 }
 
+/* motor table: the recommended kit's verdict and name */
+.kit-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.kit-cell .muted {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 추가 검토사항: points to look at beyond the kit checks */
 .kit-notes {
   margin-top: 14px;

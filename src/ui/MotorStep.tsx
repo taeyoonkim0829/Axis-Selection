@@ -6,7 +6,7 @@ import type { MotorMaker } from '../data/types'
 import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
-import { fmt } from './format'
+import { fmt, statusLabel } from './format'
 
 interface Props {
   /** One row per motor: direct drive, or with its recommended gearbox when settings.useGearbox */
@@ -43,6 +43,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
     rms: (d) => d.rmsTorque / d.motor.ratedTorque,
     speed: (d) => d.maxMotorSpeed / d.motor.ratedSpeed,
     inertia: (d) => d.checks.find((c) => c.label === '관성비')?.ratio ?? null,
+    kit: (d) => (d.kit ? statusRank[d.kit.status] : 3),
   })
   const th = { sort, onSort: toggle }
   const rows = listed.slice(0, ROW_LIMIT)
@@ -141,6 +142,9 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                 <SortTh id="inertia" {...th}>
                   {t('관성비')}
                 </SortTh>
+                <SortTh id="kit" {...th}>
+                  {t('연결키트')}
+                </SortTh>
               </tr>
             </thead>
             <tbody>
@@ -178,6 +182,9 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                     <td>
                       <Ratio ratio={inertia?.ratio ?? null} />
                     </td>
+                    <td>
+                      <KitCell drive={d} />
+                    </td>
                   </tr>
                 )
               })}
@@ -197,6 +204,14 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
           {detailOpen && (
             <>
               <CheckTable checks={selected.checks} />
+              <p className="muted small-print">
+                {selected.kit
+                  ? t('연결키트 {kit}: {status} — 판정에 포함 (4단계에서 세부 확인)', {
+                      kit: selected.kit.kit.product,
+                      status: t(statusLabel[selected.kit.status]),
+                    })
+                  : t('맞는 연결키트가 없어 주의로 판정합니다.')}
+              </p>
               <dl className="info">
                 <div>
                   <dt>{t('시리즈')}</dt>
@@ -224,6 +239,25 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
         </div>
       )}
     </section>
+  )
+}
+
+/** The recommended kit's verdict and name, or that no kit fits */
+function KitCell({ drive }: { drive: DriveEvaluation }) {
+  const t = useT()
+  if (!drive.kit) {
+    return (
+      <span className="kit-cell">
+        <StatusBadge status="warn" />
+        <span className="muted">{t('해당 키트 없음')}</span>
+      </span>
+    )
+  }
+  return (
+    <span className="kit-cell" title={drive.kit.kit.product}>
+      <StatusBadge status={drive.kit.status} />
+      <span className="muted">{drive.kit.kit.product}</span>
+    </span>
   )
 }
 

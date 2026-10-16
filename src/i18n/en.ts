@@ -309,6 +309,12 @@ export const en: Record<string, string> = {
   '키트 데이터 없음 — 확인 필요': 'No kit data — to be checked',
   '키트 전달 토크': 'Kit transferable torque',
   '이송력 Fx (병렬 키트)': 'Feed force Fx (parallel kit)',
+  '설치 방향': 'Mounting position',
+  '수평 설치 전용 축입니다': 'This axis is released for horizontal mounting only',
+  '수평 설치 전용 축입니다. 벽면(측면) 설치는 Festo에 확인하세요':
+    'This axis is released for horizontal mounting only. Check side (wall) mounting with Festo',
+  '연결키트 {kit}: {status} — 판정에 포함 (4단계에서 세부 확인)': 'Mounting kit {kit}: {status} — included in the result (details in step 4)',
+  '맞는 연결키트가 없어 주의로 판정합니다.': 'No mounting kit fits, so the result is a warning.',
   '키트 최대 회전수': 'Kit max. speed',
   '모터 최대 토크 (키트 기준)': 'Motor peak torque (at the kit)',
   '드라이브 토크(전류) 제한을 키트 전달 토크 이하로 설정하세요':

@@ -317,6 +317,19 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
   ]
 
+  // Axes released for horizontal mounting only (ELGT-TB): vertical fails; side (wall) mounting is not covered.
+  if (axis.mountingPosition === 'horizontal' && req.mounting !== 'floor') {
+    checks.unshift({
+      label: '설치 방향',
+      value: Number.NaN, // shown as —
+      limit: null,
+      unit: '',
+      ratio: null,
+      status: req.mounting === 'vertical' ? 'fail' : 'warn',
+      note: req.mounting === 'vertical' ? '수평 설치 전용 축입니다' : '수평 설치 전용 축입니다. 벽면(측면) 설치는 Festo에 확인하세요',
+    })
+  }
+
   // Electric cylinder: the pressure force is limited by buckling of the piston rod (rod length = stroke).
   // Positive force pushes in the forward direction, taken as the rod extending.
   if (axis.pressureForceCurve) {

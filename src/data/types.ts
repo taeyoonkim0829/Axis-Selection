@@ -61,6 +61,8 @@ export interface Axis {
   maxSwitchingCycles?: number | null
   allowableDeflection: number | null
   standardStrokes: number[] | string[] | null
+  /** Released mounting positions: 'horizontal' only for ELGT-TB (data sheet); absent = any */
+  mountingPosition?: 'any' | 'horizontal' | null
   /** Order type code with … where the stroke goes (ELGT-BS, ELGD, EGC); `model` when missing (ESBF) */
   typeCode?: string | null
   /** order number per standard stroke (mm as key) */

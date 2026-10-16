@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import { evaluateAxis } from './axisSelection'
-import { evaluateKit, findKits, orderKits } from './kitSelection'
-import { evaluateDrive } from './motorSelection'
+import { attachKit, evaluateKit, findKits, orderKits } from './kitSelection'
+import { evaluateDrive, selectMotors } from './motorSelection'
 import { defaultSettings, type Requirements } from './types'
 
 const axis = (id: string) => axes.find((a) => a.id === id)!
@@ -96,5 +96,27 @@ describe('evaluateKit', () => {
     const { result } = evaluate('GD060A060M1A-1000')
     expect(checkOf(result, '키트 전달 토크')).toMatchObject({ status: 'ok', limit: null, note: '키트 데이터 없음 — 확인 필요' })
     expect(result.notes[0].text).toMatch(/데이터시트에 없는 키트/)
+  })
+})
+
+describe('attachKit', () => {
+  const req: Requirements = { stroke: 500, velocity: 0.5, acceleration: 5, jerk: 0, payload: 10, cog: { x: 0, y: 0, z: 0 }, mounting: 'floor' }
+  const ev = evaluateAxis(axis('ELGD-BS-KF-60-…10P'), req, defaultSettings)!
+  const settings = { ...defaultSettings, makers: ['Festo', 'Siemens', 'Mitsubishi'] as const satisfies typeof defaultSettings.makers, requireBrake: false }
+
+  it('recommends the first kit that does not fail and folds its verdict into the motor', () => {
+    const drive = attachKit(ev, evaluateDrive(ev, motor('HG-KR43'), null, settings), kits, settings)
+    expect(drive.kits!.map((k) => k.kit.product)[0]).toBe('EAMM-A-T42-60P')
+    expect(drive.kit!.kit.product).toBe('EAMM-A-T42-60P')
+    expect(drive.driveStatus).toBeDefined()
+  })
+
+  it('warns when no kit fits and sorts motors by the combined verdict', () => {
+    const noCode = motors.find((m) => m.interfaceCode === null && m.maker === 'Festo')!
+    const results = selectMotors(ev, [motor('HG-KR43'), noCode], settings, (d) => attachKit(ev, d, kits, settings))
+    const bare = results.find((r) => r.motor.id === noCode.id)!
+    expect(bare.kit).toBeNull()
+    expect(bare.status).not.toBe('ok')
+    if (bare.driveStatus === 'ok') expect(bare.status).toBe('warn')
   })
 })

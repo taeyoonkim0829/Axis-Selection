@@ -2,6 +2,7 @@
 import { gearboxesFor } from '../data'
 import type { Gearbox, Motor } from '../data/types'
 import type { AxisEvaluation, AxisSample } from './axisSelection'
+import type { KitEvaluation } from './kitSelection'
 import { check, worstStatus, type Check, type Settings, type Status } from './types'
 
 export interface DriveEvaluation {
@@ -16,6 +17,11 @@ export interface DriveEvaluation {
   inertiaRatio: number
   /** W, averaged over the cycle */
   regenPower: number | null
+  /** Set by `attachKit`: every matching kit, checked, and the recommended one (first that does not fail) */
+  kits?: KitEvaluation[]
+  kit?: KitEvaluation | null
+  /** The drive's own verdict, before the kit is taken into account (`status` then includes the kit) */
+  driveStatus?: Status
 }
 
 type ShaftState = Pick<AxisSample, 'omega' | 'alpha' | 'torque' | 'dir'>
@@ -157,8 +163,14 @@ export function gearboxOptionsFor(motor: Motor) {
 /**
  * One drive option per motor. Direct drive unless `settings.useGearbox`; then the lowest passing gearbox
  * ratio (the lowest ratio when none passes), and motors without a compatible gearbox drop out.
+ * `attachKit` (kitSelection) adds the mounting kit and its verdict to each option before choosing and sorting.
  */
-export function selectMotors(axisEval: AxisEvaluation, all: Motor[], settings: Settings): DriveEvaluation[] {
+export function selectMotors(
+  axisEval: AxisEvaluation,
+  all: Motor[],
+  settings: Settings,
+  attachKit: (drive: DriveEvaluation) => DriveEvaluation = (d) => d,
+): DriveEvaluation[] {
   return all
     .filter(
       (m) =>
@@ -167,8 +179,8 @@ export function selectMotors(axisEval: AxisEvaluation, all: Motor[], settings: S
         (!settings.requireBrake || m.brake),
     )
     .flatMap((motor) => {
-      if (!settings.useGearbox) return [evaluateDrive(axisEval, motor, null, settings)]
-      const geared = gearboxOptionsFor(motor).map((g) => evaluateDrive(axisEval, motor, g, settings))
+      if (!settings.useGearbox) return [attachKit(evaluateDrive(axisEval, motor, null, settings))]
+      const geared = gearboxOptionsFor(motor).map((g) => attachKit(evaluateDrive(axisEval, motor, g, settings)))
       const best = geared.find((e) => e.status !== 'fail') ?? geared[0]
       return best ? [best] : []
     })

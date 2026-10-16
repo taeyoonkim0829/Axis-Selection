@@ -233,8 +233,9 @@ describe('selection on real data', () => {
     expect(axisOrder(esbf63, 250)).toEqual({ model: 'ESBF-BS-63-300-10P', partNumber: '574098', stroke: 300, modular: false })
     expect(axisOrder(esbf63, 100).partNumber).toBe('574096')
     expect(axisOrder(esbf63, 512.3)).toEqual({ model: 'ESBF-BS-63-513-10P', partNumber: '574090', stroke: 513, modular: true })
-    const elgtTb = axes.find((a) => a.id === 'ELGT-TB-120')!
-    expect(axisOrder(elgtTb, 250)).toEqual({ model: elgtTb.model, partNumber: null, stroke: null, modular: false })
+    // Without order data the axis keeps its data model name
+    const bare: Axis = { ...axes.find((a) => a.id === 'ELGT-TB-120')!, typeCode: null, strokePartNumbers: null, moduleNumber: null }
+    expect(axisOrder(bare, 250)).toEqual({ model: bare.model, partNumber: null, stroke: null, modular: false })
     // Mass follows the ordered stroke: 250 mm is built as 300 mm.
     const ev = evaluateAxis(esbf63, { ...baseReq, stroke: 250 }, defaultSettings)!
     expect(ev.axisMass).toBeCloseTo(3.165 + 0.087 * 30)
@@ -254,6 +255,8 @@ describe('selection on real data', () => {
     // Above the variable range only the fixed strokes are left: EGC-70-BS takes 50…980 or 1000
     expect(order('EGC-70-...-BS-10P-KF-GK', 990)).toEqual({ model: 'EGC-70-1000-BS-10P-KF-0H-ML-GK', partNumber: '556807', stroke: 1000, modular: true })
     expect(order('EGC-HD-160-…-BS-20P-GK', 30).model).toBe('EGC-HD-160-50-BS-20P-0H-GK')
+    // ELGT-TB (customer solution): a part number per stroke, 50 mm steps up to 1000, then 100 mm
+    expect(order('ELGT-TB-160', 1020)).toEqual({ model: 'ELGT-TB-160-1100-CS', partNumber: '8194369', stroke: 1100, modular: false })
   })
 
   it('reads the ball screw max speed from the speed-stroke curve at the built stroke', () => {
@@ -284,6 +287,14 @@ describe('selection on real data', () => {
     expect(fx('ELGD-BS-KF-60-…5P', 1000).noteArgs).toEqual({ stroke: 1000, max: 1550 })
     // The long slide buckles earlier
     expect(fx('ELGD-BS-KF-60-…5P-L', 600).limit!).toBeLessThan(fx('ELGD-BS-KF-60-…5P', 600).limit!)
+  })
+
+  it('releases ELGT-TB for horizontal mounting only', () => {
+    const mount = (mounting: Requirements['mounting']) =>
+      evaluateAxis(axes.find((a) => a.id === 'ELGT-TB-120')!, { ...baseReq, mounting }, defaultSettings)!.checks.find((c) => c.label === '설치 방향')
+    expect(mount('floor')).toBeUndefined()
+    expect(mount('wall')?.status).toBe('warn')
+    expect(mount('vertical')?.status).toBe('fail')
   })
 
   it('curveAt interpolates and clamps', () => {

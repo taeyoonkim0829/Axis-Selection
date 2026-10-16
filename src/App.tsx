@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes } from './calc/axisSelection'
-import { evaluateKit, findKits, orderKits } from './calc/kitSelection'
+import { attachKit, findKits } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
 import { axes, kits, motors } from './data'
@@ -104,7 +104,10 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   // Keep the user's pick while it is still listed; otherwise fall back to the best candidate.
   const selectedAxis = axisResults.find((r) => r.axis.id === axisId) ?? axisResults.find((r) => r.status !== 'fail') ?? null
   const motorResults = useMemo(
-    () => (selectedAxis ? selectMotors(selectedAxis, motors, deferredSettings) : []),
+    () =>
+      selectedAxis
+        ? selectMotors(selectedAxis, motors, deferredSettings, (d) => attachKit(selectedAxis, d, kits, deferredSettings))
+        : [],
     [selectedAxis, deferredSettings],
   )
   const motorResult = motorResults.find((r) => r.motor.id === motorId) ?? null
@@ -114,7 +117,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const gearboxOptions =
     selectedAxis && selectedMotor
       ? (deferredSettings.useGearbox ? gearboxOptionsFor(selectedMotor) : [null]).map((g) =>
-          evaluateDrive(selectedAxis, selectedMotor, g, deferredSettings),
+          attachKit(selectedAxis, evaluateDrive(selectedAxis, selectedMotor, g, deferredSettings), kits, deferredSettings),
         )
       : []
   // The user's gearbox pick in step 3, else the one the motor step recommended.
@@ -126,12 +129,9 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
 
   const kitMatch =
     selectedAxis && selectedDrive ? findKits(selectedAxis.axis, selectedDrive.motor, selectedDrive.gearbox, kits) : null
-  const kitRows = orderKits(kitMatch?.kits ?? [])
-  const kitEvals =
-    selectedAxis && selectedDrive ? kitRows.map((k) => evaluateKit(selectedAxis, selectedDrive, k, deferredSettings)) : []
-  // The user's pick, else the first listed kit that passes, else the first listed kit
-  const selectedKitEval =
-    kitEvals.find((e) => e.kit.id === kitId) ?? kitEvals.find((e) => e.status !== 'fail') ?? kitEvals[0] ?? null
+  // Kits checked by attachKit, in list order; the user's pick, else the drive's recommended kit
+  const kitEvals = selectedDrive?.kits ?? []
+  const selectedKitEval = kitEvals.find((e) => e.kit.id === kitId) ?? selectedDrive?.kit ?? null
   const selectedKit = selectedKitEval?.kit ?? null
 
   // PDF export: the report is mounted off screen only while the PDF is being made.

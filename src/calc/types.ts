@@ -129,7 +129,7 @@ export function check(label: string, value: number, limit: number | null | undef
   return { label, value, limit, unit, ratio, status: ratio <= 1 ? 'ok' : 'fail', note }
 }
 
-export function worstStatus(checks: Check[]): Status {
+export function worstStatus(checks: Pick<Check, 'status'>[]): Status {
   if (checks.some((c) => c.status === 'fail')) return 'fail'
   if (checks.some((c) => c.status === 'warn')) return 'warn'
   return 'ok'
