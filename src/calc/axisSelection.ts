@@ -143,6 +143,21 @@ export function screwLoadFactor(v: number): number {
 }
 
 /** Linear interpolation in a [x, y] curve, clamped to its ends. */
+/**
+ * Peak velocity vs the max speed. A ball screw's max speed falls above a stroke (critical speed of the screw):
+ * the data sheet's speed-stroke curve is read at the built stroke.
+ */
+function speedCheck(axis: Axis, velocity: number, stroke: number): Check {
+  if (!axis.speedCurve) return check('속도', velocity, axis.maxSpeed, 'm/s')
+  const limit = Math.min(axis.maxSpeed, curveAt(axis.speedCurve, stroke))
+  if (limit >= axis.maxSpeed) return check('속도', velocity, limit, 'm/s')
+  return {
+    ...check('속도', velocity, limit, 'm/s'),
+    note: '스트로크 {stroke} mm의 속도-스트로크 선도 기준 (최대 {max} m/s)',
+    noteArgs: { stroke: Math.round(stroke), max: axis.maxSpeed },
+  }
+}
+
 export function curveAt(curve: [number, number][], x: number): number {
   if (x <= curve[0][0]) return curve[0][1]
   for (let i = 1; i < curve.length; i++) {
@@ -281,7 +296,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
 
   const checks: Check[] = [
     check('스트로크', req.stroke, axis.maxStroke, 'mm'),
-    check('속도', peakVelocity, axis.maxSpeed, 'm/s'),
+    speedCheck(axis, peakVelocity, builtStroke),
     check('가속도', fwd.peakAcceleration, axis.maxAcceleration, 'm/s²'),
     check('이송력 Fx', peakForce, axis.maxFeedForce, 'N'),
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
@@ -298,7 +313,8 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     })
   }
 
-  if (axis.drive === 'spindle' && axis.speedLimitStroke && req.stroke > axis.speedLimitStroke) {
+  // Without the data sheet curve only the stroke where the derating starts is known.
+  if (!axis.speedCurve && axis.drive === 'spindle' && axis.speedLimitStroke && req.stroke > axis.speedLimitStroke) {
     checks.push({
       label: '스트로크별 속도 한계',
       value: req.stroke,

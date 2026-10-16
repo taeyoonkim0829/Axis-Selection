@@ -13,7 +13,8 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | Field | Unit / meaning |
 |---|---|
 | `family`, `variant`, `size`, `drive`, `slide`, `longSlide`, `parallelKit` | from the model name. `variant` is `""`, `HD` or `WD`. `drive` is `belt` or `spindle`. `parallelKit: true` means the data includes a parallel kit |
-| `maxStroke`, `speedLimitStroke` | mm. For spindles, max speed is derated above `speedLimitStroke` |
+| `maxStroke`, `speedLimitStroke` | mm. For spindles, max speed is derated above `speedLimitStroke` (Excel value; only used when `speedCurve` is missing) |
+| `speedCurve` | ball screw axes: `[working stroke mm, max. speed m/s]` points, interpolated linearly at the built stroke. Read from the vector paths of the data sheet curves "Speed v as a function of working stroke l" (ELGT-BS p.11, ELGD-BS p.17, ELGD-BS-WD p.13, EGC-BS p.19, EGC-HD-BS p.17, ESBF 203032 p.14), calibrated on the tick labels or, where those are outlines, on the grid frame, and thinned to points within 0.4 % of the curve. The curve without ball screw support (`-SU`) is used, the ordered version. The flat part is scaled to `maxSpeed` (the curves are within 1.5 %, ESBF-BS-100-5P 4 %). Long slides shift the curve by the documented stroke reduction: ELGD-…-L 42/78/101 mm (sizes 60/80/120), EGC GV 100 mm; ELGD-WD comes with the long slide and its curve applies as drawn |
 | `maxWorkingLoad` | kg |
 | `maxFeedForce`, `maxShaftRadialForce`, `shaftRadialForce5000km`, `shaftRadialForce10000km` | N |
 | `noLoadTorque`, `maxDrivingTorque` | Nm (`maxDrivingTorque` is empty for spindle axes) |

@@ -256,6 +256,24 @@ describe('selection on real data', () => {
     expect(order('EGC-HD-160-…-BS-20P-GK', 30).model).toBe('EGC-HD-160-50-BS-20P-0H-GK')
   })
 
+  it('reads the ball screw max speed from the speed-stroke curve at the built stroke', () => {
+    const speed = (id: string, stroke: number) =>
+      evaluateAxis(axes.find((a) => a.id === id)!, { ...baseReq, stroke, velocity: 0.3 }, defaultSettings)!.checks.find((c) => c.label === '속도')!
+    expect(speed('ELGT-BS-90-…10P', 500).limit).toBe(0.5)
+    expect(speed('ELGT-BS-90-…10P', 500).note).toBeUndefined()
+    // ELGT-BS-90-10P: about 0.27 m/s at 1000 mm (data sheet curve)
+    const long = speed('ELGT-BS-90-…10P', 1000)
+    expect(long.limit).toBeCloseTo(0.267, 2)
+    expect(long.status).toBe('fail')
+    expect(long.noteArgs).toEqual({ stroke: 1000, max: 0.5 })
+    // A long slide shortens the working stroke the curve allows: ELGD-60 by 42 mm
+    const std = speed('ELGD-BS-KF-60-…5P', 600).limit!
+    expect(speed('ELGD-BS-KF-60-…5P-L', 600).limit).toBeLessThan(std)
+    expect(speed('ELGD-BS-KF-60-…5P-L', 558).limit).toBeCloseTo(std, 3)
+    // ESBF orders 250 mm as 300 mm: the curve is read there
+    expect(speed('ESBF-BS-32-…-5P', 250).limit).toBe(0.55)
+  })
+
   it('curveAt interpolates and clamps', () => {
     const curve: [number, number][] = [[0, 10], [100, 10], [200, 4]]
     expect(curveAt(curve, 50)).toBe(10)
