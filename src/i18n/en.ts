@@ -122,7 +122,7 @@ export const en: Record<string, string> = {
   '로드 길이 {stroke} mm 기준, 전진 = 로드가 나가는 방향': 'For a rod length of {stroke} mm; forward = rod extending',
   '로드 횡하중 Fq': 'Lateral force on piston rod Fq',
   '외부 가이드 사용 — 검토 생략': 'External guide used; not checked',
-  '가압 유지 토크': 'Press hold torque',
+  '가압 구간 토크': 'Pressing torque',
   '전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀':
     'At the end of the forward move, presses over the press distance at press speed, holds, then returns',
   '압착력': 'Press force',

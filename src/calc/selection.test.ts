@@ -171,9 +171,15 @@ describe('selection on real data', () => {
     expect(Math.max(...ev.samples.filter((s) => s.move === 1).map((s) => Math.abs(s.force)))).toBeLessThan(800)
 
     const motor = { ...motors[0], ratedTorque: 0.5, peakTorque: 100 } as Motor
-    const holdCheck = evaluateDrive(ev, motor, null, settings).checks.find((c) => c.label === '가압 유지 토크')!
-    expect(holdCheck.value).toBeCloseTo((800 * axis.spindlePitch!) / 1000 / (2 * Math.PI) / 0.9)
-    expect(evaluateDrive(evaluateAxis(axis, baseReq, settings)!, motor, null, settings).checks.some((c) => c.label === '가압 유지 토크')).toBe(false)
+    const checks = evaluateDrive(ev, motor, null, settings).checks
+    const pressTorque = (800 * axis.spindlePitch!) / 1000 / (2 * Math.PI) / 0.9
+    expect(checks.find((c) => c.label === '가압 구간 토크')!.value).toBeCloseTo(pressTorque)
+    // Travel moves only: the press force stays out of the constant-velocity torque
+    expect(checks.find((c) => c.label === '등속 구간 토크')!.value).toBeLessThan(pressTorque / 2)
+    expect(evaluateDrive(evaluateAxis(axis, baseReq, settings)!, motor, null, settings).checks.some((c) => c.label === '가압 구간 토크')).toBe(false)
+    // Without a hold the press move alone is checked
+    const noHold = evaluateAxis(axis, { ...baseReq, press: { ...press, holdTime: 0 } }, settings)!
+    expect(evaluateDrive(noHold, motor, null, settings).checks.find((c) => c.label === '가압 구간 토크')!.value).toBeCloseTo(pressTorque)
   })
 
   it('vertical pressing: the weight adds to the press force bottom-up and helps top-down', () => {
