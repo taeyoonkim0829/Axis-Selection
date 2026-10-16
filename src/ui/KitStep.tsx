@@ -85,8 +85,8 @@ function KitTable({
           <tr>
             <th>{t('판정')}</th>
             <th>{t('연결 방식')}</th>
-            <th>{t('품명')}</th>
             <th>{t('견시창')}</th>
+            <th>{t('모델명')}</th>
             <th>{t('커플링 / 풀리 품번')}</th>
             <th>{t('전달 토크')}</th>
             <th>{t('회전수')}</th>
@@ -105,8 +105,8 @@ function KitTable({
                 <StatusBadge status={status} />
               </td>
               <td>{t(typeLabel[k.type])}</td>
-              <td className="model">{k.product}</td>
               <td>{k.window ? 'O' : 'X'}</td>
+              <td className="model">{k.product}</td>
               <td>{(k.type === 'axial' ? k.coupling : k.pulley) ?? '—'}</td>
               <td>
                 <Ratio ratio={checks.find((c) => c.label === '키트 전달 토크')?.ratio ?? null} />
@@ -174,7 +174,7 @@ function SpecialKits({ kits }: { kits: Kit[] }) {
         <table className="data-table">
           <thead>
             <tr>
-              <th>{t('품명')}</th>
+              <th>{t('모델명')}</th>
               <th>{t('프로젝트')}</th>
               <th>{t('제작 대상 모터')}</th>
             </tr>

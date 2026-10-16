@@ -236,7 +236,6 @@ export const en: Record<string, string> = {
     'This gearbox has no interface code. Enter interfaceCode in the gearbox data (JSON).',
   '이 모터의 인터페이스 코드가 없습니다. 모터 데이터(JSON)의 interfaceCode를 입력하세요.':
     'This motor has no interface code. Enter interfaceCode in the motor data (JSON).',
-  '품명': 'Product',
   '커플링': 'Coupling',
   '풀리 품번': 'Pulley part no.',
   'SA 특수품 (참고용 · TEC 문의 필요)': 'SA special kits (reference only · contact TEC)',
