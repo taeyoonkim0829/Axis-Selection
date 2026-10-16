@@ -1,0 +1,262 @@
+// Festo drive package for a Festo motor: servo drive (CMMT-AS / CMMT-ST), cables and braking resistor.
+import type { BrakingResistor, Cable, Controller } from '../data/types'
+import type { AxisEvaluation } from './axisSelection'
+import { motorTorqueFn, type DriveEvaluation } from './motorSelection'
+import { check, worstStatus, type Check, type Settings, type Status } from './types'
+
+export interface CableChoice {
+  role: Cable['role']
+  /** type with the length filled in, or the configurable type */
+  type: string
+  partNumber: string | null
+  /** m */
+  length: number
+  crossSection: number | null
+  /** ordered as a configurable cable (length not in the standard list) */
+  configurable: boolean
+}
+
+export interface ResistorChoice {
+  /** an external braking resistor is needed */
+  required: boolean
+  item: BrakingResistor | null
+  /** W, average regenerative power over the cycle */
+  averagePower: number
+  /** W, peak regenerative power */
+  peakPower: number
+  /** Ws, largest energy of one braking event */
+  eventEnergy: number
+}
+
+export interface ControllerSelection {
+  controller: Controller | null
+  /** Festo's preferred drive for the motor, when it differs from the selected one */
+  preferred: Controller | null
+  /** A, required at the motor */
+  rmsCurrent: number
+  peakCurrent: number
+  cables: CableChoice[]
+  resistor: ResistorChoice
+  checks: Check[]
+  /** Korean source text with `{name}` placeholders */
+  notes: { text: string; args?: Record<string, string | number> }[]
+  status: Status
+}
+
+export interface DrivePackageData {
+  controllers: Controller[]
+  resistors: BrakingResistor[]
+  cables: Cable[]
+}
+
+/** CMMT-ST has no integrated braking resistor; below this energy per braking event the supply takes it */
+const ST_REGEN_LIMIT = 1
+
+const lengthKey = (l: number) => String(Math.round(l * 10) / 10)
+
+/** Drive, cables and braking resistor for a Festo motor; null for other makers. */
+export function selectController(
+  axisEval: AxisEvaluation,
+  drive: DriveEvaluation,
+  settings: Settings,
+  data: DrivePackageData,
+): ControllerSelection | null {
+  const { motor, gearbox } = drive
+  if (!motor.controller) return null
+  const [family, voltageClass] = motor.controller === 'CMMT-ST' ? ['CMMT-ST', 'ST'] : ['CMMT-AS', motor.controller.slice(8)]
+  const candidates = data.controllers
+    .filter((c) => c.family === family && c.voltageClass === voltageClass)
+    .toSorted((a, b) => a.nominalCurrent - b.nominalCurrent)
+
+  // Motor current from the torque: an open-loop stepper always runs at its nominal current
+  const kt = motor.torqueConstant ?? (motor.nominalCurrent ? motor.ratedTorque / motor.nominalCurrent : null)
+  const motorTorque = motorTorqueFn(axisEval, motor, gearbox, settings)
+  const ratio = gearbox?.ratio ?? 1
+  const currents = axisEval.samples.map((s) =>
+    motor.openLoop ? (motor.nominalCurrent ?? 0) : kt ? Math.abs(motorTorque(s)) / kt : 0,
+  )
+  const rmsCurrent = motor.openLoop ? (motor.nominalCurrent ?? 0) : kt ? drive.rmsTorque / kt : 0
+  const peakCurrent = Math.max(0, ...currents)
+  // Longest stretch above the drive's nominal current (peak current is allowed for peakDuration)
+  const overTime = (c: Controller) => {
+    let longest = 0
+    let run = 0
+    axisEval.samples.forEach((s, i) => {
+      run = currents[i] > c.nominalCurrent ? run + s.dt : 0
+      longest = Math.max(longest, run)
+    })
+    return longest
+  }
+  const fits = (c: Controller) =>
+    motor.openLoop
+      ? c.nominalCurrent >= (motor.nominalCurrent ?? 0)
+      : c.nominalCurrent >= rmsCurrent && c.peakCurrent >= peakCurrent && overTime(c) <= c.peakDuration
+  const controller = candidates.find(fits) ?? candidates.at(-1) ?? null
+  const preferredItem = data.controllers.find((c) => c.model === motor.preferredController) ?? null
+  const preferred = preferredItem && preferredItem.id !== controller?.id ? preferredItem : null
+
+  const checks: Check[] = []
+  const notes: ControllerSelection['notes'] = []
+  if (controller) {
+    if (motor.openLoop) {
+      const c = check('드라이브 정격 전류', motor.nominalCurrent ?? 0, controller.nominalCurrent, 'A')
+      checks.push(
+        c.status === 'fail'
+          ? { ...c, status: 'warn', note: '모터 정격 전류를 낼 수 없어 토크가 선도보다 줄어듭니다' }
+          : { ...c, note: '오픈루프: 모터 정격 전류로 구동' },
+      )
+    } else {
+      checks.push(
+        check('드라이브 정격 전류', rmsCurrent, controller.nominalCurrent, 'A'),
+        check('드라이브 최대 전류', peakCurrent, controller.peakCurrent, 'A'),
+        check('최대 전류 지속 시간', overTime(controller), controller.peakDuration, 's'),
+      )
+    }
+    if (!kt && !motor.openLoop) notes.push({ text: '모터 토크 상수가 없어 전류를 계산하지 못했습니다' })
+  } else {
+    notes.push({ text: '이 모터에 맞는 드라이브 데이터가 없습니다' })
+  }
+
+  // Cables for the set length
+  const length = settings.cableLength
+  const cableChoices: CableChoice[] = []
+  const pick = (role: Cable['role']) =>
+    data.cables.find(
+      (c) =>
+        c.role === role &&
+        c.controller === family &&
+        new RegExp(c.motors).test(motor.model) &&
+        (!c.brakeOnly || motor.brake) &&
+        length > c.range[0] &&
+        length <= c.range[1],
+    )
+  const roles: Cable['role'][] = ['motor', 'encoder', 'adapter', 'brake']
+  for (const role of roles) {
+    const cable = pick(role)
+    if (!cable) continue
+    const l = cable.fixedLength ?? length
+    const key = lengthKey(l)
+    const standard = cable.partNumbers[key]
+    if (standard || !cable.configurable) {
+      cableChoices.push({
+        role,
+        type: cable.type.replace('{L}', key),
+        partNumber: standard ?? null,
+        length: l,
+        crossSection: cable.crossSection,
+        configurable: false,
+      })
+    } else {
+      cableChoices.push({
+        role,
+        type: cable.configurable.type.replace('{L}', key),
+        partNumber: cable.configurable.partNumber,
+        length: l,
+        crossSection: cable.crossSection,
+        configurable: true,
+      })
+    }
+  }
+  const hasMotorCable = cableChoices.some((c) => c.role === 'motor')
+  if (!hasMotorCable) {
+    checks.push({
+      ...check('모터 케이블 길이', length, null, 'm'),
+      status: 'warn',
+      note: '케이블 선정표 범위를 넘습니다 — 사전 기술 검토 필요',
+    })
+  } else if (controller && length > controller.maxCableLength) {
+    checks.push({
+      ...check('모터 케이블 길이', length, controller.maxCableLength, 'm'),
+      status: 'warn',
+      note: '외부 메인 필터 없이 허용되는 길이를 넘습니다',
+    })
+  } else if (length > 25) {
+    notes.push({ text: '케이블 길이 25 m 초과는 사전 기술 검토를 권장합니다' })
+  }
+  if (cableChoices.some((c) => c.configurable)) notes.push({ text: '표준 길이가 아닌 케이블은 구성형(길이 지정)으로 주문합니다' })
+  if (motor.brake) notes.push({ text: '브레이크 모터는 24 V DC 이상의 로직 전원이 필요합니다' })
+
+  // Regeneration: negative mechanical power at the motor shaft, losses neglected (conservative)
+  let energy = 0
+  let eventEnergy = 0
+  let event = 0
+  let peakRegen = 0
+  for (const s of axisEval.samples) {
+    const power = motorTorque(s) * s.omega * ratio
+    if (power < 0) {
+      event += -power * s.dt
+      energy += -power * s.dt
+      peakRegen = Math.max(peakRegen, -power)
+    } else {
+      eventEnergy = Math.max(eventEnergy, event)
+      event = 0
+    }
+  }
+  eventEnergy = Math.max(eventEnergy, event)
+  const averagePower = energy / axisEval.cycleTime
+  const resistor: ResistorChoice = { required: false, item: null, averagePower, peakPower: peakRegen, eventEnergy }
+  if (controller) {
+    const internal = controller.internalResistor
+    const needed = internal
+      ? averagePower > internal.nominalPower || eventEnergy > internal.pulseEnergy || peakRegen > internal.pulsePower
+      : eventEnergy > ST_REGEN_LIMIT
+    if (internal) {
+      checks.push(
+        check('제동저항 정격 전력 (내장)', averagePower, internal.nominalPower, 'W'),
+        check('제동 에너지 (내장)', eventEnergy, internal.pulseEnergy, 'Ws'),
+      )
+      // the internal resistor only informs here: an external one takes over when it is exceeded
+      for (const c of checks.slice(-2)) if (c.status === 'fail') Object.assign(c, { status: 'ok', note: '외부 제동저항으로 보완' })
+    }
+    if (needed) {
+      const options = controller.brakingResistors
+        .map((m) => data.resistors.find((r) => r.model === m))
+        .filter((r): r is BrakingResistor => !!r)
+      const rating = (r: BrakingResistor) =>
+        controller.resistorVoltage >= 700
+          ? { power: r.nominalPower780, energy: r.pulseEnergy780 }
+          : { power: r.nominalPower380, energy: r.pulseEnergy380 }
+      const item =
+        options.find((r) => (rating(r).power ?? 0) >= averagePower && (rating(r).energy ?? 0) >= eventEnergy) ??
+        options.at(-1) ??
+        null
+      resistor.required = true
+      resistor.item = item
+      if (item) {
+        checks.push(
+          check('외부 제동저항 정격 전력', averagePower, Math.min(rating(item).power ?? 0, controller.externalMaxPower), 'W'),
+          check('외부 제동저항 펄스 에너지', eventEnergy, rating(item).energy, 'Ws'),
+        )
+      } else {
+        checks.push({ ...check('외부 제동저항', averagePower, null, 'W'), status: 'warn', note: '맞는 제동저항 데이터가 없습니다' })
+      }
+      if (!internal) notes.push({ text: 'CMMT-ST는 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다' })
+    }
+  }
+  notes.push({ text: '회생 계산은 모터·드라이브 손실과 DC 링크 흡수를 빼지 않은 보수적인 값입니다' })
+
+  return {
+    controller,
+    preferred,
+    rmsCurrent,
+    peakCurrent,
+    cables: cableChoices,
+    resistor,
+    checks,
+    notes,
+    status: worstStatus(checks),
+  }
+}
+
+/** Folds the drive package verdict into the drive option (used as a selectMotors hook, after attachKit). */
+export function attachController(
+  axisEval: AxisEvaluation,
+  drive: DriveEvaluation,
+  settings: Settings,
+  data: DrivePackageData,
+): DriveEvaluation {
+  const selection = selectController(axisEval, drive, settings, data)
+  if (!selection) return drive
+  return { ...drive, controller: selection, status: worstStatus([{ status: drive.status }, { status: selection.status }]) }
+}
+

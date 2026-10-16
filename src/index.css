@@ -1155,6 +1155,16 @@ th.num {
   font-size: 13px;
 }
 
+/* motor details: Festo drive package (drive, cables, braking resistor) */
+.drive-package {
+  margin: 16px 0;
+}
+
+.drive-package-length {
+  max-width: 220px;
+  margin-bottom: 10px;
+}
+
 /* motor table: the recommended kit's verdict and name */
 .kit-cell {
   display: inline-flex;

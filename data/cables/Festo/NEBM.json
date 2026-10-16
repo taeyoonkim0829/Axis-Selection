@@ -1,0 +1,595 @@
+{
+  "items": [
+    {
+      "id": "C001",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-M23/40",
+        "partNumber": "8190874"
+      },
+      "role": "motor",
+      "controller": "CMMT-AS",
+      "motors": "^EMMT-AS-(40-[SM]|60-[SM]|80-[SM]|100-S)(-|$)",
+      "range": [0, 30],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-M23G15-EH-{L}-Q7N-R3LEG14",
+      "partNumbers": {
+        "5": "5251375",
+        "10": "5251377",
+        "15": "5251378",
+        "20": "5251379",
+        "2.5": "5251374",
+        "7.5": "5251376"
+      }
+    },
+    {
+      "id": "C002",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-M23/40",
+        "partNumber": "8190874"
+      },
+      "role": "motor",
+      "controller": "CMMT-AS",
+      "motors": "^EMMT-AS-(60-L|80-[LH]|100-[MLH]|150-M-HS|150-L-HT)(-|$)",
+      "range": [0, 30],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-M23G15-EH-{L}-Q9N-R3LEG14",
+      "partNumbers": {
+        "5": "5251382",
+        "10": "5251384",
+        "15": "5251385",
+        "20": "5251386",
+        "2.5": "5251381",
+        "7.5": "5251383"
+      }
+    },
+    {
+      "id": "C003",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-M23/40",
+        "partNumber": "8190874"
+      },
+      "role": "motor",
+      "controller": "CMMT-AS",
+      "motors": "^EMMT-AS-(150-M-HV|150-L-HS|190)(-|$)",
+      "range": [0, 30],
+      "code": "Q11",
+      "crossSection": 4,
+      "type": "NEBM-M40G15-EH-{L}-Q11N-R3LEG14",
+      "partNumbers": {
+        "5": "5251396",
+        "10": "5251398",
+        "15": "5251399",
+        "20": "5251400",
+        "2.5": "5251395",
+        "7.5": "5251397"
+      }
+    },
+    {
+      "id": "C004",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-EC-",
+      "range": [0, 25],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+      "partNumbers": {
+        "5": "8234029",
+        "10": "8234031",
+        "2.5": "8234028",
+        "7.5": "8234030"
+      }
+    },
+    {
+      "id": "C005",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": null,
+      "role": "motor",
+      "controller": "CMMT-AS",
+      "motors": "^EMMB-AS-",
+      "range": [0, 25],
+      "code": "Q13",
+      "crossSection": null,
+      "type": "NEBM-H6G4-E-{L}-Q13N-LE4",
+      "partNumbers": {
+        "5": "5219198",
+        "10": "5219200",
+        "15": "8097203",
+        "20": "8097204",
+        "25": "8097205",
+        "2.5": "5219197",
+        "7.5": "5219199"
+      }
+    },
+    {
+      "id": "C006",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": null,
+      "role": "encoder",
+      "controller": "CMMT-AS",
+      "motors": "^EMMB-AS-",
+      "range": [0, 25],
+      "code": "Q14",
+      "crossSection": null,
+      "type": "NEBM-REG6-E-{L}-Q14N-REG6",
+      "partNumbers": {
+        "5": "5219214",
+        "10": "5219216",
+        "15": "8097200",
+        "20": "8097201",
+        "25": "8097202",
+        "2.5": "5219213",
+        "7.5": "5219215"
+      }
+    },
+    {
+      "id": "C007",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": null,
+      "role": "adapter",
+      "controller": "CMMT-AS",
+      "motors": "^EMMB-AS-",
+      "range": [0, 25],
+      "code": null,
+      "crossSection": null,
+      "type": "NEFM-REG6-K-0.5-R3G8",
+      "partNumbers": {
+        "0.5": "8097197"
+      },
+      "fixedLength": 0.5
+    },
+    {
+      "id": "C008",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": true,
+      "configurable": null,
+      "role": "brake",
+      "controller": "CMMT-AS",
+      "motors": "^EMMB-AS-.*-B$",
+      "range": [0, 25],
+      "code": "Q14",
+      "crossSection": null,
+      "type": "NEBM-H7G2-E-{L}-Q14N-LE2",
+      "partNumbers": {
+        "5": "5219206",
+        "10": "5219208",
+        "15": "8097206",
+        "20": "8097207",
+        "25": "8097208",
+        "2.5": "5219205",
+        "7.5": "5219207"
+      }
+    },
+    {
+      "id": "C009",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-M23/40",
+        "partNumber": "8190874"
+      },
+      "role": "motor",
+      "controller": "CMMT-AS",
+      "motors": "^EMMH-AS-",
+      "range": [0, 29.9],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-H17G12-FH-{L}-Q9N-R3LEG14",
+      "partNumbers": {
+        "5": "8226144",
+        "10": "8226145",
+        "2.5": "8226143"
+      }
+    },
+    {
+      "id": "C010",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-42-S(-|$)",
+      "range": [0, 25],
+      "code": "Q6",
+      "crossSection": 0.5,
+      "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+      "partNumbers": {
+        "5": "8181668",
+        "10": "8195457",
+        "2.5": "8181670",
+        "7.5": "8190096"
+      }
+    },
+    {
+      "id": "C011",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-42-L(-|$)",
+      "range": [0, 10],
+      "code": "Q6",
+      "crossSection": 0.5,
+      "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+      "partNumbers": {
+        "5": "8181668",
+        "10": "8195457",
+        "2.5": "8181670",
+        "7.5": "8190096"
+      }
+    },
+    {
+      "id": "C012",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-42-L(-|$)",
+      "range": [10, 25],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+      "partNumbers": {
+        "5": "8195459",
+        "10": "8195461",
+        "2.5": "8195458",
+        "7.5": "8195460"
+      }
+    },
+    {
+      "id": "C013",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-57-",
+      "range": [0, 5],
+      "code": "Q6",
+      "crossSection": 0.5,
+      "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+      "partNumbers": {
+        "5": "8181668",
+        "10": "8195457",
+        "2.5": "8181670",
+        "7.5": "8190096"
+      }
+    },
+    {
+      "id": "C014",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-57-",
+      "range": [5, 10],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+      "partNumbers": {
+        "5": "8195459",
+        "10": "8195461",
+        "2.5": "8195458",
+        "7.5": "8195460"
+      }
+    },
+    {
+      "id": "C015",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-57-",
+      "range": [10, 25],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+      "partNumbers": {
+        "5": "8234029",
+        "10": "8234031",
+        "2.5": "8234028",
+        "7.5": "8234030"
+      }
+    },
+    {
+      "id": "C016",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-87-",
+      "range": [0, 5],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+      "partNumbers": {
+        "5": "8195459",
+        "10": "8195461",
+        "2.5": "8195458",
+        "7.5": "8195460"
+      }
+    },
+    {
+      "id": "C017",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMT-ST-87-",
+      "range": [5, 25],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+      "partNumbers": {
+        "5": "8234029",
+        "10": "8234031",
+        "2.5": "8234028",
+        "7.5": "8234030"
+      }
+    },
+    {
+      "id": "C018",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-42-",
+      "range": [0, 25],
+      "code": "Q6",
+      "crossSection": 0.5,
+      "type": "NEBM-L5G14-EH-{L}-Q6N-LE12",
+      "partNumbers": {
+        "5": "8181664",
+        "10": "8181672",
+        "2.5": "8181675",
+        "7.5": "8181676"
+      }
+    },
+    {
+      "id": "C019",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-57-",
+      "range": [0, 5],
+      "code": "Q6",
+      "crossSection": 0.5,
+      "type": "NEBM-L10G14-EH-{L}-Q6N-LE12",
+      "partNumbers": {
+        "5": "8181667",
+        "10": "8181665",
+        "2.5": "8181677",
+        "7.5": "8181669"
+      }
+    },
+    {
+      "id": "C020",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-57-",
+      "range": [5, 10],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-L10G14-EH-{L}-Q7N-LE12",
+      "partNumbers": {
+        "5": "8181671",
+        "10": "8181673",
+        "2.5": "8181666",
+        "7.5": "8181674"
+      }
+    },
+    {
+      "id": "C021",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-57-",
+      "range": [10, 25],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-LX/M17-",
+      "partNumbers": {}
+    },
+    {
+      "id": "C022",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-87-",
+      "range": [0, 5],
+      "code": "Q7",
+      "crossSection": 0.75,
+      "type": "NEBM-L10G14-EH-{L}-Q7N-LE12",
+      "partNumbers": {
+        "5": "8181671",
+        "10": "8181673",
+        "2.5": "8181666",
+        "7.5": "8181674"
+      }
+    },
+    {
+      "id": "C023",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-LX/M17-",
+        "partNumber": "8181663"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMB-ST-87-",
+      "range": [5, 25],
+      "code": "Q9",
+      "crossSection": 1.5,
+      "type": "NEBM-LX/M17-",
+      "partNumbers": {}
+    },
+    {
+      "id": "C024",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-SM12G8-E-{L}-Q5-LE6",
+        "partNumber": "1449605"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMS-ST-28-",
+      "range": [0, 25],
+      "code": "Q5",
+      "crossSection": null,
+      "type": "NEBM-SM12G8-E-{L}-Q5-LE6",
+      "partNumbers": {
+        "5": "1449602",
+        "7": "1449603",
+        "10": "1449604",
+        "1.5": "1449600",
+        "2.5": "1449601"
+      }
+    },
+    {
+      "id": "C025",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-S1G9-E-{L}-Q5-LE6",
+        "partNumber": "1450373"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMS-ST-(42|57)-",
+      "range": [0, 25],
+      "code": "Q5",
+      "crossSection": null,
+      "type": "NEBM-S1G9-E-{L}-Q5-LE6",
+      "partNumbers": {
+        "5": "1450370",
+        "7": "1450371",
+        "10": "1450372",
+        "1.5": "1450368",
+        "2.5": "1450369"
+      }
+    },
+    {
+      "id": "C026",
+      "maker": "Festo",
+      "family": "NEBM",
+      "brakeOnly": false,
+      "configurable": {
+        "type": "NEBM-S1G15-E-{L}-Q7-LE6",
+        "partNumber": "1450839"
+      },
+      "role": "motor",
+      "controller": "CMMT-ST",
+      "motors": "^EMMS-ST-87-",
+      "range": [0, 25],
+      "code": "Q7",
+      "crossSection": null,
+      "type": "NEBM-S1G15-E-{L}-Q7-LE6",
+      "partNumbers": {
+        "5": "1450836",
+        "7": "1450837",
+        "10": "1450838",
+        "1.5": "1450834",
+        "2.5": "1450835"
+      }
+    }
+  ]
+}

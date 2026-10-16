@@ -1,9 +1,10 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
-import { selectAxes } from './calc/axisSelection'
+import { selectAxes, type AxisEvaluation } from './calc/axisSelection'
+import { attachController } from './calc/controllerSelection'
 import { attachKit, findKits } from './calc/kitSelection'
-import { evaluateDrive, gearboxOptionsFor, selectMotors } from './calc/motorSelection'
+import { evaluateDrive, gearboxOptionsFor, selectMotors, type DriveEvaluation } from './calc/motorSelection'
 import { defaultPress, defaultSettings, verticalForward, type Requirements, type Settings } from './calc/types'
-import { axes, kits, motors } from './data'
+import { axes, brakingResistors, cables, controllers, kits, motors } from './data'
 import { LangProvider, storedLang, storeLang, translate, useT, type Lang } from './i18n'
 import { AxisStep } from './ui/AxisStep'
 import { ErrorBoundary } from './ui/ErrorBoundary'
@@ -88,6 +89,11 @@ function Fallback({ req, settings, setReq, setSettings, lang, setLang, error, re
   )
 }
 
+/** Mounting kit, then Festo drive package: both verdicts fold into the drive option's status. */
+function attachParts(axisEval: AxisEvaluation, drive: DriveEvaluation, settings: Settings) {
+  return attachController(axisEval, attachKit(axisEval, drive, kits, settings), settings, { controllers, resistors: brakingResistors, cables })
+}
+
 function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs) {
   const [axisId, setAxisId] = useState<string | null>(null)
   const [motorId, setMotorId] = useState<string | null>(null)
@@ -105,9 +111,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const selectedAxis = axisResults.find((r) => r.axis.id === axisId) ?? axisResults.find((r) => r.status !== 'fail') ?? null
   const motorResults = useMemo(
     () =>
-      selectedAxis
-        ? selectMotors(selectedAxis, motors, deferredSettings, (d) => attachKit(selectedAxis, d, kits, deferredSettings))
-        : [],
+      selectedAxis ? selectMotors(selectedAxis, motors, deferredSettings, (d) => attachParts(selectedAxis, d, deferredSettings)) : [],
     [selectedAxis, deferredSettings],
   )
   const motorResult = motorResults.find((r) => r.motor.id === motorId) ?? null
@@ -117,7 +121,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const gearboxOptions =
     selectedAxis && selectedMotor
       ? (deferredSettings.useGearbox ? gearboxOptionsFor(selectedMotor) : [null]).map((g) =>
-          attachKit(selectedAxis, evaluateDrive(selectedAxis, selectedMotor, g, deferredSettings), kits, deferredSettings),
+          attachParts(selectedAxis, evaluateDrive(selectedAxis, selectedMotor, g, deferredSettings), deferredSettings),
         )
       : []
   // The user's gearbox pick in step 3, else the one the motor step recommended.

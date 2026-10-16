@@ -7,6 +7,7 @@ import { verticalForward, type Requirements, type Settings, type Status } from '
 import type { KitEvaluation } from '../calc/kitSelection'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, Ratio, StatusBadge } from './common'
+import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
 import { axisDetailChecks, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
@@ -268,6 +269,7 @@ export function Report({ req, settings, axis, drive, gearboxOptions, kitMatch, k
             />
             <h3>{t('검토 항목')}</h3>
             <CheckTable checks={drive.checks} />
+            {drive.controller && <DrivePackage selection={drive.controller} cableLength={settings.cableLength} />}
           </>
         )}
       </Chapter>

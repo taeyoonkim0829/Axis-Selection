@@ -100,6 +100,99 @@ export interface Motor {
   amplifier: string | null
   /** mechanical interface code for mounting kits; brake and non-brake models share it; null when unknown */
   interfaceCode: string | null
+  /** A */
+  nominalCurrent?: number | null
+  peakCurrent?: number | null
+  /** Nm/A */
+  torqueConstant?: number | null
+  // Festo motors with Festo drives (see data/README.md)
+  /** drive range the motor runs on: CMMT-AS-3A (230 V), CMMT-AS-11A (400 V) or CMMT-ST (48 V DC) */
+  controller?: 'CMMT-AS-3A' | 'CMMT-AS-11A' | 'CMMT-ST' | null
+  /** Festo's preferred drive for the motor (EMMT-AS combination table) */
+  preferredController?: string | null
+  /** stepper motor: torque limited by `torqueCurve` */
+  stepper?: boolean
+  /** open-loop stepper (EMMS-ST): no encoder, runs at nominal current */
+  openLoop?: boolean
+  /** [rpm, Nm] max. torque at 48 V DC (steppers) */
+  torqueCurve?: [number, number][] | null
+}
+
+/** Festo servo drive (CMMT-AS, CMMT-ST) */
+export interface Controller {
+  id: string
+  model: string
+  family: 'CMMT-AS' | 'CMMT-ST'
+  maker: string
+  partNumber: string
+  motorType: 'AS' | 'ST'
+  supply: string
+  /** '3A' (1-phase 230 V), '11A' (3-phase 400 V), 'ST' (24/48 V DC) */
+  voltageClass: '3A' | '11A' | 'ST'
+  /** A rms per phase */
+  nominalCurrent: number
+  peakCurrent: number
+  /** s, max. time at peak current */
+  peakDuration: number
+  /** W */
+  nominalPower: number
+  peakPower: number
+  /** m, without external mains filter */
+  maxCableLength: number
+  /** integrated braking resistor: Ω, W (pulse), Ws, W (nominal); null = none */
+  internalResistor: { resistance: number; pulsePower: number; pulseEnergy: number; nominalPower: number } | null
+  /** Ω [min, max] for an external braking resistor */
+  externalResistance: [number, number]
+  /** W, max. continuous power of an external braking resistor */
+  externalMaxPower: number
+  /** V, intermediate circuit level the resistor ratings are given for (380 or 780) */
+  resistorVoltage: number
+  /** matching CACR braking resistors (model names) */
+  brakingResistors: string[]
+}
+
+export interface BrakingResistor {
+  id: string
+  model: string
+  family: string
+  maker: string
+  partNumber: string
+  resistance: number
+  /** W at 35% duty cycle */
+  power35: number | null
+  ratedPower: number | null
+  /** Ws / W at 380 V and 780 V intermediate circuit */
+  pulseEnergy380: number | null
+  nominalPower380: number | null
+  pulseEnergy780: number | null
+  nominalPower780: number | null
+}
+
+/** One cable option: a role for a group of motors on a drive range, for a span of cable lengths */
+export interface Cable {
+  id: string
+  maker: string
+  family: string
+  role: 'motor' | 'encoder' | 'adapter' | 'brake'
+  /** CMMT-AS or CMMT-ST */
+  controller: 'CMMT-AS' | 'CMMT-ST'
+  /** regular expression on the motor model */
+  motors: string
+  /** only for motors with brake */
+  brakeOnly: boolean
+  /** m, (min, max] cable lengths this option covers */
+  range: [number, number]
+  /** cross-section code (Q7 …) and mm² */
+  code: string | null
+  crossSection: number | null
+  /** type with {L} for the length in m */
+  type: string
+  /** part number per standard length (m as key) */
+  partNumbers: Record<string, string>
+  /** configurable version for other lengths ({L} in the type when the length is part of it) */
+  configurable: { type: string; partNumber: string } | null
+  /** m, fixed length part (adapters) */
+  fixedLength?: number
 }
 
 export interface Gearbox {

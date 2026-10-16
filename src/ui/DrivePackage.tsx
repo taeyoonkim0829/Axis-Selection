@@ -1,0 +1,100 @@
+import type { CableChoice, ControllerSelection } from '../calc/controllerSelection'
+import { useT } from '../i18n'
+import { CheckTable, NumberField } from './common'
+import { fmt } from './format'
+import { KitNotes } from './KitStep'
+
+const roleLabel: Record<CableChoice['role'], string> = {
+  motor: '모터 케이블',
+  encoder: '엔코더 케이블',
+  adapter: '엔코더 어댑터',
+  brake: '브레이크 케이블',
+}
+
+/** Festo drive package of the selected motor: servo drive, cables and braking resistor, with their checks. */
+export function DrivePackage({
+  selection,
+  cableLength,
+  onCableLength,
+}: {
+  selection: ControllerSelection
+  cableLength: number
+  /** omitted in the report */
+  onCableLength?: (length: number) => void
+}) {
+  const t = useT()
+  const { controller, preferred, cables, resistor } = selection
+  return (
+    <div className="drive-package">
+      <h4>{t('드라이브 · 케이블 · 제동저항')}</h4>
+      {onCableLength && (
+        <div className="drive-package-length">
+          <NumberField label={t('모터 케이블 길이')} unit="m" value={cableLength} min={0.5} step={0.5} onChange={onCableLength} />
+        </div>
+      )}
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>{t('구분')}</th>
+              <th>{t('형식')}</th>
+              <th>{t('주문번호')}</th>
+              <th>{t('비고')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{t('서보 드라이브')}</td>
+              <td className="model">{controller?.model ?? '—'}</td>
+              <td>{controller?.partNumber ?? '—'}</td>
+              <td className="muted">
+                {controller &&
+                  t('{supply} · 정격 {nominal} A / 최대 {peak} A', {
+                    supply: controller.supply,
+                    nominal: fmt(controller.nominalCurrent, 1),
+                    peak: fmt(controller.peakCurrent, 1),
+                  })}
+                {preferred && ` · ${t('Festo 추천 조합: {model}', { model: preferred.model })}`}
+              </td>
+            </tr>
+            {cables.map((c) => (
+              <tr key={c.role}>
+                <td>{t(roleLabel[c.role])}</td>
+                <td className="model">{c.type}</td>
+                <td>{c.partNumber ?? '—'}</td>
+                <td className="muted">
+                  {[
+                    c.crossSection != null ? `${fmt(c.crossSection, 2)} mm²` : null,
+                    `${fmt(c.length, 1)} m`,
+                    c.configurable ? t('구성형') : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>{t('제동저항')}</td>
+              <td className="model">
+                {resistor.required ? (resistor.item?.model ?? '—') : t(controller?.internalResistor ? '내장 제동저항' : '불필요')}
+              </td>
+              <td>{resistor.required ? (resistor.item?.partNumber ?? '—') : '—'}</td>
+              <td className="muted">
+                {t('회생 평균 {avg} W · 최대 {peak} W · 1회 {energy} Ws', {
+                  avg: fmt(resistor.averagePower, 1),
+                  peak: fmt(resistor.peakPower, 0),
+                  energy: fmt(resistor.eventEnergy, 1),
+                })}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="muted small-print">
+        {t('필요 전류: 실효 {rms} A · 최대 {peak} A', { rms: fmt(selection.rmsCurrent, 2), peak: fmt(selection.peakCurrent, 2) })}
+      </p>
+      <CheckTable checks={selection.checks} />
+      {selection.notes.length > 0 && <KitNotes notes={selection.notes} />}
+    </div>
+  )
+}

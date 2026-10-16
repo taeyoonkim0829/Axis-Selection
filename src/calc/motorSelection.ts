@@ -1,7 +1,8 @@
 // Motor (+ optional gearbox) sizing against an evaluated axis.
 import { gearboxesFor } from '../data'
 import type { Gearbox, Motor } from '../data/types'
-import type { AxisEvaluation, AxisSample } from './axisSelection'
+import { curveAt, type AxisEvaluation, type AxisSample } from './axisSelection'
+import type { ControllerSelection } from './controllerSelection'
 import type { KitEvaluation } from './kitSelection'
 import { check, worstStatus, type Check, type Settings, type Status } from './types'
 
@@ -22,6 +23,8 @@ export interface DriveEvaluation {
   kit?: KitEvaluation | null
   /** The drive's own verdict, before the kit is taken into account (`status` then includes the kit) */
   driveStatus?: Status
+  /** Festo motors: drive (CMMT), cables and braking resistor, set by `attachController`; its verdict is in `status` */
+  controller?: ControllerSelection | null
 }
 
 type ShaftState = Pick<AxisSample, 'omega' | 'alpha' | 'torque' | 'dir'>
@@ -39,6 +42,9 @@ export function motorTorqueFn(axisEval: AxisEvaluation, motor: Motor, gearbox: G
     return motorLoadTorque + motorSideInertia * s.alpha * ratio
   }
 }
+
+/** Open-loop steppers (no encoder) lose steps when overloaded: the curve is divided by this safety factor. */
+export const OPEN_LOOP_SAFETY = 1.5
 
 export function evaluateDrive(
   axisEval: AxisEvaluation,
@@ -60,9 +66,22 @@ export function evaluateDrive(
   let pressOverTime = 0
   let pressing = false
   const negativeEnergy = [0, 0]
+  // Steppers: the torque available falls with speed (data sheet curve at 48 V)
+  const curve = motor.torqueCurve
+  let curveRatio = 0
+  let curveAt_: [number, number, number] = [0, 0, 0] // torque, limit, rpm at the tightest sample
   for (const s of axisEval.samples) {
     const torque = motorTorque(s)
     peak = Math.max(peak, Math.abs(torque))
+    if (curve) {
+      const rpm = (Math.abs(s.omega) * ratio * 60) / (2 * Math.PI)
+      const limit = curveAt(curve, rpm) / (motor.openLoop ? OPEN_LOOP_SAFETY : 1)
+      const r = limit > 0 ? Math.abs(torque) / limit : Infinity
+      if (r > curveRatio) {
+        curveRatio = r
+        curveAt_ = [Math.abs(torque), limit, rpm]
+      }
+    }
     if (s.dir !== 0 && Math.abs(s.a) < 1e-9 && s.load > 0) {
       pressing = true
       pressPeak = Math.max(pressPeak, Math.abs(torque))
@@ -99,6 +118,15 @@ export function evaluateDrive(
     check('최대 회전수', maxMotorSpeed, motor.maxSpeed ?? motor.ratedSpeed, 'rpm'),
   ]
   checks.push(check('관성비', inertiaRatio, motor.allowableInertiaRatio ?? settings.defaultInertiaRatio, '배'))
+  if (curve) {
+    checks.push({
+      ...check('토크-회전수 선도', curveAt_[0], curveAt_[1], 'Nm'),
+      note: motor.openLoop
+        ? '{rpm} rpm, 48 V 선도 ÷ 안전율 {sf} (오픈루프: 탈조 방지, 선도 공차 ±20%)'
+        : '{rpm} rpm, 48 V 선도 (최대 토크)',
+      noteArgs: { rpm: Math.round(curveAt_[2]), sf: OPEN_LOOP_SAFETY },
+    })
+  }
 
   let regenPower: number | null = null
   if (motor.reverseEfficiency != null) {

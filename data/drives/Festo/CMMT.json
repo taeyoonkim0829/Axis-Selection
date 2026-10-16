@@ -1,0 +1,288 @@
+{
+  "items": [
+    {
+      "id": "CMMT-AS-C2-3A-MP-S1",
+      "model": "CMMT-AS-C2-3A-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143163",
+      "motorType": "AS",
+      "supply": "1~ 230 V AC",
+      "voltageClass": "3A",
+      "nominalCurrent": 2,
+      "peakCurrent": 6,
+      "peakDuration": 2,
+      "nominalPower": 350,
+      "peakPower": 1000,
+      "maxCableLength": 25,
+      "internalResistor": {
+        "resistance": 100,
+        "pulsePower": 1600,
+        "pulseEnergy": 230,
+        "nominalPower": 23
+      },
+      "externalResistance": [100, 160],
+      "externalMaxPower": 180,
+      "resistorVoltage": 380,
+      "brakingResistors": [
+        "CACR-LE2-100-W500",
+        "CACR-KL2-100-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C4-3A-MP-S1",
+      "model": "CMMT-AS-C4-3A-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143164",
+      "motorType": "AS",
+      "supply": "1~ 230 V AC",
+      "voltageClass": "3A",
+      "nominalCurrent": 4,
+      "peakCurrent": 12,
+      "peakDuration": 2,
+      "nominalPower": 700,
+      "peakPower": 2000,
+      "maxCableLength": 25,
+      "internalResistor": {
+        "resistance": 100,
+        "pulsePower": 1600,
+        "pulseEnergy": 230,
+        "nominalPower": 23
+      },
+      "externalResistance": [67, 100],
+      "externalMaxPower": 350,
+      "resistorVoltage": 380,
+      "brakingResistors": [
+        "CACR-LE2-72-W500",
+        "CACR-LE2-100-W500",
+        "CACR-KL2-67-W1800",
+        "CACR-KL2-100-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C2-11A-P3-MP-S1",
+      "model": "CMMT-AS-C2-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143165",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 1.7,
+      "peakCurrent": 5.1,
+      "peakDuration": 2,
+      "nominalPower": 800,
+      "peakPower": 2400,
+      "maxCableLength": 50,
+      "internalResistor": {
+        "resistance": 130,
+        "pulsePower": 5000,
+        "pulseEnergy": 850,
+        "nominalPower": 48
+      },
+      "externalResistance": [130, 250],
+      "externalMaxPower": 400,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-LE2-240-W500",
+        "CACR-KL2-240-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C3-11A-P3-MP-S1",
+      "model": "CMMT-AS-C3-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143166",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 2.5,
+      "peakCurrent": 7.5,
+      "peakDuration": 2,
+      "nominalPower": 1200,
+      "peakPower": 3600,
+      "maxCableLength": 50,
+      "internalResistor": {
+        "resistance": 130,
+        "pulsePower": 5000,
+        "pulseEnergy": 850,
+        "nominalPower": 48
+      },
+      "externalResistance": [130, 250],
+      "externalMaxPower": 600,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-LE2-240-W500",
+        "CACR-KL2-240-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C5-11A-P3-MP-S1",
+      "model": "CMMT-AS-C5-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143167",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 5,
+      "peakCurrent": 15,
+      "peakDuration": 2,
+      "nominalPower": 2500,
+      "peakPower": 7500,
+      "maxCableLength": 50,
+      "internalResistor": {
+        "resistance": 130,
+        "pulsePower": 5000,
+        "pulseEnergy": 850,
+        "nominalPower": 58
+      },
+      "externalResistance": [80, 130],
+      "externalMaxPower": 1200,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-LE2-100-W500",
+        "CACR-KL2-100-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C7-11A-P3-MP-S1",
+      "model": "CMMT-AS-C7-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143168",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 7,
+      "peakCurrent": 21,
+      "peakDuration": 2,
+      "nominalPower": 4000,
+      "peakPower": 12000,
+      "maxCableLength": 25,
+      "internalResistor": {
+        "resistance": 47,
+        "pulsePower": 13600,
+        "pulseEnergy": 1200,
+        "nominalPower": 100
+      },
+      "externalResistance": [60, 85],
+      "externalMaxPower": 1500,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-LE2-72-W500",
+        "CACR-KL2-67-W1800"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C12-11A-P3-MP-S1",
+      "model": "CMMT-AS-C12-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8143169",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 12,
+      "peakCurrent": 36,
+      "peakDuration": 2,
+      "nominalPower": 6000,
+      "peakPower": 18000,
+      "maxCableLength": 25,
+      "internalResistor": {
+        "resistance": 47,
+        "pulsePower": 13600,
+        "pulseEnergy": 1200,
+        "nominalPower": 100
+      },
+      "externalResistance": [40, 60],
+      "externalMaxPower": 3000,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-LE2-50-W500",
+        "CACR-KL2-40-W2000"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C18-11A-P3-MP-S1",
+      "model": "CMMT-AS-C18-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8157801",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 18,
+      "peakCurrent": 54,
+      "peakDuration": 2,
+      "nominalPower": 9000,
+      "peakPower": 27000,
+      "maxCableLength": 50,
+      "internalResistor": {
+        "resistance": 24,
+        "pulsePower": 24000,
+        "pulseEnergy": 1200,
+        "nominalPower": 100
+      },
+      "externalResistance": [30, 40],
+      "externalMaxPower": 4500,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-KL2-40-W2000"
+      ]
+    },
+    {
+      "id": "CMMT-AS-C25-11A-P3-MP-S1",
+      "model": "CMMT-AS-C25-11A-P3-MP-S1",
+      "family": "CMMT-AS",
+      "maker": "Festo",
+      "partNumber": "8157802",
+      "motorType": "AS",
+      "supply": "3~ 400 V AC",
+      "voltageClass": "11A",
+      "nominalCurrent": 25,
+      "peakCurrent": 75,
+      "peakDuration": 2,
+      "nominalPower": 12000,
+      "peakPower": 36000,
+      "maxCableLength": 50,
+      "internalResistor": {
+        "resistance": 24,
+        "pulsePower": 24000,
+        "pulseEnergy": 1200,
+        "nominalPower": 100
+      },
+      "externalResistance": [20, 30],
+      "externalMaxPower": 5000,
+      "resistorVoltage": 780,
+      "brakingResistors": [
+        "CACR-KL2-21-W3600"
+      ]
+    },
+    {
+      "id": "CMMT-ST-C8-1C-MP-S0",
+      "model": "CMMT-ST-C8-1C-MP-S0",
+      "family": "CMMT-ST",
+      "maker": "Festo",
+      "partNumber": "8163946",
+      "motorType": "ST",
+      "supply": "24/48 V DC",
+      "voltageClass": "ST",
+      "nominalCurrent": 8,
+      "peakCurrent": 20,
+      "peakDuration": 3,
+      "nominalPower": 300,
+      "peakPower": 800,
+      "maxCableLength": 25,
+      "internalResistor": null,
+      "externalResistance": [6, 6],
+      "externalMaxPower": 490,
+      "resistorVoltage": 48,
+      "brakingResistors": [
+        "CACR-LE2-6-W60-V"
+      ]
+    }
+  ]
+}

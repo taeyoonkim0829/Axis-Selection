@@ -6,6 +6,7 @@ import type { MotorMaker } from '../data/types'
 import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
+import { DrivePackage } from './DrivePackage'
 import { fmt, statusLabel } from './format'
 
 interface Props {
@@ -44,6 +45,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
     speed: (d) => d.maxMotorSpeed / d.motor.ratedSpeed,
     inertia: (d) => d.checks.find((c) => c.label === '관성비')?.ratio ?? null,
     kit: (d) => (d.kit ? statusRank[d.kit.status] : 3),
+    controller: (d) => d.controller?.controller?.nominalCurrent ?? null,
   })
   const th = { sort, onSort: toggle }
   const rows = listed.slice(0, ROW_LIMIT)
@@ -145,6 +147,9 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                 <SortTh id="kit" {...th}>
                   {t('연결키트')}
                 </SortTh>
+                <SortTh id="controller" {...th}>
+                  {t('드라이브')}
+                </SortTh>
               </tr>
             </thead>
             <tbody>
@@ -185,6 +190,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                     <td>
                       <KitCell drive={d} />
                     </td>
+                    <td className="model muted">{d.controller?.controller?.model.replace(/-MP-S\d$/, '') ?? '—'}</td>
                   </tr>
                 )
               })}
@@ -212,6 +218,13 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
                     })
                   : t('맞는 연결키트가 없어 주의로 판정합니다.')}
               </p>
+              {selected.controller && (
+                <DrivePackage
+                  selection={selected.controller}
+                  cableLength={settings.cableLength}
+                  onCableLength={(cableLength) => onSettings({ ...settings, cableLength })}
+                />
+              )}
               <dl className="info">
                 <div>
                   <dt>{t('시리즈')}</dt>

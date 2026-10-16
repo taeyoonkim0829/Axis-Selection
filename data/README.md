@@ -3,7 +3,7 @@
 The app reads every JSON file in this folder at build time, except discontinued families excluded in `src/data/index.ts` (Mitsubishi `HF-KP`/`HF-SP`, Apex `PA`); those files are kept for reference. These files are the source of truth: edit them directly.
 
 ```
-data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits
+data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits | drives | brakingResistors | cables
 ```
 
 Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up automatically (restart `npm run dev`). Every item needs a unique `id`, and `family` should match its file name. Missing values are `null`. The TypeScript shapes are in `src/data/types.ts`, and `npm test` loads the real data.
@@ -49,7 +49,7 @@ ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide): b
 
 | Field | Unit / meaning |
 |---|---|
-| `family` | model prefix: `EMMT`, `1FK2`, `HK-KT` |
+| `family` | product family: Festo series (`EMMT-AS`, `EMMT-ST` …), Siemens `1FK2`, Mitsubishi `HK-KT` |
 | `brake` | brake model |
 | `nominalCurrent`, `peakCurrent` | A |
 | `ratedPower` | W |
@@ -64,6 +64,37 @@ ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide): b
 | `allowableInertiaRatio` | load/rotor inertia ratio |
 | `capacitorEnergy` / `regenPower` | J / W |
 | `interfaceCode` | mounting kit code, e.g. `60PA`. Brake and non-brake models share it |
+| `controller` | Festo: drive range the motor runs on, `CMMT-AS-3A` (1-phase 230 V: EMMT-AS LS, EMMB-AS), `CMMT-AS-11A` (3-phase 400 V: EMMT-AS HS/HV/HT, EMMH-AS) or `CMMT-ST` (48 V DC: EMMT-EC, steppers). `null`/absent for other makers |
+| `preferredController` | EMMT-AS: Festo's preferred drive from "Servo motors EMMT-AS and motor controllers CMMT-AS" (2023/02); `null` where that table has no row |
+| `winding` | Festo servo winding code (`LS`, `HS`, `HV`, `HT`, `ES`) |
+| `stepper` / `openLoop` | stepper motor / open-loop stepper (EMMS-ST, no encoder: runs at nominal current) |
+| `torqueCurve` | steppers: `[rpm, Nm]` max. torque at 48 V DC, read from the vector paths of the data sheet curves "Torque M as a function of rotational speed n" (EMMT-ST p.11–13: envelope of peak torque [2] and field-weakened peak torque [4]; EMMB-ST p.10–12, same curves; EMMS-ST p.7–8, log speed axis, 48 V curve), thinned to points within 0.4 % of the plateau |
+
+Festo motors (`motors/Festo/`) come from the Festo data sheets in `Drive & Motor` (2025–2026), "General technical data" and brake tables, one item per size, length, winding and brake: EMMT-AS/EC (`EMMT.json`, rebuilt from the 2026/09 data sheet: EMMT-AS-80 inertia and the HS max. speeds were outdated), EMMB-AS, EMMH-AS (`<size>-<M|H>-HS`), EMMT-ST and EMMB-ST (closed loop: the encoder versions, which carry a nominal torque; inertia of the single-turn encoder version), EMMS-ST (open loop; `ratedTorque` = `peakTorque` = holding torque, `ratedSpeed` = max. speed, the curve limits the torque). `interfaceCode` comes from the EAMM-A interface overview (EMMH-AS `68C`…`138C`, EMMT-ST/EMMB-ST `42A`/`57A`/`87A`, EMMS-ST-28 `28A`; EMMS-ST-42/57/87 are not listed there, so `null`). `allowableInertiaRatio` 15 is the Excel value kept for EMMT and EMMB-AS; the new families leave it `null` (the setting's default applies). EMCA, EMME-AS and EMMS-AS were removed (no data sheet).
+
+## Drives (`drives/Festo/CMMT.json`)
+
+Festo servo drives CMMT-AS (documentation 2026/04: electrical data p.6–7, ordering p.15, braking resistors p.17–18; standard safety `-S1`) and CMMT-ST (2026/02, p.6, 10–11).
+
+| Field | Unit / meaning |
+|---|---|
+| `voltageClass` | `3A` (1-phase 230 V AC), `11A` (3-phase 400 V AC) or `ST` (24/48 V DC) |
+| `nominalCurrent` / `peakCurrent` | A rms per phase |
+| `peakDuration` | s, max. time at peak current (2 s CMMT-AS, 3 s CMMT-ST) |
+| `nominalPower` / `peakPower` | W |
+| `maxCableLength` | m, motor cable without external mains filter |
+| `internalResistor` | integrated braking resistor: `resistance` Ω, `pulsePower` W, `pulseEnergy` Ws, `nominalPower` W; `null` for CMMT-ST |
+| `externalResistance` / `externalMaxPower` | Ω [min, max] / W max. continuous power of an external resistor |
+| `resistorVoltage` | V, intermediate circuit the CACR ratings are read at (380 for 230 V drives, 780 for 400 V, 48 for CMMT-ST) |
+| `brakingResistors` | matching CACR models (CMMT-AS p.17–18; CMMT-ST p.11) |
+
+## Braking resistors (`brakingResistors/Festo/CACR.json`)
+
+CACR documentation 2023/10 (p.3, 8): `resistance` Ω, `power35` W at 35 % duty cycle, `ratedPower` W, `pulseEnergy380`/`nominalPower380` and `pulseEnergy780`/`nominalPower780` (Ws / W at 380 V and 780 V). CACR-KL2-21-W3600 (for C25-11A) comes from the CMMT-AS accessories table and has the 780 V values only.
+
+## Cables (`cables/Festo/NEBM.json`)
+
+One item per cable option: a `role` (`motor`, `encoder`, `adapter`, `brake`) for the motors matching `motors` (regular expression on the model) on a drive range (`controller`), for cable lengths in `range` (m, (min, max]). `code`/`crossSection` is the cross-section (Q7 = 0.75 mm² …), `type` has `{L}` for the length, `partNumbers` lists the standard lengths, `configurable` is the cable for other lengths (NEBM-M23/40, NEBM-LX/M17, or an X-length type with `{L}`). `brakeOnly` items go only with brake motors; `fixedLength` marks a fixed-length part (EMMB-AS encoder adapter). Sources: the motor data sheets' accessories and "Recommended cable cross-section as a function of cable length" tables (EMMT-AS p.53–55, read up to 30 m: longer cables need technical clarification; EMMT-ST p.17–18; EMMB-ST p.15–16; EMMB-AS p.11–12; EMMH-AS p.19; EMMS-ST p.13–14, straight plug).
 
 ## Gearboxes (`gearboxes/<maker>/<family>.json`)
 

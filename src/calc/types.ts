@@ -84,6 +84,8 @@ export interface Settings {
   useGearbox: boolean
   /** Constant-velocity torque above the rated torque fails instead of warning */
   conservative: boolean
+  /** m, motor cable length for the cable selection (Festo drives) */
+  cableLength: number
 }
 
 export const defaultSettings: Settings = {
@@ -104,6 +106,7 @@ export const defaultSettings: Settings = {
   externalGuide: false,
   useGearbox: false,
   conservative: false,
+  cableLength: 5,
 }
 
 export type Status = 'ok' | 'warn' | 'fail'
