@@ -189,8 +189,21 @@ export interface Cable {
   type: string
   /** part number per standard length (m as key) */
   partNumbers: Record<string, string>
-  /** configurable version for other lengths ({L} in the type when the length is part of it) */
-  configurable: { type: string; partNumber: string } | null
+  /**
+   * other lengths: `variable` = a part number of its own for any length (M23/M40, Sub-D), `modular` = configured in
+   * the modular product system and ordered by its module number (`module`, e.g. NEBM-LX/M17); the type gets the length.
+   * null = standard lengths only (the next longer one is ordered).
+   */
+  configurable: {
+    kind: 'variable' | 'modular'
+    type: string
+    partNumber: string
+    module?: string
+    /** m: length increment and range */
+    step: number
+    min: number
+    max: number
+  } | null
   /** m, fixed length part (adapters) */
   fixedLength?: number
 }

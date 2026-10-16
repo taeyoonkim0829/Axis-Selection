@@ -6,8 +6,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-M23/40",
-        "partNumber": "8190874"
+        "kind": "variable",
+        "type": "NEBM-M23G15-EH-{L}-Q7N-R3LEG14",
+        "partNumber": "5251373",
+        "step": 0.1,
+        "min": 0.5,
+        "max": 100
       },
       "role": "motor",
       "controller": "CMMT-AS",
@@ -31,8 +35,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-M23/40",
-        "partNumber": "8190874"
+        "kind": "variable",
+        "type": "NEBM-M23G15-EH-{L}-Q9N-R3LEG14",
+        "partNumber": "5251380",
+        "step": 0.1,
+        "min": 0.5,
+        "max": 100
       },
       "role": "motor",
       "controller": "CMMT-AS",
@@ -56,8 +64,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-M23/40",
-        "partNumber": "8190874"
+        "kind": "variable",
+        "type": "NEBM-M40G15-EH-{L}-Q11N-R3LEG14",
+        "partNumber": "5251394",
+        "step": 0.1,
+        "min": 0.5,
+        "max": 100
       },
       "role": "motor",
       "controller": "CMMT-AS",
@@ -81,8 +93,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -191,8 +208,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-M23/40",
-        "partNumber": "8190874"
+        "kind": "modular",
+        "type": "NEBM-H17G12-FH-{L}-Q9N-R3LEG14",
+        "partNumber": "8190874",
+        "module": "NEBM-M23/40",
+        "step": 0.1,
+        "min": 0.5,
+        "max": 29.9
       },
       "role": "motor",
       "controller": "CMMT-AS",
@@ -213,8 +235,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -236,8 +263,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -259,8 +291,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -282,8 +319,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q6N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -305,8 +347,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -328,8 +375,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -351,8 +403,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q7N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -374,8 +431,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-M17G12-EH-{L}-Q9N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -397,8 +459,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L5G14-EH-{L}-Q6N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -420,8 +487,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L10G14-EH-{L}-Q6N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -443,8 +515,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L10G14-EH-{L}-Q7N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -466,8 +543,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L10G14-EH-{L}-Q9N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -475,7 +557,7 @@
       "range": [10, 25],
       "code": "Q9",
       "crossSection": 1.5,
-      "type": "NEBM-LX/M17-",
+      "type": "NEBM-L10G14-EH-{L}-Q9N-LE12",
       "partNumbers": {}
     },
     {
@@ -484,8 +566,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L10G14-EH-{L}-Q7N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -507,8 +594,13 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
-        "type": "NEBM-LX/M17-",
-        "partNumber": "8181663"
+        "kind": "modular",
+        "type": "NEBM-L10G14-EH-{L}-Q9N-LE12",
+        "partNumber": "8181663",
+        "module": "NEBM-LX/M17",
+        "step": 0.5,
+        "min": 0.5,
+        "max": 20
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -516,7 +608,7 @@
       "range": [5, 25],
       "code": "Q9",
       "crossSection": 1.5,
-      "type": "NEBM-LX/M17-",
+      "type": "NEBM-L10G14-EH-{L}-Q9N-LE12",
       "partNumbers": {}
     },
     {
@@ -525,8 +617,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
+        "kind": "variable",
         "type": "NEBM-SM12G8-E-{L}-Q5-LE6",
-        "partNumber": "1449605"
+        "partNumber": "1449605",
+        "step": 0.1,
+        "min": 1,
+        "max": 25
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -539,6 +635,9 @@
         "5": "1449602",
         "7": "1449603",
         "10": "1449604",
+        "15": "5105618",
+        "20": "5105619",
+        "25": "5105620",
         "1.5": "1449600",
         "2.5": "1449601"
       }
@@ -549,8 +648,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
+        "kind": "variable",
         "type": "NEBM-S1G9-E-{L}-Q5-LE6",
-        "partNumber": "1450373"
+        "partNumber": "1450373",
+        "step": 0.1,
+        "min": 1,
+        "max": 25
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -563,6 +666,9 @@
         "5": "1450370",
         "7": "1450371",
         "10": "1450372",
+        "15": "5085055",
+        "20": "5085056",
+        "25": "5085057",
         "1.5": "1450368",
         "2.5": "1450369"
       }
@@ -573,8 +679,12 @@
       "family": "NEBM",
       "brakeOnly": false,
       "configurable": {
+        "kind": "variable",
         "type": "NEBM-S1G15-E-{L}-Q7-LE6",
-        "partNumber": "1450839"
+        "partNumber": "1450839",
+        "step": 0.1,
+        "min": 1,
+        "max": 25
       },
       "role": "motor",
       "controller": "CMMT-ST",
@@ -587,6 +697,9 @@
         "5": "1450836",
         "7": "1450837",
         "10": "1450838",
+        "15": "5085058",
+        "20": "5085059",
+        "25": "5085060",
         "1.5": "1450834",
         "2.5": "1450835"
       }

@@ -28,15 +28,31 @@ describe('selectController', () => {
 
   it('selects the motor cable by length and cross-section', () => {
     const at = (motor: string, cableLength: number) => run('ELGD-BS-KF-60-…10P', motor, {}, { cableLength }).selection.cables
-    expect(at('EMMT-AS-60-M-HS', 5)[0]).toMatchObject({ type: 'NEBM-M23G15-EH-5-Q7N-R3LEG14', partNumber: '5251375', configurable: false })
-    // no standard length: configurable cable
-    expect(at('EMMT-AS-60-M-HS', 12)[0]).toMatchObject({ type: 'NEBM-M23/40', partNumber: '8190874', configurable: true })
+    expect(at('EMMT-AS-60-M-HS', 5)[0]).toMatchObject({ type: 'NEBM-M23G15-EH-5-Q7N-R3LEG14', partNumber: '5251375', order: 'standard' })
     // EMMT-ST-57: 0.5 mm² up to 5 m, 0.75 mm² up to 10 m
     expect(at('EMMT-ST-57-M', 5)[0].type).toBe('NEBM-M17G12-EH-5-Q6N-LE12')
     expect(at('EMMT-ST-57-M', 7.5)[0].type).toBe('NEBM-M17G12-EH-7.5-Q7N-LE12')
     // EMMB-AS: motor, encoder, encoder adapter and, with brake, the brake cable
     expect(at('EMMB-AS-60-04-B', 5).map((c) => c.role)).toEqual(['motor', 'encoder', 'adapter', 'brake'])
     expect(at('EMMB-AS-60-04', 5).map((c) => c.role)).toEqual(['motor', 'encoder', 'adapter'])
+  })
+
+  it('completes type and part number for lengths without a standard cable (NEBM documentation)', () => {
+    const motorCable = (motor: string, cableLength: number) =>
+      run('ELGD-BS-KF-60-…10P', motor, {}, { cableLength }).selection.cables.find((c) => c.role === 'motor')!
+    // M23: a variable-length part number per cross-section
+    expect(motorCable('EMMT-AS-60-M-HS', 6)).toMatchObject({ type: 'NEBM-M23G15-EH-6-Q7N-R3LEG14', partNumber: '5251373', order: 'variable' })
+    expect(motorCable('EMMT-AS-60-L-HS', 12.34)).toMatchObject({ type: 'NEBM-M23G15-EH-12.4-Q9N-R3LEG14', partNumber: '5251380', length: 12.4 })
+    // M17 / L10: modular product system NEBM-LX/M17, 0.5 m increments
+    expect(motorCable('EMMT-ST-57-M', 6)).toMatchObject({ type: 'NEBM-M17G12-EH-6-Q7N-LE12', partNumber: '8181663', order: 'modular', module: 'NEBM-LX/M17' })
+    expect(motorCable('EMMT-ST-57-M', 6.2).type).toBe('NEBM-M17G12-EH-6.5-Q7N-LE12')
+    expect(motorCable('EMMB-ST-57-M', 12).type).toBe('NEBM-L10G14-EH-12-Q9N-LE12')
+    // Sub-D: variable length 1 ... 25 m
+    expect(motorCable('EMMS-ST-57-M', 6)).toMatchObject({ type: 'NEBM-S1G9-E-6-Q5-LE6', partNumber: '1450373' })
+    // EMMB-AS cables come in standard lengths only: the next longer one
+    const emmb = run('ELGD-BS-KF-60-…10P', 'EMMB-AS-60-04', {}, { cableLength: 6 }).selection.cables
+    expect(emmb.find((c) => c.role === 'motor')).toMatchObject({ type: 'NEBM-H6G4-E-7.5-Q13N-LE4', partNumber: '5219199', order: 'rounded' })
+    expect(emmb.find((c) => c.role === 'adapter')!.type).toBe('NEFM-REG6-K-0.5-R3G8')
   })
 
   it('warns beyond the cable selection table', () => {

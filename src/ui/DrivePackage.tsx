@@ -11,6 +11,12 @@ const roleLabel: Record<CableChoice['role'], string> = {
   brake: '브레이크 케이블',
 }
 
+const orderLabel: Record<Exclude<CableChoice['order'], 'standard'>, string> = {
+  variable: '가변 길이',
+  modular: '모듈러 ({module})',
+  rounded: '표준 길이로 올림',
+}
+
 /** Festo drive package of the selected motor: servo drive, cables and braking resistor, with their checks. */
 export function DrivePackage({
   selection,
@@ -66,7 +72,7 @@ export function DrivePackage({
                   {[
                     c.crossSection != null ? `${fmt(c.crossSection, 2)} mm²` : null,
                     `${fmt(c.length, 1)} m`,
-                    c.configurable ? t('구성형') : null,
+                    c.order === 'standard' ? null : t(orderLabel[c.order], { module: c.module ?? '' }),
                   ]
                     .filter(Boolean)
                     .join(' · ')}

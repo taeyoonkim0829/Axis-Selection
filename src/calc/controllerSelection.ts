@@ -12,8 +12,11 @@ export interface CableChoice {
   /** m */
   length: number
   crossSection: number | null
-  /** ordered as a configurable cable (length not in the standard list) */
-  configurable: boolean
+  /** how the length is ordered: a standard length, a variable-length part number, the modular product system, or
+   * rounded up to the next standard length */
+  order: 'standard' | 'variable' | 'modular' | 'rounded'
+  /** module name for `modular` (e.g. NEBM-LX/M17) */
+  module?: string
 }
 
 export interface ResistorChoice {
@@ -135,25 +138,38 @@ export function selectController(
     const cable = pick(role)
     if (!cable) continue
     const l = cable.fixedLength ?? length
-    const key = lengthKey(l)
-    const standard = cable.partNumbers[key]
-    if (standard || !cable.configurable) {
+    const base = { role, crossSection: cable.crossSection }
+    const standard = cable.partNumbers[lengthKey(l)]
+    const conf = cable.configurable
+    if (standard) {
+      cableChoices.push({ ...base, type: cable.type.replace('{L}', lengthKey(l)), partNumber: standard, length: l, order: 'standard' })
+    } else if (conf && l <= conf.max) {
+      // the length goes into the type, rounded up to the configurable increment
+      const ordered = Math.max(conf.min, Math.ceil(l / conf.step - 1e-9) * conf.step)
       cableChoices.push({
-        role,
-        type: cable.type.replace('{L}', key),
-        partNumber: standard ?? null,
-        length: l,
-        crossSection: cable.crossSection,
-        configurable: false,
+        ...base,
+        type: conf.type.replace('{L}', lengthKey(ordered)),
+        partNumber: conf.partNumber,
+        length: ordered,
+        order: conf.kind,
+        module: conf.module,
       })
     } else {
+      // standard lengths only: the next longer one
+      const next = Object.keys(cable.partNumbers)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .find((s) => s >= l)
+      if (next == null) {
+        notes.push({ text: '{type}: 주문할 수 있는 길이를 넘습니다', args: { type: cable.type.replace('-{L}', '') } })
+        continue
+      }
       cableChoices.push({
-        role,
-        type: cable.configurable.type.replace('{L}', key),
-        partNumber: cable.configurable.partNumber,
-        length: l,
-        crossSection: cable.crossSection,
-        configurable: true,
+        ...base,
+        type: cable.type.replace('{L}', lengthKey(next)),
+        partNumber: cable.partNumbers[lengthKey(next)],
+        length: next,
+        order: 'rounded',
       })
     }
   }
@@ -173,7 +189,10 @@ export function selectController(
   } else if (length > 25) {
     notes.push({ text: '케이블 길이 25 m 초과는 사전 기술 검토를 권장합니다' })
   }
-  if (cableChoices.some((c) => c.configurable)) notes.push({ text: '표준 길이가 아닌 케이블은 구성형(길이 지정)으로 주문합니다' })
+  if (cableChoices.some((c) => c.order === 'modular')) {
+    notes.push({ text: '모듈러 케이블은 모듈 번호와 형식(길이 포함)으로 주문합니다' })
+  }
+  if (cableChoices.some((c) => c.order === 'rounded')) notes.push({ text: '표준 길이만 있는 케이블은 다음 표준 길이로 올렸습니다' })
   if (motor.brake) notes.push({ text: '브레이크 모터는 24 V DC 이상의 로직 전원이 필요합니다' })
 
   // Regeneration: negative mechanical power at the motor shaft, losses neglected (conservative)
