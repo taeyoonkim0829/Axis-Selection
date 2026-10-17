@@ -77,7 +77,7 @@ export function DrivePackage({
             ))}
             <tr>
               <td>{t('제동저항')}</td>
-              <td className="model">
+              <td className={resistor.required && resistor.item ? 'model' : undefined}>
                 {resistor.required ? (resistor.item?.model ?? '—') : t(controller?.internalResistor ? '내장 제동저항' : '불필요')}
               </td>
               <td>{resistor.required ? (resistor.item?.partNumber ?? '—') : '—'}</td>
