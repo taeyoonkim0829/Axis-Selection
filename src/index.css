@@ -1184,6 +1184,11 @@ th.num {
   margin-top: 14px;
 }
 
+.kit-notes h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
 .kit-notes ul {
   margin: 0;
   padding-left: 18px;
@@ -1459,8 +1464,8 @@ th.num {
   font-size: 11px;
 }
 
-.report .kit-notes h4 {
-  font-size: 13px;
+.report .kit-notes ul {
+  padding: 0 0 0 18px;
 }
 
 .report .drive-package .data-table td.model {
