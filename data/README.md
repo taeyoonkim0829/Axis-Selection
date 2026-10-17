@@ -151,7 +151,7 @@ Matching: axes by `typeCode` (or `model`) with the stroke in place of `…`, the
 
 | Kind | JSON fields |
 |---|---|
-| axis | `stroke` (mm, of the model in the file); `drive` (frame on the drive shaft at the axis end face, `axis` pointing out to the motor); `slide` (`origin` = centre of the slide mounting surface at the start position, `normal` = mounting surface normal, `travel` = direction away from the motor); `stretch` (optional, for other strokes: `part` = text in the PRODUCT name of the profile body, `axis` = coordinate index 0/1/2 of its length direction, `dir` = ±1 the side that moves (the far end), `range` = [min, max] where the cut may go, between the end features) |
+| axis | `stroke` (mm, of the model in the file); `drive` (frame on the drive shaft at the axis end face the kit sits on — not the shaft tip or the centering collar, which go into the kit — `axis` pointing out to the motor); `slide` (`origin` = centre of the slide mounting surface at the start position, `normal` = mounting surface normal, `travel` = direction away from the motor); `stretch` (optional, for other strokes: `part` = text in the PRODUCT name of the profile body, `axis` = coordinate index 0/1/2 of its length direction, `dir` = ±1 the side that moves (the far end), `range` = [min, max] where the cut may go, between the end features) |
 | kit | `axisFace`, `motorFace`: frames of the axis-side and motor-side flange faces |
 | gearbox | `output` (axis/kit side), `input` (motor side) flange frames |
 | motor | `flange` (flange face, `axis` pointing into the motor body). Optional: without a JSON the Festo convention is used (origin at the flange face, shaft along +z, `up` +y) |

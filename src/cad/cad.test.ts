@@ -95,8 +95,9 @@ describe('combination', () => {
     const combo = await buildCombo(sel, comboDrawings(sel, testDrawings), { mounting, cog: { x: 0, y: 0, z: 50 } }, load)
     const box = await meshBox(combo.step)
     expect(box.meshes).toBe(7 + 16 + 1)
-    // floor: motor end at −X, axis 738.5 + 300 mm long, motor 114.5 mm behind the kit (47 mm) at the axis end face
-    const length = 738.5 + 300 + 47 + 114.5
+    // floor: motor end at −X; axis end face 730 + 300 mm from the far end (the shaft stub sits in the kit),
+    // kit 47 mm, motor 114.5 mm behind its flange
+    const length = 730 + 300 + 47 + 114.5
     const extent = box.hi.map((h, k) => h - box.lo[k])
     const along = mounting === 'vertical' ? 2 : 0
     expect(extent[along]).toBeCloseTo(length, 0)
