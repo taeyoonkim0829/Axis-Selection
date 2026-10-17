@@ -113,6 +113,8 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
   const exact = list.find(
     (d) =>
       d.names.includes(motor.model) ||
+      // Mitsubishi HK lists the voltage class in the model ("HK-KT13W (200V)"), the file name does not
+      d.names.includes(motor.model.replace(/\s*\(\d+V\)$/, '')) ||
       (motor.orderCode != null && d.names.includes(motor.orderCode)) ||
       (motor.partNumber != null && d.partNumber === motor.partNumber),
   )

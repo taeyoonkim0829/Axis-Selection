@@ -107,6 +107,15 @@ describe('drawing files', () => {
     expect(hg.length).toBe(50)
     expect(hg.filter((m) => !motorDrawingFor(m, all)).map((m) => m.model)).toEqual([])
   })
+
+  it('matches HK motors without the voltage class in the model', () => {
+    const all = allPaths.map((path) => ({ ...parseDrawingPath(path)!, url: path, meta: null }))
+    const found = motors.filter((m) => /^HK-/.test(m.model) && motorDrawingFor(m, all))
+    expect(motorDrawingFor(motors.find((m) => m.model === 'HK-KT13WB (200V)')!, all)?.drawing.model).toBe('HK-KT13WB')
+    // every HK-MT and HK-RT; HK-KT/ST without their 400 V class (…4W) and a few sizes (no file yet)
+    expect(motors.filter((m) => /^HK-(MT|RT)/.test(m.model)).every((m) => found.includes(m))).toBe(true)
+    expect(found.length).toBe(96)
+  })
 })
 
 describe('combination', () => {
