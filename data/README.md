@@ -142,3 +142,19 @@ A kit fits when `axisCode` equals the axis's `interfaceCode` and `motorCode` equ
 | `noLoadTorque` | Nm, parallel kits: no-load driving torque |
 | `dataSource` | the data sheet row used when the kit's own name is not listed but its current generation is (`EAMM-A-L38-60G` → `EAMM-A-L38-60G-G2`, same interface codes); `null` otherwise |
 | `efficiency` / `length` | not filled in |
+
+## Drawings (`<kind>/<maker>/Drawings/…/<partNumber>_<model>.stp`)
+
+Manufacturer CAD models (STEP) for step 5 (조합 도면), next to the product data of their kind (`axes`, `motors`, `gearboxes`, `kits`); subfolders below `Drawings/` are free. The file name is `<partNumber>_<model>` as Festo's CAD download names it (`8124427_ELGT-BS-90-500-20P.stp`). The files are copied unchanged into the assembly (the CADENAS files carry `License CC BY-ND 4.0`; the exported STEP repeats it in its header). Each STEP file has a JSON file of the same name with its mating frames, in the file's own coordinates (mm). A frame is `{ "origin": [x, y, z], "axis": [x, y, z], "up": [x, y, z] }`: `axis` points from the axis side towards the motor side, `up` is perpendicular to it and is turned onto the parent's `up` (motor connector, kit and axis "up" line up).
+
+Matching: axes by `typeCode` (or `model`) with the stroke in place of `…`, the file with the stroke closest to the ordered one; kits by `product` or `partNumber`; gearboxes by `model` or `partNumber`; motors by `model`, `orderCode` or `partNumber`, else (Festo) another option variant of the same motor (`EMMT-AS-60-S-HS-RMY` for `EMMT-AS-60-S-HS`, a `B` in the options only for brake motors).
+
+| Kind | JSON fields |
+|---|---|
+| axis | `stroke` (mm, of the model in the file); `drive` (frame on the drive shaft at the axis end face, `axis` pointing out to the motor); `slide` (`origin` = centre of the slide mounting surface at the start position, `normal` = mounting surface normal, `travel` = direction away from the motor); `stretch` (optional, for other strokes: `part` = text in the PRODUCT name of the profile body, `axis` = coordinate index 0/1/2 of its length direction, `dir` = ±1 the side that moves (the far end), `range` = [min, max] where the cut may go, between the end features) |
+| kit | `axisFace`, `motorFace`: frames of the axis-side and motor-side flange faces |
+| gearbox | `output` (axis/kit side), `input` (motor side) flange frames |
+| motor | `flange` (flange face, `axis` pointing into the motor body). Optional: without a JSON the Festo convention is used (origin at the flange face, shaft along +z, `up` +y) |
+
+The length change (`src/cad/stretch.ts`) moves everything beyond a cut plane of the profile body; it places the cut where only edges along the length cross it. Shortening removes the features (holes, slots) that lie entirely in the cut-out window; lengthening leaves a gap without them, so the hole pattern near the cut differs from the real axis. A file for the ordered stroke avoids this.
+

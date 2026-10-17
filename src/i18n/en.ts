@@ -388,6 +388,35 @@ export const en: Record<string, string> = {
   '드라이브': 'Drive',
   '주문 형식 / 주문번호': 'Order type / part no.',
   '주문 형식': 'Order type',
+  // step 5: combination drawing
+  '조합 도면': 'Combination drawing',
+  '축': 'Axis',
+  '도면 파일': 'Drawing file',
+  '도면 없음': 'No drawing',
+  '설치 방향: {mounting}': 'Mounting: {mounting}',
+  '축, 모터, 연결키트를 선택하면 제조사 도면으로 조합 모델을 만듭니다.':
+    "Select an axis, motor and mounting kit to assemble them from the manufacturers' CAD models.",
+  '스트로크 {from} mm 모델을 {to} mm로 길이 보정': 'Length adjusted from the {from} mm stroke model to {to} mm',
+  '정합 정보(JSON) 없음': 'No mating data (JSON)',
+  '같은 모터의 다른 옵션 도면': 'Drawing of another option of the same motor',
+  '도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.':
+    'Some parts have no drawing, so they cannot be assembled. Put the STEP file and its mating data (JSON) in data/<kind>/<maker>/Drawings/.',
+  '3D 미리보기': '3D preview',
+  '3D 미리보기 새로 고침': 'Refresh 3D preview',
+  'STEP 내보내기': 'Export STEP',
+  'DXF 내보내기': 'Export DXF',
+  '3D 모델을 만드는 중…': 'Building the 3D model…',
+  'STEP 파일을 만드는 중…': 'Writing the STEP file…',
+  'DXF 도면을 만드는 중…': 'Drawing the DXF…',
+  '도면을 만들지 못했습니다: {error}': 'Could not make the drawing: {error}',
+  '3D 뷰어를 불러오는 중…': 'Loading the 3D viewer…',
+  '제조사 CAD 데이터(STEP)를 그대로 조립합니다. 무게 중심(빨간 점)은 슬라이드 중심(시작 위치) 기준입니다. DXF는 정면·평면·우측면도(제3각법)입니다.':
+    "The manufacturers' CAD data (STEP) is assembled as is. The centre of gravity (red dot) is relative to the slide centre at the start position. The DXF has front, top and right side views (third-angle projection).",
+  '등각': 'Isometric',
+  '정면': 'Front',
+  '평면': 'Top',
+  '우측면': 'Right',
+  '무게 중심': 'Centre of gravity',
 }
 
 /** Replacements for the Korean words in product data (motor series and descriptions, axis categories), in order. */

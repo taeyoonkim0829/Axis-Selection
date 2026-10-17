@@ -1196,6 +1196,92 @@ th.num {
   line-height: 1.6;
 }
 
+/* step 5: combination drawing — actions, 3D viewer */
+.drawing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 14px 0 10px;
+}
+
+.action-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--sign);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--sign);
+  color: var(--sign-ink);
+}
+
+.action-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.combo-viewer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.combo-viewer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.combo-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.combo-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.combo-legend .swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--line-strong);
+}
+
+.combo-legend .swatch.round {
+  border-radius: 50%;
+}
+
+.combo-canvas {
+  height: min(480px, 70vh);
+  background: var(--surface);
+  touch-action: none;
+}
+
 /* ---------- motion profile chart ---------- */
 
 .profile-chart {

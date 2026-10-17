@@ -10,6 +10,7 @@ import { AxisStep } from './ui/AxisStep'
 import { ErrorBoundary } from './ui/ErrorBoundary'
 import { GearboxStep } from './ui/GearboxStep'
 import { InputPanel } from './ui/InputPanel'
+import { DrawingStep } from './ui/DrawingStep'
 import { KitStep } from './ui/KitStep'
 import { MotionProfile } from './ui/MotionProfile'
 import type { ProfileView } from './ui/ProfileChart'
@@ -227,6 +228,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
               selectedId={selectedKit?.id ?? null}
               onSelect={setKitId}
             />
+            <DrawingStep axis={selectedAxis} drive={selectedDrive} kit={selectedKit} req={deferredReq} />
           </div>
         </main>
         <Footer />
