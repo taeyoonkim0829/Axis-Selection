@@ -3,8 +3,9 @@ import type { Frame } from './geometry'
 import type { StretchSpec } from './stretch'
 import type { Vec3 } from './step'
 
-// Manufacturer CAD files (STEP) live next to the product data: data/<kind>/<maker>/Drawings/…/<partNumber>_<model>.stp,
-// each with a JSON of the same name holding its mating frames (see data/README.md).
+// Manufacturer CAD files (STEP) live next to the product data: data/<kind>/<maker>/Drawings/…/<partNumber>_<model>.stp
+// (Festo) or the maker's own file name (Mitsubishi `hg-kr13_.stp`), each with a JSON of the same name holding its
+// mating frames (see data/README.md).
 
 export type DrawingKind = 'axes' | 'motors' | 'gearboxes' | 'kits'
 
@@ -40,6 +41,8 @@ export interface Drawing<M = unknown> {
   partNumber: string | null
   /** model name from the file name */
   model: string
+  /** every model name the file stands for (`model` first) */
+  names: string[]
   meta: M | null
 }
 
@@ -50,17 +53,30 @@ const stepUrls = import.meta.glob<string>('../../data/*/*/Drawings/**/*.{stp,ste
 })
 const metaFiles = import.meta.glob<unknown>('../../data/*/*/Drawings/**/*.json', { import: 'default', eager: true })
 
-export function parseDrawingPath(path: string): Pick<Drawing, 'kind' | 'maker' | 'partNumber' | 'model' | 'path'> | null {
+/**
+ * Part number and model names from the file name: `<partNumber>_<model>` (CADENAS), else the model up to the first
+ * `_`, upper case (Mitsubishi: `hg-kr13_`, `hg-ak0136_b_`); an optional `(4)` (400 V class) stands for both names
+ * (`hg-jr12k1(4)_` = HG-JR12K1 and HG-JR12K14).
+ */
+export function parseDrawingPath(
+  path: string,
+): Pick<Drawing, 'kind' | 'maker' | 'partNumber' | 'model' | 'names' | 'path'> | null {
   const m = /data\/(axes|motors|gearboxes|kits)\/([^/]+)\/Drawings\/(?:.*\/)?([^/]+)\.(?:stp|step)$/i.exec(path)
   if (!m) return null
   const [, kind, maker, base] = m
   const named = /^(\d{5,})_(.+)$/.exec(base)
+  const model = named?.[2] ?? base.split('_')[0].toUpperCase()
+  const optional = /\((\w+)\)/.exec(model)
+  const names = optional
+    ? [model.replace(optional[0], ''), model.replace(optional[0], optional[1])]
+    : [model]
   return {
     kind: kind as DrawingKind,
     maker,
     path: path.slice(path.indexOf('data/')),
     partNumber: named?.[1] ?? null,
-    model: named?.[2] ?? base,
+    model: names[0],
+    names,
   }
 }
 
@@ -77,7 +93,7 @@ const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 export function axisDrawingsFor(axis: Axis, stroke: number, all = drawings): Drawing<AxisMeta>[] {
   const code = axis.typeCode ?? axis.model
   const re = new RegExp(`^${code.split('…').map(escape).join('\\d+')}$`)
-  return (all.filter((d) => d.kind === 'axes' && d.meta && re.test(d.model)) as Drawing<AxisMeta>[]).sort(
+  return (all.filter((d) => d.kind === 'axes' && d.meta && d.names.some((n) => re.test(n))) as Drawing<AxisMeta>[]).sort(
     (a, b) => Math.abs(a.meta!.stroke - stroke) - Math.abs(b.meta!.stroke - stroke),
   )
 }
@@ -96,8 +112,8 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
   const list = all.filter((d) => d.kind === 'motors' && d.maker === motor.maker) as Drawing<MotorMeta>[]
   const exact = list.find(
     (d) =>
-      d.model === motor.model ||
-      (motor.orderCode != null && d.model === motor.orderCode) ||
+      d.names.includes(motor.model) ||
+      (motor.orderCode != null && d.names.includes(motor.orderCode)) ||
       (motor.partNumber != null && d.partNumber === motor.partNumber),
   )
   if (exact) return { drawing: exact, otherOptions: false }
@@ -113,12 +129,12 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
 
 export const kitDrawingFor = (kit: Kit, all = drawings) =>
   (all.find(
-    (d) => d.kind === 'kits' && (d.model === kit.product || (kit.partNumber != null && d.partNumber === kit.partNumber)),
+    (d) => d.kind === 'kits' && (d.names.includes(kit.product) || (kit.partNumber != null && d.partNumber === kit.partNumber)),
   ) as Drawing<KitMeta> | undefined) ?? null
 
 export const gearboxDrawingFor = (gearbox: Gearbox, all = drawings) =>
   (all.find(
     (d) =>
       d.kind === 'gearboxes' &&
-      (d.model === gearbox.model || (gearbox.partNumber != null && d.partNumber === gearbox.partNumber)),
+      (d.names.includes(gearbox.model) || (gearbox.partNumber != null && d.partNumber === gearbox.partNumber)),
   ) as Drawing<GearboxMeta> | undefined) ?? null

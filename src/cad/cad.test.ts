@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { axes, kits, motors } from '../data'
 import { buildCombo, comboDrawings, type ComboSelection } from './combo'
-import { parseDrawingPath, type Drawing } from './drawings'
+import { motorDrawingFor, parseDrawingPath, type Drawing } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
 import { parseStep, writeStep } from './step'
 import { stretchPart, type StretchSpec } from './stretch'
@@ -10,22 +10,31 @@ const files = [
   'data/axes/Festo/Drawings/ELGT/BS/8124427_ELGT-BS-90-500-20P.stp',
   'data/kits/Festo/Drawings/EAMM-A/4824833_EAMM-A-T46-60P.stp',
   'data/motors/Festo/Drawings/EMMT-AS/8160632_EMMT-AS-60-S-HS-RMY.stp',
+  'data/motors/Mitsubishi/Drawings/HG-KR/hg-kr43_.stp',
 ]
-const texts = import.meta.glob<string>('../../data/*/*/Drawings/**/*.stp', { query: '?raw', import: 'default', eager: true })
+const texts = import.meta.glob<string>(
+  [
+    '../../data/*/Festo/Drawings/**/*.stp',
+    '../../data/motors/Mitsubishi/Drawings/HG-KR/hg-kr43_.stp',
+  ],
+  { query: '?raw', import: 'default', eager: true },
+)
+// every drawing file's path, not loaded
+const allPaths = Object.keys(import.meta.glob('../../data/*/*/Drawings/**/*.{stp,step,STP,STEP}'))
 const metas = import.meta.glob<unknown>('../../data/*/*/Drawings/**/*.json', { import: 'default', eager: true })
 const text = (path: string) => texts[`../../${path}`]
 const testDrawings: Drawing[] = files.map((path) => ({
   ...parseDrawingPath(path)!,
   url: path,
-  meta: metas[`../../${path.replace(/\.stp$/, '.json')}`],
+  meta: metas[`../../${path.replace(/\.stp$/, '.json')}`] ?? null,
 }))
 const load = async (d: Drawing) => text(d.path)
 
-const selection = (stroke: number): ComboSelection => ({
+const selection = (stroke: number, motor = 'EMMT-AS-60-S-HS'): ComboSelection => ({
   axis: axes.find((a) => a.model === 'ELGT-BS-90-…20P')!,
   axisModel: `ELGT-BS-90-${stroke}-20P`,
   stroke,
-  motor: motors.find((m) => m.model === 'EMMT-AS-60-S-HS')!,
+  motor: motors.find((m) => m.model === motor)!,
   gearbox: null,
   kit: kits.find((k) => k.product === 'EAMM-A-T46-60P' && k.axisCode === 'T46-90')!,
 })
@@ -83,6 +92,23 @@ describe('axis stretch', () => {
   })
 })
 
+describe('drawing files', () => {
+  it('reads model names from Mitsubishi file names', () => {
+    const name = (file: string) => parseDrawingPath(`data/motors/Mitsubishi/Drawings/${file}`)?.names
+    expect(name('HG-KR/hg-kr13b_.stp')).toEqual(['HG-KR13B'])
+    expect(name('HG-AK/x/hg-ak0136_b_.stp')).toEqual(['HG-AK0136'])
+    expect(name('HG-JR/hg-jr12k1(4)_.stp')).toEqual(['HG-JR12K1', 'HG-JR12K14'])
+    expect(name('HG-JR/hg-jr103b.stp')).toEqual(['HG-JR103B'])
+  })
+
+  it('has a drawing for every HG-KR, HG-SR and HG-JR motor', () => {
+    const all = allPaths.map((path) => ({ ...parseDrawingPath(path)!, url: path, meta: null }))
+    const hg = motors.filter((m) => /^HG-(KR|SR|JR)/.test(m.model))
+    expect(hg.length).toBe(50)
+    expect(hg.filter((m) => !motorDrawingFor(m, all)).map((m) => m.model)).toEqual([])
+  })
+})
+
 describe('combination', () => {
   it('finds the drawings of the selection', () => {
     const found = comboDrawings(selection(500), testDrawings)
@@ -102,5 +128,15 @@ describe('combination', () => {
     const along = mounting === 'vertical' ? 2 : 0
     expect(extent[along]).toBeCloseTo(length, 0)
     expect(combo.cog).toEqual(mounting === 'floor' ? [0, 0, 50] : [0, -50, 0])
+  })
+
+  it('mounts a Mitsubishi motor by its flange (z = 0, shaft +z) without a JSON', async () => {
+    const sel = selection(500, 'HG-KR43')
+    const found = comboDrawings(sel, testDrawings)
+    expect(found.motor?.path).toBe(files[3])
+    const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load)
+    const box = await meshBox(combo.step)
+    // HG-KR43 is 98.3 mm behind its flange
+    expect(box.hi[0] - box.lo[0]).toBeCloseTo(730 + 47 + 98.3, 0)
   })
 })

@@ -25,3 +25,10 @@ dist-ssr
 
 # Design tool working files
 .impeccable
+
+# CAD downloads: only the STEP files are used (data/*/*/Drawings)
+data/**/Drawings/**/*.dwg
+data/**/Drawings/**/*.dxf
+data/**/Drawings/**/*.igs
+data/**/Drawings/**/*.iges
+data/**/Drawings/**/*.zip
