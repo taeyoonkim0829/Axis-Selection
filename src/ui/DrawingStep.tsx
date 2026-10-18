@@ -35,11 +35,36 @@ interface Props {
 
 const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터' }
 
-const loadText = async (d: Drawing) => {
-  const res = await fetch(d.url)
-  if (!res.ok) throw new Error(`${d.path}: ${res.status}`)
-  return res.text()
+/** Drawing files fetched once per page (a rebuild for another spacing or orientation reuses them); failures are dropped */
+const fileCache = new Map<string, Promise<string>>()
+
+async function fetchText(d: Drawing, attempts = 2): Promise<string> {
+  try {
+    const res = await fetch(d.url)
+    if (!res.ok) throw new Error(`${d.path}: ${res.status}`)
+    return await res.text()
+  } catch (e) {
+    // A network error (server reloading, file locked by a sync client) is retried once after a short pause
+    if (attempts > 1 && e instanceof TypeError) {
+      await new Promise((r) => setTimeout(r, 500))
+      return fetchText(d, attempts - 1)
+    }
+    throw e instanceof TypeError ? new Error(`${d.path}: ${e.message}`) : e
+  }
 }
+
+const loadText = (d: Drawing) => {
+  let text = fileCache.get(d.url)
+  if (!text) {
+    text = fetchText(d)
+    fileCache.set(d.url, text)
+    text.catch(() => fileCache.delete(d.url))
+  }
+  return text
+}
+
+/** ms an input change must settle before the open preview is rebuilt (typing 1500 builds once, not four times) */
+const REBUILD_DELAY = 400
 
 function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }))
@@ -182,16 +207,21 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   useEffect(() => {
     if (!stale) return
     let cancelled = false
-    meshesFor()
-      .then(({ combo, meshes }) => {
-        if (!cancelled) setShown({ key, combo, meshes })
-      })
-      .catch((e: unknown) => {
-        cache.current = null
-        if (!cancelled) setError(String(e instanceof Error ? e.message : e))
-      })
+    const timer = setTimeout(() => {
+      meshesFor()
+        .then(({ combo, meshes }) => {
+          if (cancelled) return
+          setShown({ key, combo, meshes })
+          setError(null)
+        })
+        .catch((e: unknown) => {
+          cache.current = null
+          if (!cancelled) setError(String(e instanceof Error ? e.message : e))
+        })
+    }, REBUILD_DELAY)
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
   }, [key, stale]) // eslint-disable-line react-hooks/exhaustive-deps -- rebuild when the selection changes
 
