@@ -172,6 +172,7 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 - **Segmented toggles**: blue fill when active.
 - **Error panel**: replaces the results column when the calculation fails; fail-soft fill, fail border and title, the error text on a white block, an outlined fail-colour 다시 시도 button. The inputs stay usable.
 - **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; sign-blue borders between cells.
+- **Heading unit** (`.heading-unit`, 소재 무게 중심 (mm)): a muted 12px regular unit after the heading when a row of fields is too narrow for a unit inside each.
 - **Chart spans**: dwell shaded `--surface-2`, press (press move + hold) shaded `--accent-soft`, each labelled above the plot.
 
 ## Do's and Don'ts

@@ -549,6 +549,13 @@ h3 {
   margin-bottom: 12px;
 }
 
+/* Unit shared by a row of narrow fields (소재 무게 중심 X/Y/Z) */
+.heading-unit {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .help {
   margin: -4px 0 10px;
   color: var(--muted);

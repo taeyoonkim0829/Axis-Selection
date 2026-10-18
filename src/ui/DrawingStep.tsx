@@ -12,6 +12,7 @@ import {
   type ComboOptions,
   type ComboSelection,
   type PartRole,
+  type TwinAxis,
 } from '../cad/combo'
 import type { Drawing } from '../cad/drawings'
 import type { PartMesh } from '../cad/occt'
@@ -53,7 +54,7 @@ const fileSafe = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, '_')
 
 /** Step 5: the manufacturers' CAD models of the selection, assembled — 3D preview, STEP and DXF export. */
 export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Props) {
-  // Only the (first) axis is drawn: the COG is placed relative to its slide centre.
+  // The drawing is built from the first axis: the COG is placed relative to its slide centre.
   const req = { ...input, cog: axisCog(input) }
   const t = useT()
   const selection: ComboSelection | null =
@@ -63,6 +64,11 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const found = selection ? comboDrawings(selection) : null
   const parallel = kit?.type === 'parallel'
   const connector = connectorSide(sides, parallel)
+  // Twin arrangement: the second axis beside the first (with its own drive train under motor sync); LM guides are not drawn
+  const twin: TwinAxis | undefined =
+    axis && axis.layout.axes > 1 && input.parallel
+      ? { spacing: input.parallel.spacing, drive: axis.layout.mode === 'twinMotor' }
+      : undefined
   const key = selection
     ? [
         selection.axis.id,
@@ -76,6 +82,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         req.cog.z,
         parallel ? sides.kitSide : '',
         connector,
+        twin ? `${twin.spacing}/${twin.drive}` : '',
       ].join('|')
     : ''
 
@@ -86,7 +93,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const [shown, setShown] = useState<{ key: string; combo: Combo; meshes: PartMesh[] } | null>(null)
 
   const entryFor = () => {
-    if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText, sides) }
+    if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText, sides, twin) }
     return cache.current
   }
   const meshesFor = async () => {
@@ -225,7 +232,15 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             </table>
           </div>
           {axis && axis.layout.mode !== 'single' && (
-            <p className="muted small-print">{t('병렬 구성의 두 번째 축과 LM 가이드는 도면에 포함되지 않습니다.')}</p>
+            <p className="muted small-print">
+              {t(
+                axis.layout.mode === 'twinMotor'
+                  ? '두 번째 축(모터·키트 포함)을 축 간격만큼 옆에 함께 배치합니다.'
+                  : axis.layout.mode === 'twinShaft'
+                    ? '두 번째 축을 축 간격만큼 옆에 함께 배치합니다. 연결축은 도면에 포함되지 않습니다.'
+                    : 'LM 가이드는 도면에 포함되지 않습니다.',
+              )}
+            </p>
           )}
           {!ready && (
             <p className="muted small-print">

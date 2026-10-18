@@ -115,11 +115,18 @@ export interface Combo {
   stretch: number
 }
 
+/** Second, parallel axis: `spacing` mm beside the first along the slide's lateral (+y) direction */
+export interface TwinAxis {
+  spacing: number
+  /** true: it has its own kit, gearbox and motor (motor sync); false: driven through a connecting shaft (not drawn) */
+  drive: boolean
+}
+
 /**
  * Places axis → kit → (gearbox →) motor by their mating frames and writes one STEP assembly. The axis is
  * stretched or shortened from the file's stroke to the ordered stroke when its metadata allows it. A parallel kit
  * is turned about the drive shaft to `options.kitSide`, and the motor about its shaft so its connector points to
- * `connectorSide(options)`.
+ * `connectorSide(options)`. `twin` adds a copy of the axis (and of its drive train) beside it.
  */
 export async function buildCombo(
   sel: ComboSelection,
@@ -127,6 +134,7 @@ export async function buildCombo(
   req: Pick<Requirements, 'mounting' | 'cog'>,
   load: (d: Drawing) => Promise<string>,
   options: ComboOptions = defaultComboOptions,
+  twin?: TwinAxis,
 ): Promise<Combo> {
   if (found.missing.length > 0 || !found.axis || !found.kit || !found.motor) throw new Error('drawings missing')
   const axisMeta = found.axis.meta!
@@ -183,9 +191,18 @@ export async function buildCombo(
   parts.push({ role: 'motor', name: found.motor.model, file: parseStep(motorText), transform: motorToWorld })
 
   const lateral = cross(world.normal, world.travel)
+  let name = parts.map((p) => p.name).join(' + ')
+  // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train when it has a motor
+  if (twin) {
+    const shift = scale(lateral, twin.spacing)
+    const copies = parts
+      .filter((p) => twin.drive || p.role === 'axis')
+      .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))
+    parts.push(...copies)
+    name += ' (2 axes)'
+  }
   const cog = add(add(scale(world.travel, req.cog.x), scale(lateral, req.cog.y)), scale(world.normal, req.cog.z))
   const notices = [...new Set([axisText, kitText, motorText, gearboxText].flatMap((t) => (t && sourceNotice(t)) || []))]
-  const name = parts.map((p) => p.name).join(' + ')
   const step = writeStep(assemble(name, parts, { notices }))
   return {
     name,

@@ -140,6 +140,21 @@ describe('combination', () => {
     expect(combo.cog).toEqual(mounting === 'floor' ? [0, 0, 50] : [0, -50, 0])
   })
 
+  it('places the second axis of a twin arrangement beside the first', async () => {
+    const sel = selection(500)
+    const found = comboDrawings(sel, testDrawings)
+    const cog = { mounting: 'floor' as const, cog: { x: 0, y: 0, z: 0 } }
+    const single = await meshBox((await buildCombo(sel, found, cog, load)).step)
+    const shaft = await buildCombo(sel, found, cog, load, undefined, { spacing: 400, drive: false })
+    expect(shaft.parts.map((p) => p.role)).toEqual(['axis', 'kit', 'motor', 'axis'])
+    const box = await meshBox(shaft.step)
+    expect(box.meshes).toBe(single.meshes + 7)
+    // floor: +y is the lateral direction (normal × travel); the copy sits 400 mm over
+    expect(box.hi[1] - box.lo[1]).toBeCloseTo(single.hi[1] - single.lo[1] + 400, 0)
+    const motorSync = await buildCombo(sel, found, cog, load, undefined, { spacing: 400, drive: true })
+    expect(motorSync.parts).toHaveLength(6)
+  }, 30000)
+
   it('mounts a Mitsubishi motor by its flange (z = 0, shaft +z) without a JSON', async () => {
     const sel = selection(500, 'HG-KR43')
     const found = comboDrawings(sel, testDrawings)

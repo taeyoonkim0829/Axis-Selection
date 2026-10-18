@@ -163,19 +163,18 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
         </section>
 
         <section>
-          <h2>{t('소재 무게 중심')}</h2>
+          {/* Three fields in a row are too narrow for a unit inside each: the unit sits in the heading */}
+          <h2>
+            {t('소재 무게 중심')} <span className="heading-unit">(mm)</span>
+          </h2>
           <div className="grid-3">
-            <NumberField label="X" unit="mm" value={req.cog.x} min={-1e6} onChange={(v) => setCog('x', v)} />
-            <NumberField
-              label="Y"
-              unit="mm"
-              value={req.cog.y}
-              min={-1e6}
-              onChange={(v) => setCog('y', v)}
-              hint={parallel.mode !== 'single' ? t('축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽') : undefined}
-            />
-            <NumberField label="Z" unit="mm" value={req.cog.z} min={-1e6} onChange={(v) => setCog('z', v)} />
+            <NumberField label="X" value={req.cog.x} min={-1e6} onChange={(v) => setCog('x', v)} />
+            <NumberField label="Y" value={req.cog.y} min={-1e6} onChange={(v) => setCog('y', v)} />
+            <NumberField label="Z" value={req.cog.z} min={-1e6} onChange={(v) => setCog('z', v)} />
           </div>
+          {parallel.mode !== 'single' && (
+            <p className="field-hint">{t('Y: 축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽')}</p>
+          )}
           <details className="cog-details">
             <summary>{t('무게 중심 입력 가이드')}</summary>
             <img className="cog-image" src={cogImage} alt={t('축 형태별 X, Y, Z 좌표 방향')} />

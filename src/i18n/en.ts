@@ -447,7 +447,7 @@ export const en: Record<string, string> = {
   '블록 + 브래킷': 'Blocks + bracket',
   '연결축 관성': 'Connecting shaft inertia',
   '연결축 + 커플링': 'Shaft + couplings',
-  '축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽': 'from the centre of the arrangement, +Y = towards the second axis / guide',
+  'Y: 축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽': 'Y: from the centre of the arrangement, +Y = towards the second axis / guide',
   '모터 2개 (축마다 1개), 부하가 큰 축 기준': 'Two motors (one per axis), sized for the more loaded axis',
   '모터 1개가 연결축으로 축 2개 구동': 'One motor drives both axes through a connecting shaft',
   '구동 토크 (연결축 포함)': 'Driving torque (incl. connecting shaft)',
@@ -462,8 +462,10 @@ export const en: Record<string, string> = {
   'LM 가이드 모멘트 My': 'LM guide moment My',
   'LM 가이드 모멘트 Mz': 'LM guide moment Mz',
   '1개당 최대 (정하중 + 가속)': 'highest per guide (static + acceleration)',
-  '병렬 구성의 두 번째 축과 LM 가이드는 도면에 포함되지 않습니다.':
-    'The second axis and the LM guides of a parallel arrangement are not in the drawing.',
+  '두 번째 축(모터·키트 포함)을 축 간격만큼 옆에 함께 배치합니다.': 'The second axis (with its motor and kit) is placed beside the first at the axis spacing.',
+  '두 번째 축을 축 간격만큼 옆에 함께 배치합니다. 연결축은 도면에 포함되지 않습니다.':
+    'The second axis is placed beside the first at the axis spacing. The connecting shaft is not in the drawing.',
+  'LM 가이드는 도면에 포함되지 않습니다.': 'The LM guides are not in the drawing.',
   '축 1개 부하 분담': 'Load share per axis',
   'LM 가이드': 'LM guide',
   '별도 선정 (참고값: 3장)': 'Selected separately (reference values: chapter 3)',
