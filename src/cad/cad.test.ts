@@ -11,6 +11,7 @@ const files = [
   'data/kits/Festo/Drawings/EAMM-A/4824833_EAMM-A-T46-60P.stp',
   'data/motors/Festo/Drawings/EMMT-AS/8160632_EMMT-AS-60-S-HS-RMY.stp',
   'data/motors/Mitsubishi/Drawings/HG-KR/hg-kr43_.stp',
+  'data/kits/Festo/Drawings/EAMM-U/4824069_EAMM-U-87-T46-60P-114.stp',
 ]
 const texts = import.meta.glob<string>(
   [
@@ -30,13 +31,13 @@ const testDrawings: Drawing[] = files.map((path) => ({
 }))
 const load = async (d: Drawing) => text(d.path)
 
-const selection = (stroke: number, motor = 'EMMT-AS-60-S-HS'): ComboSelection => ({
+const selection = (stroke: number, motor = 'EMMT-AS-60-S-HS', kit = 'EAMM-A-T46-60P'): ComboSelection => ({
   axis: axes.find((a) => a.model === 'ELGT-BS-90-…20P')!,
   axisModel: `ELGT-BS-90-${stroke}-20P`,
   stroke,
   motor: motors.find((m) => m.model === motor)!,
   gearbox: null,
-  kit: kits.find((k) => k.product === 'EAMM-A-T46-60P' && k.axisCode === 'T46-90')!,
+  kit: kits.find((k) => k.product === kit && k.axisCode === 'T46-90')!,
 })
 
 type OcctMesh = { attributes: { position: { array: number[] } } }
@@ -147,5 +148,19 @@ describe('combination', () => {
     const box = await meshBox(combo.step)
     // HG-KR43 is 98.3 mm behind its flange
     expect(box.hi[0] - box.lo[0]).toBeCloseTo(730 + 47 + 98.3, 0)
+  })
+
+  it('folds the motor back under the axis with the parallel kit', async () => {
+    const sel = selection(800, 'EMMT-AS-60-S-HS', 'EAMM-U-87-T46-60P-114')
+    const found = comboDrawings(sel, testDrawings)
+    expect(found.kit?.path).toBe(files[4])
+    const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load)
+    const box = await meshBox(combo.step)
+    expect(box.meshes).toBe(7 + 20 + 1)
+    // the housing reaches 34.8 mm beyond the axis end face; the motor lies alongside the axis
+    expect(box.hi[0] - box.lo[0]).toBeCloseTo(730 + 300 + 34.8, 0)
+    // below the axis: kit 114 mm centre distance, motor connector pointing away from the axis (71 mm off centre);
+    // above the drive shaft the kit housing (39.5 mm) stands out over the profile (37 mm)
+    expect(box.hi[2] - box.lo[2]).toBeCloseTo(39.5 + 114 + 71, 0)
   })
 })
