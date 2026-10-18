@@ -1197,6 +1197,23 @@ th.num {
 }
 
 /* step 5: combination drawing — actions, 3D viewer */
+.drawing-sides {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 14px 0 0;
+}
+
+.drawing-sides .segmented {
+  justify-self: start;
+}
+
+.drawing-sides p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .drawing-actions {
   display: flex;
   flex-wrap: wrap;

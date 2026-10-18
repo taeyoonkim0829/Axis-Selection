@@ -2,11 +2,22 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Requirements } from '../calc/types'
-import { buildCombo, comboDrawings, type Combo, type ComboSelection, type PartRole } from '../cad/combo'
+import {
+  buildCombo,
+  comboDrawings,
+  defaultComboOptions,
+  SIDES,
+  type Combo,
+  type ComboOptions,
+  type ComboSelection,
+  type PartRole,
+  type Side,
+} from '../cad/combo'
 import type { Drawing } from '../cad/drawings'
 import type { PartMesh } from '../cad/occt'
 import type { Kit } from '../data/types'
 import { useT } from '../i18n'
+import { RadioGroup } from './common'
 import { mountingLabel } from './format'
 
 const ComboViewer = lazy(() => import('./ComboViewer'))
@@ -19,6 +30,8 @@ interface Props {
 }
 
 const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터' }
+const sideLabel: Record<Side, string> = { up: '상', down: '하', left: '좌', right: '우' }
+const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
 
 const loadText = async (d: Drawing) => {
   const res = await fetch(d.url)
@@ -45,8 +58,22 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
       ? { axis: axis.axis, axisModel: axis.order.model, stroke: axis.order.stroke ?? req.stroke, motor: drive.motor, gearbox: drive.gearbox, kit }
       : null
   const found = selection ? comboDrawings(selection) : null
+  // parallel kits: kit and motor connector side, seen from the motor end of the axis
+  const [sides, setSides] = useState<ComboOptions>(defaultComboOptions)
+  const parallel = kit?.type === 'parallel'
   const key = selection
-    ? [selection.axis.id, selection.stroke, selection.motor.id, selection.gearbox?.id, selection.kit.id, req.mounting, req.cog.x, req.cog.y, req.cog.z].join('|')
+    ? [
+        selection.axis.id,
+        selection.stroke,
+        selection.motor.id,
+        selection.gearbox?.id,
+        selection.kit.id,
+        req.mounting,
+        req.cog.x,
+        req.cog.y,
+        req.cog.z,
+        parallel ? `${sides.kitSide}/${sides.motorConnector}` : '',
+      ].join('|')
     : ''
 
   const [preview, setPreview] = useState(false)
@@ -56,7 +83,7 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
   const [shown, setShown] = useState<{ key: string; combo: Combo; meshes: PartMesh[] } | null>(null)
 
   const entryFor = () => {
-    if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText) }
+    if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText, sides) }
     return cache.current
   }
   const meshesFor = async () => {
@@ -95,7 +122,8 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
       const { drawingDxf } = await import('../cad/dxf')
       const title = [
         combo.name,
-        `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm`,
+        `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm` +
+          (parallel ? `, parallel kit: motor ${sides.kitSide}, connector ${sides.motorConnector} (seen from the motor end)` : ''),
         'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
       ]
       download(`${fileSafe(combo.parts.map((p) => p.name).join('_'))}.dxf`, drawingDxf({ meshes, cog: combo.cog, title }), 'application/dxf')
@@ -196,6 +224,30 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
             <p className="muted small-print">
               {t('도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.')}
             </p>
+          )}
+          {parallel && (
+            <div className="drawing-sides">
+              <span>{t('키트 조립 방향 (모터 위치)')}</span>
+              <RadioGroup
+                options={SIDES}
+                value={sides.kitSide}
+                onChange={(kitSide) => setSides((s) => ({ ...s, kitSide }))}
+                label={(s) => t(sideLabel[s])}
+              />
+              <span>{t('모터 조립 방향 (커넥터)')}</span>
+              <RadioGroup
+                options={SIDES}
+                value={sides.motorConnector}
+                onChange={(motorConnector) => setSides((s) => ({ ...s, motorConnector }))}
+                label={(s) => t(sideLabel[s])}
+              />
+              <p className="muted small-print">
+                {t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}
+                {sides.motorConnector === opposite[sides.kitSide] && (
+                  <span className="warn-text"> {t('모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.')}</span>
+                )}
+              </p>
+            </div>
           )}
           <div className="drawing-actions">
             <button type="button" className="action-btn" onClick={showPreview} disabled={!ready || busy != null}>

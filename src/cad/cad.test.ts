@@ -163,4 +163,17 @@ describe('combination', () => {
     // above the drive shaft the kit housing (39.5 mm) stands out over the profile (37 mm)
     expect(box.hi[2] - box.lo[2]).toBeCloseTo(39.5 + 114 + 71, 0)
   })
+
+  it('turns the parallel kit and the motor to the chosen sides', async () => {
+    const sel = selection(800, 'EMMT-AS-60-S-HS', 'EAMM-U-87-T46-60P-114')
+    const found = comboDrawings(sel, testDrawings)
+    const options = { kitSide: 'right', motorConnector: 'right' } as const
+    const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, options)
+    const box = await meshBox(combo.step)
+    // seen from the motor end (−X, looking +X, slide up), right is −Y: motor centre 114 mm off, connector 71 mm further
+    expect(box.lo[1]).toBeCloseTo(-114 - 71, 0)
+    expect(box.hi[1]).toBeCloseTo(58.1, 0)
+    // nothing hangs below the axis profile any more
+    expect(box.lo[2]).toBeCloseTo(-90, 0)
+  })
 })

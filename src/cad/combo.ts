@@ -12,7 +12,7 @@ import {
   type KitMeta,
   type MotorMeta,
 } from './drawings'
-import { add, cross, identity, mate, scale, type Frame, type Transform } from './geometry'
+import { add, apply, cross, dot, identity, mate, rotate, scale, sub, turnAbout, type Frame, type Transform } from './geometry'
 import { parseStep, writeStep, type Vec3 } from './step'
 import { stretchPart } from './stretch'
 
@@ -52,7 +52,22 @@ export function comboDrawings(sel: ComboSelection, all?: Drawing[]): ComboDrawin
   return { axis, motor: motor?.drawing ?? null, motorOtherOptions: motor?.otherOptions ?? false, gearbox, kit, missing }
 }
 
-const DEFAULT_MOTOR: MotorMeta = { flange: { origin: [0, 0, 0], axis: [0, 0, -1], up: [0, 1, 0] } }
+// Festo convention (flange at z = 0, shaft +z, connector +y); Mitsubishi's flange motors have their connectors at −y
+const defaultMotorMeta = (maker: string): MotorMeta => ({
+  flange: { origin: [0, 0, 0], axis: [0, 0, -1], up: [0, 1, 0] },
+  ...(maker === 'Mitsubishi' ? { connector: [0, -1, 0] } : {}),
+})
+
+/** Direction seen from the motor end of the axis, looking along the axis with the slide surface up. */
+export type Side = 'up' | 'down' | 'left' | 'right'
+export const SIDES: readonly Side[] = ['up', 'down', 'left', 'right']
+
+/** Parallel kits: the side the motor sits on (kit turned about the axis drive shaft) and where the motor connector points. */
+export interface ComboOptions {
+  kitSide: Side
+  motorConnector: Side
+}
+export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: 'down' }
 
 /** World axes (Z up): the slide travels along X on floor and wall; vertical puts the motor on top. */
 export function mountingFrame(mounting: Mounting): { travel: Vec3; normal: Vec3 } {
@@ -82,18 +97,21 @@ export interface Combo {
 
 /**
  * Places axis → kit → (gearbox →) motor by their mating frames and writes one STEP assembly. The axis is
- * stretched or shortened from the file's stroke to the ordered stroke when its metadata allows it.
+ * stretched or shortened from the file's stroke to the ordered stroke when its metadata allows it. A parallel kit
+ * is turned about the drive shaft to `options.kitSide`, and the motor about its shaft so its connector points to
+ * `options.motorConnector`.
  */
 export async function buildCombo(
   sel: ComboSelection,
   found: ComboDrawings,
   req: Pick<Requirements, 'mounting' | 'cog'>,
   load: (d: Drawing) => Promise<string>,
+  options: ComboOptions = defaultComboOptions,
 ): Promise<Combo> {
   if (found.missing.length > 0 || !found.axis || !found.kit || !found.motor) throw new Error('drawings missing')
   const axisMeta = found.axis.meta!
   const kitMeta = found.kit.meta!
-  const motorMeta = (found.motor.meta as MotorMeta | null) ?? DEFAULT_MOTOR
+  const motorMeta = (found.motor.meta as MotorMeta | null) ?? defaultMotorMeta(sel.motor.maker)
   const [axisText, kitText, motorText, gearboxText] = await Promise.all([
     load(found.axis),
     load(found.kit),
@@ -112,7 +130,20 @@ export async function buildCombo(
   const world = mountingFrame(req.mounting)
   const slideFrame: Frame = { origin: axisMeta.slide.origin, axis: axisMeta.slide.travel, up: axisMeta.slide.normal }
   const axisToWorld = mate(identity, { origin: [0, 0, 0], axis: world.travel, up: world.normal }, slideFrame)
-  const kitToWorld = mate(axisToWorld, axisMeta.drive, kitMeta.axisFace)
+  let kitToWorld = mate(axisToWorld, axisMeta.drive, kitMeta.axisFace)
+  // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
+  const out = rotate(axisToWorld, axisMeta.drive.axis)
+  const up = rotate(axisToWorld, axisMeta.drive.up)
+  const right = cross(up, out)
+  const sideVector = (side: Side) =>
+    side === 'up' ? up : side === 'down' ? scale(up, -1) : side === 'right' ? right : scale(right, -1)
+  const parallel = sel.kit.type === 'parallel'
+  if (parallel) {
+    const offset = sub(apply(kitToWorld, kitMeta.motorFace.origin), apply(kitToWorld, kitMeta.axisFace.origin))
+    const radial = sub(offset, scale(out, dot(offset, out)))
+    if (Math.hypot(...radial) > 1)
+      kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, axisMeta.drive.origin), out, radial, sideVector(options.kitSide))
+  }
   const parts: (AssemblyPart & { role: PartRole })[] = [
     { role: 'axis', name: sel.axisModel, file: axisFile, transform: axisToWorld },
     { role: 'kit', name: sel.kit.product, file: parseStep(kitText), transform: kitToWorld },
@@ -124,12 +155,13 @@ export async function buildCombo(
     parts.push({ role: 'gearbox', name: sel.gearbox!.model, file: parseStep(gearboxText), transform: gearboxToWorld })
     motorParent = { transform: gearboxToWorld, frame: gearboxMeta.input }
   }
-  parts.push({
-    role: 'motor',
-    name: found.motor.model,
-    file: parseStep(motorText),
-    transform: mate(motorParent.transform, motorParent.frame, motorMeta.flange),
-  })
+  let motorToWorld = mate(motorParent.transform, motorParent.frame, motorMeta.flange)
+  if (parallel) {
+    const shaft = rotate(motorToWorld, motorMeta.flange.axis)
+    const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
+    motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, sideVector(options.motorConnector))
+  }
+  parts.push({ role: 'motor', name: found.motor.model, file: parseStep(motorText), transform: motorToWorld })
 
   const lateral = cross(world.normal, world.travel)
   const cog = add(add(scale(world.travel, req.cog.x), scale(lateral, req.cog.y)), scale(world.normal, req.cog.z))

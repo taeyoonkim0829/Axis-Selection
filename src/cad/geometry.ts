@@ -67,3 +67,20 @@ export const frameTransform = (f: Frame) => fromColumns(cross(f.up, f.axis), f.u
 /** Places a child part so that its frame coincides with the parent's frame (both in their part coordinates). */
 export const mate = (parentToWorld: Transform, parent: Frame, child: Frame) =>
   compose(parentToWorld, compose(frameTransform(parent), invert(frameTransform(child))))
+
+/** Turns a placed part about the line through `pivot` along unit `k` so that direction `from` points along `to` (both ⟂ k). */
+export function turnAbout(m: Transform, pivot: Vec3, k: Vec3, from: Vec3, to: Vec3): Transform {
+  const a = scale(from, 1 / Math.hypot(...from))
+  const b = scale(to, 1 / Math.hypot(...to))
+  const c = dot(a, b)
+  const s = dot(cross(a, b), k)
+  const skew: Transform['r'] = [
+    [0, -k[2], k[1]],
+    [k[2], 0, -k[0]],
+    [-k[1], k[0], 0],
+  ]
+  const r = [0, 1, 2].map((i) =>
+    [0, 1, 2].map((j) => (i === j ? c : 0) + s * skew[i][j] + (1 - c) * k[i] * k[j]),
+  ) as Transform['r']
+  return compose({ r, t: sub(pivot, rotate({ r, t: [0, 0, 0] }, pivot)) }, m)
+}

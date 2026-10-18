@@ -30,6 +30,8 @@ export interface GearboxMeta {
 }
 export interface MotorMeta {
   flange: Frame
+  /** direction the connector points to, ⟂ the shaft (default `flange.up`) */
+  connector?: Vec3
 }
 
 export interface Drawing<M = unknown> {
