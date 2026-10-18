@@ -406,6 +406,7 @@ export const en: Record<string, string> = {
   '모터 조립 방향 (커넥터)': 'Motor orientation (connector)',
   '모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.': 'Seen from the motor end of the axis looking along it, with the slide surface at the top.',
   '모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.': 'The motor connector points towards the axis. Check for interference.',
+  '모터가 슬라이드 쪽에 있어 슬라이드·소재와 간섭할 수 있으므로 사용 가능한 스트로크가 줄어들 수 있습니다.': 'The motor sits on the slide side and can collide with the slide or the payload, so the usable stroke may be shorter.',
   '같은 모터의 다른 옵션 도면': 'Drawing of another option of the same motor',
   '도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.':
     'Some parts have no drawing, so they cannot be assembled. Put the STEP file and its mating data (JSON) in data/<kind>/<maker>/Drawings/.',
