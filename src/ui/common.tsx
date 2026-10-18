@@ -169,7 +169,7 @@ export function CollapseTitle({ open, onToggle, children }: { open: boolean; onT
 }
 
 /** Single-select segmented buttons. */
-export function RadioGroup<T extends string>({
+export function RadioGroup<T extends string | number>({
   options,
   value,
   onChange,

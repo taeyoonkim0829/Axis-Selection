@@ -213,6 +213,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
                 }}
                 settings={settings}
                 onSettings={setSettings}
+                layout={selectedAxis?.layout}
               />
             ) : (
               <section className="panel step" id="step-motor">

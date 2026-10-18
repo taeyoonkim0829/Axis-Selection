@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ParallelLayout } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Settings } from '../calc/types'
 import { motorFamilies } from '../data'
@@ -17,13 +18,15 @@ interface Props {
   onSelect: (id: string) => void
   settings: Settings
   onSettings: (settings: Settings) => void
+  /** Axis arrangement of the selected axis (motor count) */
+  layout?: ParallelLayout
 }
 
 const makers: MotorMaker[] = ['Festo', 'Siemens', 'Mitsubishi']
 
 const ROW_LIMIT = 60
 
-export function MotorStep({ results, selected, onSelect, settings, onSettings }: Props) {
+export function MotorStep({ results, selected, onSelect, settings, onSettings, layout }: Props) {
   const t = useT()
   const lang = useLang()
   const selectedId = selected?.motor.id ?? null
@@ -69,6 +72,8 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings }:
           <span className="step-no">2</span> {t('모터 선정')}
         </h2>
         <span className="muted">{t('적합 {pass}', { pass: passing.length })}</span>
+        {layout?.mode === 'twinMotor' && <span className="muted">{t('모터 2개 (축마다 1개), 부하가 큰 축 기준')}</span>}
+        {layout?.mode === 'twinShaft' && <span className="muted">{t('모터 1개가 연결축으로 축 2개 구동')}</span>}
         <label className="toggle small">
           <input type="checkbox" checked={showFailed} onChange={(e) => setShowFailed(e.target.checked)} />
           <span>{t('부적합 포함')}</span>

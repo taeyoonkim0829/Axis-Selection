@@ -10,7 +10,18 @@ import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, StatusBadge } from './common'
 import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
-import { axisDetailChecks, cableRoleLabel, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel, sideLabel } from './format'
+import {
+  axisDetailChecks,
+  cableRoleLabel,
+  driveLabel,
+  fmt,
+  kgf,
+  mountingLabel,
+  moveLabel,
+  parallelModeLabel,
+  pressDirectionLabel,
+  sideLabel,
+} from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
 
@@ -85,34 +96,50 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   const vertical = verticalForward(req)
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
-  type SelectionRow = [string, string, string, string | null, Status | null]
+  const layout = axis.layout
+  // Quantities: two axes in a twin arrangement; one drive train per motor
+  const nAxes = layout.axes
+  const nDrive = drive ? layout.motors : null
+  type SelectionRow = [string, string, string, string | null, number | null, Status | null]
   const selection: SelectionRow[] = [
-    [t('직교 축'), 'Festo', axis.order.model, axis.order.partNumber, axis.status],
+    [t('직교 축'), 'Festo', axis.order.model, axis.order.partNumber, nAxes, axis.status],
     [
       t('모터'),
       drive?.motor.maker ?? '—',
       drive ? (drive.motor.orderCode ?? drive.motor.model) : t('선택 안 됨'),
       drive?.motor.partNumber ?? null,
+      nDrive,
       drive?.status ?? null,
     ],
     // Festo drive package: drive, cables, external braking resistor
     ...(drive?.controller?.controller
-      ? ([[t('서보 드라이브'), 'Festo', drive.controller.controller.model, drive.controller.controller.partNumber, drive.controller.status]] as SelectionRow[])
+      ? ([[t('서보 드라이브'), 'Festo', drive.controller.controller.model, drive.controller.controller.partNumber, nDrive, drive.controller.status]] as SelectionRow[])
       : []),
     ...(drive?.controller?.cables ?? []).map(
-      (c): SelectionRow => [t(cableRoleLabel[c.role]), 'Festo', c.type, c.partNumber, null],
+      (c): SelectionRow => [t(cableRoleLabel[c.role]), 'Festo', c.type, c.partNumber, nDrive, null],
     ),
     ...(drive?.controller?.resistor.item && drive.controller.resistor.required
-      ? ([[t('제동저항'), 'Festo', drive.controller.resistor.item.model, drive.controller.resistor.item.partNumber, null]] as SelectionRow[])
+      ? ([[t('제동저항'), 'Festo', drive.controller.resistor.item.model, drive.controller.resistor.item.partNumber, nDrive, null]] as SelectionRow[])
       : []),
     [
       t('감속기'),
       g?.maker ?? '—',
       drive ? (g ? `${g.model} (${g.ratio}:1)` : t('감속기 미사용')) : '—',
       g?.partNumber ?? null,
+      g ? nDrive : null,
       drive ? gearboxStatus(drive) : null,
     ],
-    [t('연결키트'), kit ? 'Festo' : '—', kit?.product ?? (drive ? t('해당 키트 없음') : '—'), kit?.partNumber ?? null, kitEval?.status ?? null],
+    [
+      t('연결키트'),
+      kit ? 'Festo' : '—',
+      kit?.product ?? (drive ? t('해당 키트 없음') : '—'),
+      kit?.partNumber ?? null,
+      kit ? nDrive : null,
+      kitEval?.status ?? null,
+    ],
+    ...(layout.guides
+      ? ([[t('LM 가이드'), '—', t('별도 선정 (참고값: 3장)'), null, layout.guides, null]] as SelectionRow[])
+      : []),
   ]
   const noMotor = <p className="empty">{t('모터를 선택하지 않았습니다.')}</p>
 
@@ -143,6 +170,19 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                 ] as Row[])
               : []),
             ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
+            ['축 구성', t(parallelModeLabel[layout.mode])],
+            ...(layout.mode !== 'single'
+              ? ([
+                  [layout.guides ? '축–가이드 간격' : '축 간격', q(req.parallel!.spacing, 'mm')],
+                  ...(layout.guides
+                    ? ([
+                        ['LM 가이드 수', String(layout.guides)],
+                        ['가이드 1개 이동 질량', q(req.parallel!.guideMass, 'kg')],
+                      ] as Row[])
+                    : ([['축 1개 부하 분담', `${Math.round(layout.share * 100)}%`]] as Row[])),
+                  ...(layout.mode === 'twinShaft' ? ([['연결축 관성', q(layout.shaftInertia, 'kg·cm²', 4)]] as Row[]) : []),
+                ] as Row[])
+              : []),
           ]}
         />
 
@@ -173,16 +213,18 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
               <th>{t('메이커')}</th>
               <th>{t('모델명')}</th>
               <th>{t('주문번호')}</th>
+              <th>{t('수량')}</th>
               <th>{t('판정')}</th>
             </tr>
           </thead>
           <tbody>
-            {selection.map(([part, maker, model, partNumber, status]) => (
+            {selection.map(([part, maker, model, partNumber, count, status]) => (
               <tr key={part}>
                 <td>{part}</td>
                 <td>{maker}</td>
                 <td className="model">{model}</td>
                 <td>{partNumber ?? '—'}</td>
+                <td>{count ?? '—'}</td>
                 <td>{status ? <StatusBadge status={status} /> : '—'}</td>
               </tr>
             ))}

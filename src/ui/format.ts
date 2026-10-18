@@ -31,7 +31,14 @@ export const sideLabel: Record<Side, string> = { up: '상', down: '하', left: '
 
 export const mountingLabel = { floor: '바닥', wall: '벽면', vertical: '수직' } as const
 
-export const driveLabel = { belt: '벨트', spindle: '볼스크류' } as const
+export const parallelModeLabel = {
+  single: '단일 축',
+  twinMotor: '2축 · 모터 동기',
+  twinShaft: '2축 · 기구 동기',
+  guides: '축 + LM 가이드',
+} as const
+
+export const driveLabel ={ belt: '벨트', spindle: '볼스크류' } as const
 
 export const pressDirectionLabel = { down: '위→아래 (눌러 내림)', up: '아래→위 (밀어 올림)' } as const
 

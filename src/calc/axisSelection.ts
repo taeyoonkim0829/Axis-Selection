@@ -2,7 +2,7 @@
 // guide load comparison value, deflection and life. Motor-independent.
 import type { Axis } from '../data/types'
 import { dwellPhase, moveProfile, samplePhases, type MoveProfile, type Phase } from './motionProfile'
-import { check, verticalForward, worstStatus, type Check, type Requirements, type Settings, type Status } from './types'
+import { check, verticalForward, worstStatus, type Check, type ParallelMode, type Requirements, type Settings, type Status } from './types'
 
 export const G = 9.81
 /** N/mm², aluminium profile (Excel deflection sheet) */
@@ -73,11 +73,14 @@ export interface AxisEvaluation {
   /** mm per revolution of the axis drive shaft */
   feed: number
   efficiency: number
-  /** kg·cm² at the axis drive shaft (Festo J0 + JH·stroke + JL·payload) */
+  /** kg·cm² at the axis drive shaft (Festo J0 + JH·stroke + JL·payload); with a connecting shaft both axes and the shaft */
   inertia: number
+  /** Drive-shaft samples of what the motor drives (both axes with a connecting shaft) */
   samples: AxisSample[]
   guideFv: number
   axisMass: number
+  /** Axis arrangement (single axis, two axes, LM guides) */
+  layout: ParallelLayout
 }
 
 /** What to order for an axis and a required stroke. */
@@ -193,6 +196,123 @@ export interface GuideLoads {
   Mz: number
 }
 
+/** Members of the axis arrangement, side by side along the slide's lateral (y) direction. */
+export interface ParallelLayout {
+  mode: ParallelMode
+  /** m, lateral position of each member relative to the (first) axis slide centre */
+  positions: number[]
+  /** true for an axis, false for an LM guide */
+  isAxis: boolean[]
+  axes: number
+  /** motors driving the arrangement */
+  motors: number
+  guides: number
+  /** Share of the payload carried in the travel direction by the more loaded axis (lever rule; 1 with one axis) */
+  share: number
+  /** kg, moving mass of the LM guides in total */
+  guideMass: number
+  /** kg·cm², connecting shaft at the axis drive shaft (one motor driving two axes) */
+  shaftInertia: number
+}
+
+const SINGLE: ParallelLayout = {
+  mode: 'single',
+  positions: [0],
+  isAxis: [true],
+  axes: 1,
+  motors: 1,
+  guides: 0,
+  share: 1,
+  guideMass: 0,
+  shaftInertia: 0,
+}
+
+/**
+ * The arrangement from the requirements. Two axes sit at 0 and +spacing; LM guides at +spacing (one) or at
+ * ±spacing with the axis in the middle (two). With two axes the drive forces split by the lever rule about the
+ * payload's y position, so the axis on the payload side carries the larger share.
+ */
+export function parallelLayout(req: Requirements): ParallelLayout {
+  const p = req.parallel
+  const s = (p?.spacing ?? 0) / 1000
+  if (!p || p.mode === 'single' || !(s > 0)) return SINGLE
+  if (p.mode === 'guides') {
+    const two = p.guideCount === 2
+    return {
+      ...SINGLE,
+      mode: 'guides',
+      positions: two ? [-s, 0, s] : [0, s],
+      isAxis: two ? [false, true, false] : [true, false],
+      guides: two ? 2 : 1,
+      guideMass: (two ? 2 : 1) * Math.max(0, p.guideMass),
+    }
+  }
+  const y = req.cog.y / 1000
+  return {
+    ...SINGLE,
+    mode: p.mode,
+    positions: [0, s],
+    isAxis: [true, true],
+    axes: 2,
+    motors: p.mode === 'twinMotor' ? 2 : 1,
+    share: Math.max(Math.abs(s - y), Math.abs(y)) / s,
+    shaftInertia: p.mode === 'twinShaft' ? Math.max(0, p.shaftInertia) : 0,
+  }
+}
+
+/**
+ * Loads on each member of a parallel arrangement (rigid payload plate, members of equal stiffness). The rolling
+ * moment about the travel axis turns into normal forces across the members (linear distribution), so the members
+ * see no Mx; pitch and yaw moments and in-plane forces are shared equally. With two axes the drives take the yaw
+ * from forces in the travel direction (inertial force, and the weight on a vertical axis); with one axis that yaw
+ * acts about the axis (y = 0) and is shared by the guides. One member: `guideLoads`.
+ */
+export function memberLoads(req: Requirements, mass: number, accel: number, layout: ParallelLayout): GuideLoads[] {
+  const n = layout.positions.length
+  if (n === 1) return [guideLoads(req, mass, accel)]
+  const x = Math.abs(req.cog.x) / 1000
+  const y = req.cog.y / 1000
+  const z = Math.abs(req.cog.z) / 1000
+  const weight = mass * G
+  const inertial = mass * accel
+  const mean = layout.positions.reduce((a, b) => a + b, 0) / n
+  const spread = layout.positions.reduce((sum, p) => sum + (p - mean) ** 2, 0)
+  const yaw = layout.axes > 1 ? 0 : Math.abs(y)
+  return layout.positions.map((p) => {
+    const d = p - mean
+    switch (req.mounting) {
+      case 'floor':
+        return {
+          Fy: 0,
+          Fz: Math.abs(weight / n + (weight * (y - mean) * d) / spread),
+          Mx: 0,
+          My: (x * weight + z * inertial) / n,
+          Mz: (yaw * inertial) / n,
+        }
+      case 'wall':
+        return {
+          Fy: weight / n,
+          Fz: (z * weight * Math.abs(d)) / spread,
+          Mx: 0,
+          My: (z * inertial) / n,
+          Mz: (x * weight + yaw * inertial) / n,
+        }
+      case 'vertical': {
+        const axial = weight + inertial
+        return { Fy: 0, Fz: 0, Mx: 0, My: (z * axial) / n, Mz: (yaw * axial) / n }
+      }
+    }
+  })
+}
+
+/** Labels of the LM guide loads (reference values for choosing the guides) */
+const LM_LOAD_LABELS: [keyof GuideLoads, string, string][] = [
+  ['Fy', 'LM 가이드 하중 Fy', 'N'],
+  ['Fz', 'LM 가이드 하중 Fz', 'N'],
+  ['My', 'LM 가이드 모멘트 My', 'Nm'],
+  ['Mz', 'LM 가이드 모멘트 Mz', 'Nm'],
+]
+
 /** Static + inertial guide loads from the payload centre of gravity (N, Nm). */
 export function guideLoads(req: Requirements, mass: number, accel: number): GuideLoads {
   const x = Math.abs(req.cog.x) / 1000
@@ -285,29 +405,48 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   // Mass and inertia follow the built stroke (the ordered one for ESBF), the motion the required one.
   const order = axisOrder(axis, req.stroke)
   const builtStroke = order.stroke ?? req.stroke
-  const mass = req.payload + axis.slideMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
-  const inertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * builtStroke) / 1000 + axis.inertiaJLPerKg * req.payload
+  // Parallel arrangement: with two axes each carries its share of the payload (the more loaded one is checked);
+  // LM guides add their moving mass to the axis drive.
+  const layout = parallelLayout(req)
+  const share = layout.share
+  const slide = axis.slideMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
+  const axisPayload = share * req.payload + layout.guideMass
+  const mass = axisPayload + slide
+  const axisInertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * builtStroke) / 1000
+  const inertia = axisInertia + axis.inertiaJLPerKg * axisPayload
   const toRad = (2 * Math.PI) / (feed / 1000)
-  // Weight opposes the forward move when it goes up and helps it when it goes down (top-down pressing).
-  const gravity = vertical ? (verticalForward(req) === 'down' ? -1 : 1) * mass * G : 0
-  const resistance = mu * mass * G + settings.guideResistance + settings.externalForce
+  const down = verticalForward(req) === 'down'
 
-  const driveAt = (v: number, a: number, dir: 1 | -1 | 0, load = 0): DriveState => {
-    const sgn = v !== 0 ? Math.sign(v) : dir
-    const external = gravity + sgn * resistance + load
-    const torque = inertia * 1e-4 * a * toRad + (external * feed) / (2000 * Math.PI) + sgn * axis.noLoadTorque
-    return { omega: v * toRad, alpha: a * toRad, torque, force: mass * a + external }
-  }
-  const samples: AxisSample[] = samplePhases(phases, (i) => moves[i]).map((s) => ({
-    ...s,
-    ...driveAt(s.v, s.a, s.dir, s.load),
-  }))
+  /** Drive-shaft load of a drive train moving m [kg] with inertia J [kg·cm²], taking share k of the external forces */
+  const drive =
+    (m: number, J: number, noLoad: number, k: number) =>
+    (v: number, a: number, dir: 1 | -1 | 0, load = 0): DriveState => {
+      // Weight opposes the forward move when it goes up and helps it when it goes down (top-down pressing).
+      const gravity = vertical ? (down ? -1 : 1) * m * G : 0
+      const resistance = mu * m * G + k * (settings.guideResistance + settings.externalForce)
+      const sgn = v !== 0 ? Math.sign(v) : dir
+      const external = gravity + sgn * resistance + k * load
+      const torque = J * 1e-4 * a * toRad + (external * feed) / (2000 * Math.PI) + sgn * noLoad
+      return { omega: v * toRad, alpha: a * toRad, torque, force: m * a + external }
+    }
+  const axisDriveAt = drive(mass, inertia, axis.noLoadTorque, share)
+  // One motor driving both axes through a connecting shaft: the motor sees both axes, the payload and the shaft.
+  const shaft = layout.mode === 'twinShaft'
+  const trainInertia = shaft ? 2 * axisInertia + axis.inertiaJLPerKg * req.payload + layout.shaftInertia : inertia
+  const driveAt = shaft ? drive(req.payload + 2 * slide, trainInertia, 2 * axis.noLoadTorque, 1) : axisDriveAt
+  const sampled = samplePhases(phases, (i) => moves[i])
+  const samples: AxisSample[] = sampled.map((s) => ({ ...s, ...driveAt(s.v, s.a, s.dir, s.load) }))
+  const axisSamples: AxisSample[] = shaft ? sampled.map((s) => ({ ...s, ...axisDriveAt(s.v, s.a, s.dir, s.load) })) : samples
 
-  const moving = samples.filter((s) => s.dir !== 0)
+  const shaftTorque = (list: AxisSample[]) =>
+    Math.max(
+      ...list
+        .filter((s) => s.dir !== 0)
+        .map((s) => (s.torque * s.omega >= 0 ? Math.abs(s.torque) / efficiency : Math.abs(s.torque) * efficiency)),
+    )
+  const moving = axisSamples.filter((s) => s.dir !== 0)
   const peakForce = Math.max(...moving.map((s) => Math.abs(s.force)))
-  const peakShaftTorque = Math.max(
-    ...moving.map((s) => (s.torque * s.omega >= 0 ? Math.abs(s.torque) / efficiency : Math.abs(s.torque) * efficiency)),
-  )
+  const peakShaftTorque = shaftTorque(axisSamples)
 
   const checks: Check[] = [
     check('스트로크', req.stroke, axis.maxStroke, 'mm'),
@@ -316,6 +455,15 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     feedForceCheck(axis, peakForce, builtStroke),
     check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
   ]
+  // The motor-side axis passes the second axis's torque on through its drive shaft.
+  if (shaft) {
+    const c = check('구동 토크 (연결축 포함)', shaftTorque(samples), axis.maxDrivingTorque, 'Nm')
+    checks.push(
+      c.status === 'fail'
+        ? { ...c, status: 'warn', note: '모터 쪽 축의 구동축이 두 축의 토크를 전달합니다. 허용 여부를 Festo에 확인하세요' }
+        : { ...c, note: '모터 쪽 축의 구동축이 두 축의 토크를 전달합니다' },
+    )
+  }
 
   // Axes released for horizontal mounting only (ELGT-TB): vertical fails; side (wall) mounting is not covered.
   if (axis.mountingPosition === 'horizontal' && req.mounting !== 'floor') {
@@ -333,7 +481,7 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   // Electric cylinder: the pressure force is limited by buckling of the piston rod (rod length = stroke).
   // Positive force pushes in the forward direction, taken as the rod extending.
   if (axis.pressureForceCurve) {
-    const compression = Math.max(0, ...samples.map((s) => s.force))
+    const compression = Math.max(0, ...axisSamples.map((s) => s.force))
     checks.push({
       ...check('압축력 (좌굴)', compression, curveAt(axis.pressureForceCurve, req.stroke), 'N'),
       note: '로드 길이 {stroke} mm 기준, 전진 = 로드가 나가는 방향',
@@ -354,11 +502,16 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     })
   }
 
-  const loads = guideLoads(req, mass, fwd.peakAcceleration)
+  // Guide loads: the whole moving system (payload, slides, LM guides) spread over the members; the more loaded
+  // axis is checked.
+  const systemMass = req.payload + layout.axes * slide + layout.guideMass
+  const members = memberLoads(req, systemMass, fwd.peakAcceleration, layout)
+  const axisLoads = members.filter((_, i) => layout.isAxis[i])
+  const loads = axisLoads.reduce((a, b) => (guideComparisonValue(b, axis).fv > guideComparisonValue(a, axis).fv ? b : a))
   let fv = 0
   if (axis.rodLateralForceCurve) {
     // Electric cylinder: without an external guide the payload hangs on the piston rod.
-    const lateral = Math.hypot(loads.Fy, loads.Fz)
+    const lateral = Math.max(...axisLoads.map((l) => Math.hypot(l.Fy, l.Fz)))
     checks.push(
       settings.externalGuide
         ? check('로드 횡하중 Fq', lateral, null, 'N', '외부 가이드 사용 — 검토 생략')
@@ -381,8 +534,10 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     const I = req.mounting === 'floor' ? axis.Iy : axis.Iz
     if (span && I) {
       const selfWeight = mAxis * G * (totalLength ? Math.min(1, span / totalLength) : 1)
+      // Point load: the weight on this axis (its share in a parallel arrangement)
+      const pointLoad = layout.positions.length > 1 ? (req.mounting === 'floor' ? loads.Fz : loads.Fy) : mass * G
       const deflection =
-        (mass * G * span ** 3) / (48 * YOUNGS_MODULUS * I) + (5 * selfWeight * span ** 3) / (384 * YOUNGS_MODULUS * I)
+        (pointLoad * span ** 3) / (48 * YOUNGS_MODULUS * I) + (5 * selfWeight * span ** 3) / (384 * YOUNGS_MODULUS * I)
       const limit = axis.allowableDeflection ?? 0.5
       const c = { ...check('처짐', deflection, limit, 'mm', '지지 간격 {span} mm 기준'), noteArgs: { span: Math.round(span) } }
       checks.push(c.status === 'fail' ? { ...c, status: 'warn', note: '지지 간격 {span} mm 기준 — 중간 지지 추가 또는 지지 간격 입력 검토' } : c)
@@ -391,10 +546,28 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
 
   const info: InfoItem[] = [
     { label: '사이클 타임 (왕복)', value: cycleTime, unit: 's' },
-    { label: '이동 질량 (부하 + 슬라이드)', value: mass, unit: 'kg' },
+    {
+      label: '이동 질량 (부하 + 슬라이드)',
+      value: mass,
+      unit: 'kg',
+      ...(layout.axes > 1
+        ? { note: '축 1개당, 부하 분담 {share}%', noteArgs: { share: Math.round(share * 100) } }
+        : layout.guides > 0
+          ? { note: 'LM 가이드 {mass} kg 포함', noteArgs: { mass: layout.guideMass } }
+          : {}),
+    },
     { label: '축 질량', value: mAxis, unit: 'kg' },
-    { label: '축 관성 모멘트 (구동축 기준)', value: inertia, unit: 'kg·cm²' },
+    { label: '축 관성 모멘트 (구동축 기준)', value: trainInertia, unit: 'kg·cm²', ...(shaft ? { note: '2축 + 연결축' } : {}) },
   ]
+  if (shaft) info.push({ label: '모터 구동 이동 질량 (2축 합계)', value: req.payload + 2 * slide, unit: 'kg' })
+  // LM guides: the largest load on one guide, for choosing the guide blocks
+  const guideMembers = members.filter((_, i) => !layout.isAxis[i])
+  if (guideMembers.length) {
+    for (const [key, label, unit] of LM_LOAD_LABELS) {
+      const value = Math.max(...guideMembers.map((l) => l[key]))
+      if (value > 0) info.push({ label, value, unit, note: '1개당 최대 (정하중 + 가속)' })
+    }
+  }
   if (fv > 0) {
     const km = GUIDE_REFERENCE_LIFE_KM / fv ** 3
     info.push({ label: '가이드 예상 수명', value: km, unit: 'km', ...lifeNote(km, req.stroke, cycleTime, settings.hoursPerDay) })
@@ -457,10 +630,11 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     movingMass: mass,
     feed,
     efficiency,
-    inertia,
+    inertia: trainInertia,
     samples,
     guideFv: fv,
     axisMass: mAxis,
+    layout,
   }
 }
 

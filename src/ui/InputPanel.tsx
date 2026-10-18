@@ -1,10 +1,27 @@
 import { useState } from 'react'
 import { accelerationForTime, accelTimeFor, minAccelTime } from '../calc/motionProfile'
-import { defaultPress, defaultSettings, type Mounting, type PressConditions, type Requirements, type Settings } from '../calc/types'
+import {
+  defaultParallel,
+  defaultPress,
+  defaultSettings,
+  type Mounting,
+  type ParallelConfig,
+  type ParallelMode,
+  type PressConditions,
+  type Requirements,
+  type Settings,
+} from '../calc/types'
 import { useT } from '../i18n'
 import cogImage from '../../images/center_of_gravity.png'
 import { NumberField, RadioGroup, ToggleButton } from './common'
-import { fmt, kgf, mountingLabel, pressDirectionLabel } from './format'
+import { fmt, kgf, mountingLabel, parallelModeLabel, pressDirectionLabel } from './format'
+
+const parallelModeHint: Record<ParallelMode, string> = {
+  single: '축 1개로 부하를 지지하고 구동',
+  twinMotor: '평행한 축 2개를 모터 2개로 동기 제어. 모터·키트·드라이브는 축 1개 기준 (각 2개)',
+  twinShaft: '평행한 축 2개를 모터 1개가 연결축으로 구동. 모터는 두 축 합계 기준',
+  guides: '축과 평행한 LM 가이드가 부하를 나눠 지지. 구동은 축 1개',
+}
 
 type AccelMode = 'acceleration' | 'time'
 const accelModeLabel: Record<AccelMode, string> = { acceleration: '가속도', time: '가속 시간' }
@@ -24,6 +41,9 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
   const press = req.press ?? defaultPress
   const setPress = <K extends keyof PressConditions>(key: K, value: PressConditions[K]) =>
     onReq({ ...req, press: { ...press, [key]: value } })
+  const parallel = req.parallel ?? defaultParallel
+  const setParallel = <K extends keyof ParallelConfig>(key: K, value: ParallelConfig[K]) =>
+    onReq({ ...req, parallel: { ...parallel, [key]: value } })
 
   // Acceleration can be entered directly or as the time to reach the velocity; the calculation always uses
   // req.acceleration, so in time mode it is re-derived whenever velocity, time or jerk changes.
@@ -146,7 +166,14 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
           <h2>{t('소재 무게 중심')}</h2>
           <div className="grid-3">
             <NumberField label="X" unit="mm" value={req.cog.x} min={-1e6} onChange={(v) => setCog('x', v)} />
-            <NumberField label="Y" unit="mm" value={req.cog.y} min={-1e6} onChange={(v) => setCog('y', v)} />
+            <NumberField
+              label="Y"
+              unit="mm"
+              value={req.cog.y}
+              min={-1e6}
+              onChange={(v) => setCog('y', v)}
+              hint={parallel.mode !== 'single' ? t('+Y = 추가 축/가이드 쪽') : undefined}
+            />
             <NumberField label="Z" unit="mm" value={req.cog.z} min={-1e6} onChange={(v) => setCog('z', v)} />
           </div>
           <details className="cog-details">
@@ -222,6 +249,68 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
               onChange={(v) => setPress('speed', v)}
             />
             <NumberField label={t('가압 유지 시간')} unit="s" value={press.holdTime} onChange={(v) => setPress('holdTime', v)} />
+          </div>
+        )}
+      </section>
+
+      <section className="panel application">
+        <h2>{t('축 구성')}</h2>
+        <div className="segmented" role="radiogroup">
+          {(Object.keys(parallelModeLabel) as ParallelMode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={parallel.mode === m}
+              className={parallel.mode === m ? 'active' : ''}
+              onClick={() => setParallel('mode', m)}
+            >
+              {t(parallelModeLabel[m])}
+            </button>
+          ))}
+        </div>
+        <p className="field-hint application-hint">{t(parallelModeHint[parallel.mode])}</p>
+        {parallel.mode === 'guides' && (
+          <div className="field">
+            <span className="field-label">{t('LM 가이드 수')}</span>
+            <RadioGroup
+              options={[1, 2] as const}
+              value={parallel.guideCount}
+              onChange={(v) => setParallel('guideCount', v)}
+              label={(v) => t(v === 1 ? '1개 (2열)' : '2개 (3열, 축이 가운데)')}
+            />
+          </div>
+        )}
+        {parallel.mode !== 'single' && (
+          <div className="grid-2">
+            <NumberField
+              label={t(parallel.mode === 'guides' ? '축–가이드 간격' : '축 간격')}
+              unit="mm"
+              value={parallel.spacing}
+              min={1}
+              onChange={(v) => setParallel('spacing', v)}
+              hint={t('중앙 부하는 Y = {y} mm', {
+                y: fmt(parallel.mode === 'guides' && parallel.guideCount === 2 ? 0 : parallel.spacing / 2, 1),
+              })}
+            />
+            {parallel.mode === 'guides' && (
+              <NumberField
+                label={t('가이드 1개 이동 질량')}
+                unit="kg"
+                value={parallel.guideMass}
+                onChange={(v) => setParallel('guideMass', v)}
+                hint={t('블록 + 브래킷')}
+              />
+            )}
+            {parallel.mode === 'twinShaft' && (
+              <NumberField
+                label={t('연결축 관성')}
+                unit="kg·cm²"
+                value={parallel.shaftInertia}
+                onChange={(v) => setParallel('shaftInertia', v)}
+                hint={t('연결축 + 커플링')}
+              />
+            )}
           </div>
         )}
       </section>

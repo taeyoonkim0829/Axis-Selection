@@ -222,6 +222,9 @@ export function DrawingStep({ axis, drive, kit, req, sides, onSides }: Props) {
               </tbody>
             </table>
           </div>
+          {axis && axis.layout.mode !== 'single' && (
+            <p className="muted small-print">{t('병렬 구성의 두 번째 축과 LM 가이드는 도면에 포함되지 않습니다.')}</p>
+          )}
           {!ready && (
             <p className="muted small-print">
               {t('도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.')}

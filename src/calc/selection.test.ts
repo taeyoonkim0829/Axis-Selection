@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { axes, gearboxes, kits, motors } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
-import { axisOrder, curveAt, evaluateAxis, guideLoads, selectAxes, G } from './axisSelection'
+import { axisOrder, curveAt, evaluateAxis, guideLoads, memberLoads, parallelLayout, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, gearboxStatus, selectMotors } from './motorSelection'
 import { moveProfile } from './motionProfile'
-import { defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
+import { defaultParallel, defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
 
 const baseReq: Requirements = {
   stroke: 500,
@@ -32,6 +32,51 @@ describe('guideLoads', () => {
     expect(l.My).toBeCloseTo(0.05 * 10 * (G + 5))
     expect(l.Mz).toBeCloseTo(0.1 * 10 * (G + 5))
     expect(l.Fz).toBe(0)
+  })
+})
+
+describe('parallel arrangement', () => {
+  const twin = (mode: 'twinMotor' | 'twinShaft', y = 0): Requirements => ({
+    ...baseReq,
+    cog: { x: 0, y, z: 0 },
+    parallel: { mode, spacing: 400, guideCount: 1, guideMass: 0, shaftInertia: 2 },
+  })
+
+  it('splits the payload between two axes by the lever rule', () => {
+    expect(parallelLayout(twin('twinMotor', 200)).share).toBeCloseTo(0.5)
+    expect(parallelLayout(twin('twinMotor', 100)).share).toBeCloseTo(0.75)
+    const single = evaluateAxis(spindle, baseReq, defaultSettings)!
+    const ev = evaluateAxis(spindle, twin('twinMotor', 200), defaultSettings)!
+    expect(ev.movingMass).toBeCloseTo(single.movingMass - 5)
+    expect(ev.layout.motors).toBe(2)
+  })
+
+  it('a connecting shaft puts both axes on one motor', () => {
+    const ev = evaluateAxis(spindle, twin('twinShaft', 200), defaultSettings)!
+    const axisInertia = spindle.inertiaJ0 + (spindle.inertiaJHPerMeter * (ev.order.stroke ?? 500)) / 1000
+    expect(ev.inertia).toBeCloseTo(2 * axisInertia + spindle.inertiaJLPerKg * 10 + 2)
+    expect(ev.checks.some((c) => c.label === '구동 토크 (연결축 포함)')).toBe(true)
+  })
+
+  it('turns the rolling moment into normal forces across the members', () => {
+    const layout = parallelLayout({ ...baseReq, parallel: { ...defaultParallel, mode: 'guides', spacing: 200 } })
+    // Payload over the guide (y = 200): the guide takes the whole weight, the axis nothing
+    const loads = memberLoads({ ...baseReq, cog: { x: 0, y: 200, z: 0 } }, 10, 5, layout)
+    expect(loads[0].Fz).toBeCloseTo(0)
+    expect(loads[1].Fz).toBeCloseTo(10 * G)
+    expect(loads[0].Mx).toBe(0)
+    // Centred between them: half each; the inertial yaw about the axis is shared
+    const centred = memberLoads({ ...baseReq, cog: { x: 0, y: 100, z: 0 } }, 10, 5, layout)
+    expect(centred[0].Fz).toBeCloseTo(5 * G)
+    expect(centred[0].Mz).toBeCloseTo((0.1 * 50) / 2)
+  })
+
+  it('LM guides lower the axis guide load', () => {
+    const req = { ...baseReq, cog: { x: 0, y: 100, z: 0 } }
+    const single = evaluateAxis(spindle, req, defaultSettings)!
+    const guided = evaluateAxis(spindle, { ...req, parallel: { ...defaultParallel, mode: 'guides', spacing: 200 } }, defaultSettings)!
+    expect(guided.guideFv).toBeLessThan(single.guideFv)
+    expect(guided.info.some((i) => i.label === 'LM 가이드 하중 Fz')).toBe(true)
   })
 })
 

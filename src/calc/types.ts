@@ -20,6 +20,35 @@ export interface Requirements {
   mounting: Mounting
   /** Pressing at the end of the forward move; absent or disabled = plain point-to-point move */
   press?: PressConditions
+  /** Second axis or LM guides parallel to the axis; absent = single axis */
+  parallel?: ParallelConfig
+}
+
+/**
+ * Axis arrangement. Parallel members (axes, LM guides) sit side by side along the slide's lateral (y) direction,
+ * rigidly connected by the payload plate: single axis, two axes driven by two synchronised motors (gantry) or by
+ * one motor through a connecting shaft, or the axis with one or two LM guides.
+ */
+export type ParallelMode = 'single' | 'twinMotor' | 'twinShaft' | 'guides'
+
+export interface ParallelConfig {
+  mode: ParallelMode
+  /** mm between neighbouring centrelines (axis–axis, axis–guide); the second axis or guide sits at +y */
+  spacing: number
+  /** guides: LM guides added; 1 = at +y, 2 = at −y and +y (axis in the middle) */
+  guideCount: 1 | 2
+  /** kg, moving mass per LM guide (carriages and bracket) */
+  guideMass: number
+  /** twinShaft: kg·cm², connecting shaft and its couplings, at the axis drive shaft */
+  shaftInertia: number
+}
+
+export const defaultParallel: ParallelConfig = {
+  mode: 'single',
+  spacing: 300,
+  guideCount: 1,
+  guideMass: 0,
+  shaftInertia: 0,
 }
 
 /** Press cycle: approach at the set velocity, press over the last `distance` at `speed`, hold, return. */
