@@ -3,22 +3,22 @@ import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Requirements } from '../calc/types'
 import {
+  assemblyWarnings,
   buildCombo,
   comboDrawings,
-  defaultComboOptions,
+  connectorSide,
   SIDES,
   type Combo,
   type ComboOptions,
   type ComboSelection,
   type PartRole,
-  type Side,
 } from '../cad/combo'
 import type { Drawing } from '../cad/drawings'
 import type { PartMesh } from '../cad/occt'
 import type { Kit } from '../data/types'
 import { useT } from '../i18n'
 import { RadioGroup } from './common'
-import { mountingLabel } from './format'
+import { mountingLabel, sideLabel } from './format'
 
 const ComboViewer = lazy(() => import('./ComboViewer'))
 
@@ -27,11 +27,12 @@ interface Props {
   drive: DriveEvaluation | null
   kit: Kit | null
   req: Requirements
+  /** assembly orientation (kept in Workspace, the report prints it) */
+  sides: ComboOptions
+  onSides: (sides: ComboOptions) => void
 }
 
 const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터' }
-const sideLabel: Record<Side, string> = { up: '상', down: '하', left: '좌', right: '우' }
-const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
 
 const loadText = async (d: Drawing) => {
   const res = await fetch(d.url)
@@ -51,16 +52,15 @@ function download(name: string, text: string, type: string) {
 const fileSafe = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, '_')
 
 /** Step 5: the manufacturers' CAD models of the selection, assembled — 3D preview, STEP and DXF export. */
-export function DrawingStep({ axis, drive, kit, req }: Props) {
+export function DrawingStep({ axis, drive, kit, req, sides, onSides }: Props) {
   const t = useT()
   const selection: ComboSelection | null =
     axis && drive && kit
       ? { axis: axis.axis, axisModel: axis.order.model, stroke: axis.order.stroke ?? req.stroke, motor: drive.motor, gearbox: drive.gearbox, kit }
       : null
   const found = selection ? comboDrawings(selection) : null
-  // parallel kits: kit and motor connector side, seen from the motor end of the axis
-  const [sides, setSides] = useState<ComboOptions>(defaultComboOptions)
   const parallel = kit?.type === 'parallel'
+  const connector = connectorSide(sides, parallel)
   const key = selection
     ? [
         selection.axis.id,
@@ -72,7 +72,8 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
         req.cog.x,
         req.cog.y,
         req.cog.z,
-        parallel ? `${sides.kitSide}/${sides.motorConnector}` : '',
+        parallel ? sides.kitSide : '',
+        connector,
       ].join('|')
     : ''
 
@@ -123,7 +124,8 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
       const title = [
         combo.name,
         `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm` +
-          (parallel ? `, parallel kit: motor ${sides.kitSide}, connector ${sides.motorConnector} (seen from the motor end)` : ''),
+          (parallel ? `, parallel kit: motor ${sides.kitSide}` : '') +
+          `, motor connector ${connector} (seen from the motor end)`,
         'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
       ]
       download(`${fileSafe(combo.parts.map((p) => p.name).join('_'))}.dxf`, drawingDxf({ meshes, cog: combo.cog, title }), 'application/dxf')
@@ -225,36 +227,35 @@ export function DrawingStep({ axis, drive, kit, req }: Props) {
               {t('도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.')}
             </p>
           )}
-          {parallel && (
-            <div className="drawing-sides">
-              <span>{t('키트 조립 방향 (모터 위치)')}</span>
-              <RadioGroup
-                options={SIDES}
-                value={sides.kitSide}
-                onChange={(kitSide) => setSides((s) => ({ ...s, kitSide }))}
-                label={(s) => t(sideLabel[s])}
-              />
-              <span>{t('모터 조립 방향 (커넥터)')}</span>
-              <RadioGroup
-                options={SIDES}
-                value={sides.motorConnector}
-                onChange={(motorConnector) => setSides((s) => ({ ...s, motorConnector }))}
-                label={(s) => t(sideLabel[s])}
-              />
-              <p className="muted small-print">
-                {t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}
-                {sides.motorConnector === opposite[sides.kitSide] && (
-                  <span className="warn-text"> {t('모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.')}</span>
-                )}
-                {sides.kitSide === 'up' && (
-                  <span className="warn-text">
-                    {' '}
-                    {t('모터가 슬라이드 쪽에 있어 슬라이드·소재와 간섭할 수 있으므로 사용 가능한 스트로크가 줄어들 수 있습니다.')}
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
+          <div className="drawing-sides">
+            {parallel && (
+              <>
+                <span>{t('키트 조립 방향 (모터 위치)')}</span>
+                <RadioGroup
+                  options={SIDES}
+                  value={sides.kitSide}
+                  onChange={(kitSide) => onSides({ ...sides, kitSide })}
+                  label={(s) => t(sideLabel[s])}
+                />
+              </>
+            )}
+            <span>{t('모터 조립 방향 (커넥터)')}</span>
+            <RadioGroup
+              options={SIDES}
+              value={connector}
+              onChange={(motorConnector) => onSides({ ...sides, motorConnector })}
+              label={(s) => t(sideLabel[s])}
+            />
+            <p className="muted small-print">
+              {t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}
+              {assemblyWarnings(sides, parallel).map((w) => (
+                <span key={w} className="warn-text">
+                  {' '}
+                  {t(w)}
+                </span>
+              ))}
+            </p>
+          </div>
           <div className="drawing-actions">
             <button type="button" className="action-btn" onClick={showPreview} disabled={!ready || busy != null}>
               {t(preview ? '3D 미리보기 새로 고침' : '3D 미리보기')}

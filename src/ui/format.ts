@@ -1,3 +1,4 @@
+import type { Side } from '../cad/combo'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { CableChoice } from '../calc/controllerSelection'
 import type { Status, VerticalDirection } from '../calc/types'
@@ -24,6 +25,9 @@ export function pct(ratio: number | null | undefined): string {
 }
 
 export const statusLabel: Record<Status, string> = { ok: '적합', warn: '주의', fail: '부적합' }
+
+/** Assembly side seen from the motor end of the axis (step 5, report) */
+export const sideLabel: Record<Side, string> = { up: '상', down: '하', left: '좌', right: '우' }
 
 export const mountingLabel = { floor: '바닥', wall: '벽면', vertical: '수직' } as const
 

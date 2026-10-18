@@ -176,4 +176,14 @@ describe('combination', () => {
     // nothing hangs below the axis profile any more
     expect(box.lo[2]).toBeCloseTo(-90, 0)
   })
+
+  it('turns the motor of an axial kit to the chosen connector side', async () => {
+    const sel = selection(800)
+    const found = comboDrawings(sel, testDrawings)
+    const options = { kitSide: 'down', motorConnector: 'right' } as const
+    const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, options)
+    const box = await meshBox(combo.step)
+    // seen from the motor end, right is −Y: the connector reaches 71 mm off the shaft, past the profile (50 mm)
+    expect(box.lo[1]).toBeCloseTo(-71, 0)
+  })
 })

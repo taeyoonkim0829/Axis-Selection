@@ -5,11 +5,12 @@ import { accelTimeFor } from '../calc/motionProfile'
 import { gearboxChecks, gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
+import { assemblyWarnings, connectorSide, type ComboOptions } from '../cad/combo'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, StatusBadge } from './common'
 import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
-import { axisDetailChecks, cableRoleLabel, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel } from './format'
+import { axisDetailChecks, cableRoleLabel, driveLabel, fmt, kgf, mountingLabel, moveLabel, pressDirectionLabel, sideLabel } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
 
@@ -23,6 +24,8 @@ interface Props {
   kit: KitEvaluation | null
   /** Motion profile view selected on screen */
   profileView: ProfileView
+  /** assembly orientation chosen in step 5 */
+  assembly: ComboOptions
 }
 
 type Row = [label: string, value: ReactNode]
@@ -73,7 +76,7 @@ function Chapter({ no, title, children }: { no: number; title: string; children:
   )
 }
 
-export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, profileView }: Props) {
+export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, profileView, assembly }: Props) {
   const kit = kitEval?.kit ?? null
   const t = useT()
   const lang = useLang()
@@ -362,8 +365,18 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                     ['관성 모멘트', kit.inertia != null ? q(kit.inertia, 'kg·cm²') : '—'],
                     ['최대 회전수', kit.maxSpeed != null ? q(kit.maxSpeed, 'rpm') : '—'],
                     ...(kit.noLoadTorque != null ? ([['무부하 토크', q(kit.noLoadTorque, 'Nm')]] as Row[]) : []),
+                    ...(kit.type === 'parallel'
+                      ? ([['키트 조립 방향 (모터 위치)', t(sideLabel[assembly.kitSide])]] as Row[])
+                      : []),
+                    ['모터 조립 방향 (커넥터)', t(sideLabel[connectorSide(assembly, kit.type === 'parallel')])],
                   ]}
                 />
+                <p className="report-note">{t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}</p>
+                {assemblyWarnings(assembly, kit.type === 'parallel').map((w) => (
+                  <p key={w} className="report-note warn-text">
+                    {t(w)}
+                  </p>
+                ))}
                 {kitEval && <CheckTable checks={kitEval.checks} />}
                 {kitEval && kitEval.notes.length > 0 && <KitNotes notes={kitEval.notes} />}
               </>

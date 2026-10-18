@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { selectAxes, type AxisEvaluation } from './calc/axisSelection'
+import { defaultComboOptions, type ComboOptions } from './cad/combo'
 import { attachController } from './calc/controllerSelection'
 import { attachKit, findKits } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors, type DriveEvaluation } from './calc/motorSelection'
@@ -103,6 +104,8 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
   const [kitId, setKitId] = useState<string | null>(null)
   // Motion profile view (왕복 / 전진 / 복귀); the PDF prints the same view
   const [profileView, setProfileView] = useState<ProfileView>('cycle')
+  // step 5 assembly orientation (parallel kit side, motor connector), printed in the report
+  const [assembly, setAssembly] = useState<ComboOptions>(defaultComboOptions)
 
   const deferredReq = useDeferredValue(req)
   const deferredSettings = useDeferredValue(settings)
@@ -228,7 +231,14 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
               selectedId={selectedKit?.id ?? null}
               onSelect={setKitId}
             />
-            <DrawingStep axis={selectedAxis} drive={selectedDrive} kit={selectedKit} req={deferredReq} />
+            <DrawingStep
+              axis={selectedAxis}
+              drive={selectedDrive}
+              kit={selectedKit}
+              req={deferredReq}
+              sides={assembly}
+              onSides={setAssembly}
+            />
           </div>
         </main>
         <Footer />
@@ -243,6 +253,7 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang }: Inputs
             kitMatch={kitMatch}
             kit={selectedKitEval}
             profileView={profileView}
+            assembly={assembly}
           />
         </div>
       )}

@@ -62,12 +62,32 @@ const defaultMotorMeta = (maker: string): MotorMeta => ({
 export type Side = 'up' | 'down' | 'left' | 'right'
 export const SIDES: readonly Side[] = ['up', 'down', 'left', 'right']
 
-/** Parallel kits: the side the motor sits on (kit turned about the axis drive shaft) and where the motor connector points. */
+/**
+ * Assembly orientation: the side a parallel kit puts the motor on (kit turned about the axis drive shaft) and where
+ * the motor connector points (any kit). `motorConnector` null = automatic: away from the axis with a parallel kit
+ * (the kit side), up with an axial kit.
+ */
 export interface ComboOptions {
   kitSide: Side
-  motorConnector: Side
+  motorConnector: Side | null
 }
-export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: 'down' }
+export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: null }
+
+export const connectorSide = (options: ComboOptions, parallel: boolean): Side =>
+  options.motorConnector ?? (parallel ? options.kitSide : 'up')
+
+const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
+
+/** Warnings about the chosen orientation (Korean source text), shown in step 5 and the report. */
+export function assemblyWarnings(options: ComboOptions, parallel: boolean): string[] {
+  if (!parallel) return []
+  const warnings: string[] = []
+  if (connectorSide(options, parallel) === opposite[options.kitSide])
+    warnings.push('모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.')
+  if (options.kitSide === 'up')
+    warnings.push('모터가 슬라이드 쪽에 있어 슬라이드·소재와 간섭할 수 있으므로 사용 가능한 스트로크가 줄어들 수 있습니다.')
+  return warnings
+}
 
 /** World axes (Z up): the slide travels along X on floor and wall; vertical puts the motor on top. */
 export function mountingFrame(mounting: Mounting): { travel: Vec3; normal: Vec3 } {
@@ -99,7 +119,7 @@ export interface Combo {
  * Places axis → kit → (gearbox →) motor by their mating frames and writes one STEP assembly. The axis is
  * stretched or shortened from the file's stroke to the ordered stroke when its metadata allows it. A parallel kit
  * is turned about the drive shaft to `options.kitSide`, and the motor about its shaft so its connector points to
- * `options.motorConnector`.
+ * `connectorSide(options)`.
  */
 export async function buildCombo(
   sel: ComboSelection,
@@ -156,11 +176,10 @@ export async function buildCombo(
     motorParent = { transform: gearboxToWorld, frame: gearboxMeta.input }
   }
   let motorToWorld = mate(motorParent.transform, motorParent.frame, motorMeta.flange)
-  if (parallel) {
-    const shaft = rotate(motorToWorld, motorMeta.flange.axis)
-    const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
-    motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, sideVector(options.motorConnector))
-  }
+  const shaft = rotate(motorToWorld, motorMeta.flange.axis)
+  const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
+  const target = sideVector(connectorSide(options, parallel))
+  motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
   parts.push({ role: 'motor', name: found.motor.model, file: parseStep(motorText), transform: motorToWorld })
 
   const lateral = cross(world.normal, world.travel)
