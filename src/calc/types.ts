@@ -33,7 +33,7 @@ export type ParallelMode = 'single' | 'twinMotor' | 'twinShaft' | 'guides'
 
 export interface ParallelConfig {
   mode: ParallelMode
-  /** mm between neighbouring centrelines (axis–axis, axis–guide); the second axis or guide sits at +y */
+  /** mm between neighbouring centrelines (axis–axis, axis–guide); the payload y is measured from the centre of the arrangement, the second axis or guide on the +y side */
   spacing: number
   /** guides: LM guides added; 1 = at +y, 2 = at −y and +y (axis in the middle) */
   guideCount: 1 | 2

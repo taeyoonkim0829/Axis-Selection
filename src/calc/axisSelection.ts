@@ -199,7 +199,7 @@ export interface GuideLoads {
 /** Members of the axis arrangement, side by side along the slide's lateral (y) direction. */
 export interface ParallelLayout {
   mode: ParallelMode
-  /** m, lateral position of each member relative to the (first) axis slide centre */
+  /** m, lateral position of each member relative to the centre of the arrangement (the COG y reference) */
   positions: number[]
   /** true for an axis, false for an LM guide */
   isAxis: boolean[]
@@ -228,9 +228,10 @@ const SINGLE: ParallelLayout = {
 }
 
 /**
- * The arrangement from the requirements. Two axes sit at 0 and +spacing; LM guides at +spacing (one) or at
- * ±spacing with the axis in the middle (two). With two axes the drive forces split by the lever rule about the
- * payload's y position, so the axis on the payload side carries the larger share.
+ * The arrangement from the requirements, centred on y = 0 (the payload's y is measured from the centre). Two axes
+ * or the axis and one LM guide sit at ∓spacing/2 (the first axis at −); two LM guides at ±spacing with the axis in
+ * the middle. With two axes the drive forces split by the lever rule about the payload's y position: half each
+ * when centred, more on the axis on the payload side.
  */
 export function parallelLayout(req: Requirements): ParallelLayout {
   const p = req.parallel
@@ -241,7 +242,7 @@ export function parallelLayout(req: Requirements): ParallelLayout {
     return {
       ...SINGLE,
       mode: 'guides',
-      positions: two ? [-s, 0, s] : [0, s],
+      positions: two ? [-s, 0, s] : [-s / 2, s / 2],
       isAxis: two ? [false, true, false] : [true, false],
       guides: two ? 2 : 1,
       guideMass: (two ? 2 : 1) * Math.max(0, p.guideMass),
@@ -251,13 +252,20 @@ export function parallelLayout(req: Requirements): ParallelLayout {
   return {
     ...SINGLE,
     mode: p.mode,
-    positions: [0, s],
+    positions: [-s / 2, s / 2],
     isAxis: [true, true],
     axes: 2,
     motors: p.mode === 'twinMotor' ? 2 : 1,
-    share: Math.max(Math.abs(s - y), Math.abs(y)) / s,
+    share: 0.5 + Math.abs(y) / s,
     shaftInertia: p.mode === 'twinShaft' ? Math.max(0, p.shaftInertia) : 0,
   }
+}
+
+/** Payload COG relative to the (first) axis slide centre, as the drawing places it (only that axis is drawn). */
+export function axisCog(req: Requirements): Requirements['cog'] {
+  const layout = parallelLayout(req)
+  const axisY = layout.positions[layout.isAxis.indexOf(true)] * 1000
+  return { ...req.cog, y: req.cog.y - axisY }
 }
 
 /**
@@ -265,7 +273,7 @@ export function parallelLayout(req: Requirements): ParallelLayout {
  * moment about the travel axis turns into normal forces across the members (linear distribution), so the members
  * see no Mx; pitch and yaw moments and in-plane forces are shared equally. With two axes the drives take the yaw
  * from forces in the travel direction (inertial force, and the weight on a vertical axis); with one axis that yaw
- * acts about the axis (y = 0) and is shared by the guides. One member: `guideLoads`.
+ * acts about the axis and is shared by the guides. One member: `guideLoads`.
  */
 export function memberLoads(req: Requirements, mass: number, accel: number, layout: ParallelLayout): GuideLoads[] {
   const n = layout.positions.length
@@ -277,7 +285,8 @@ export function memberLoads(req: Requirements, mass: number, accel: number, layo
   const inertial = mass * accel
   const mean = layout.positions.reduce((a, b) => a + b, 0) / n
   const spread = layout.positions.reduce((sum, p) => sum + (p - mean) ** 2, 0)
-  const yaw = layout.axes > 1 ? 0 : Math.abs(y)
+  // Arm of the travel-direction forces about the single driving axis
+  const yaw = layout.axes > 1 ? 0 : Math.abs(y - layout.positions[layout.isAxis.indexOf(true)])
   return layout.positions.map((p) => {
     const d = p - mean
     switch (req.mounting) {

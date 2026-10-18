@@ -172,7 +172,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
               value={req.cog.y}
               min={-1e6}
               onChange={(v) => setCog('y', v)}
-              hint={parallel.mode !== 'single' ? t('+Y = 추가 축/가이드 쪽') : undefined}
+              hint={parallel.mode !== 'single' ? t('축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽') : undefined}
             />
             <NumberField label="Z" unit="mm" value={req.cog.z} min={-1e6} onChange={(v) => setCog('z', v)} />
           </div>
@@ -255,7 +255,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
 
       <section className="panel application">
         <h2>{t('축 구성')}</h2>
-        <div className="segmented" role="radiogroup">
+        <div className="segmented segmented-grid" role="radiogroup">
           {(Object.keys(parallelModeLabel) as ParallelMode[]).map((m) => (
             <button
               key={m}
@@ -289,9 +289,6 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
               value={parallel.spacing}
               min={1}
               onChange={(v) => setParallel('spacing', v)}
-              hint={t('중앙 부하는 Y = {y} mm', {
-                y: fmt(parallel.mode === 'guides' && parallel.guideCount === 2 ? 0 : parallel.spacing / 2, 1),
-              })}
             />
             {parallel.mode === 'guides' && (
               <NumberField

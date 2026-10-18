@@ -702,6 +702,20 @@ h3 {
   font-weight: 600;
 }
 
+/* Four choices (축 구성): two per row instead of overflowing the input box */
+.inputs .segmented-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.inputs .segmented-grid button:nth-child(odd) {
+  border-left: 0;
+}
+
+.inputs .segmented-grid button:nth-child(n + 3) {
+  border-top: 1px solid var(--sign);
+}
+
 .segmented.small button {
   padding: 4px 11px;
   font-size: 13px;

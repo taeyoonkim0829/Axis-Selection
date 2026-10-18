@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import type { AxisEvaluation } from '../calc/axisSelection'
+import { axisCog, type AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Requirements } from '../calc/types'
 import {
@@ -52,7 +52,9 @@ function download(name: string, text: string, type: string) {
 const fileSafe = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, '_')
 
 /** Step 5: the manufacturers' CAD models of the selection, assembled — 3D preview, STEP and DXF export. */
-export function DrawingStep({ axis, drive, kit, req, sides, onSides }: Props) {
+export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Props) {
+  // Only the (first) axis is drawn: the COG is placed relative to its slide centre.
+  const req = { ...input, cog: axisCog(input) }
   const t = useT()
   const selection: ComboSelection | null =
     axis && drive && kit
