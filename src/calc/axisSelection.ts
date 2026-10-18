@@ -269,6 +269,26 @@ export function axisCog(req: Requirements): Requirements['cog'] {
 }
 
 /**
+ * Forces on the payload and moving parts by direction in the slide frame (N, magnitudes): travel (x), lateral (y)
+ * and normal (z). Weight acts along the normal (floor), lateral (wall) or travel (vertical) direction; the axis's
+ * own inertial force along the travel; a gantry's other axes add inertial forces across it (`req.cross`).
+ */
+function slideForces(req: Requirements, mass: number, accel: number) {
+  const weight = mass * G
+  const inertial = mass * accel
+  const lateral = mass * (req.cross?.lateral ?? 0)
+  const normal = mass * (req.cross?.normal ?? 0)
+  switch (req.mounting) {
+    case 'floor':
+      return { travel: inertial, lateral, normal: weight + normal }
+    case 'wall':
+      return { travel: inertial, lateral: weight + lateral, normal }
+    case 'vertical':
+      return { travel: weight + inertial, lateral, normal }
+  }
+}
+
+/**
  * Loads on each member of a parallel arrangement (rigid payload plate, members of equal stiffness). The rolling
  * moment about the travel axis turns into normal forces across the members (linear distribution), so the members
  * see no Mx; pitch and yaw moments and in-plane forces are shared equally. With two axes the drives take the yaw
@@ -281,38 +301,39 @@ export function memberLoads(req: Requirements, mass: number, accel: number, layo
   const x = Math.abs(req.cog.x) / 1000
   const y = req.cog.y / 1000
   const z = Math.abs(req.cog.z) / 1000
-  const weight = mass * G
-  const inertial = mass * accel
+  const f = slideForces(req, mass, accel)
   const mean = layout.positions.reduce((a, b) => a + b, 0) / n
   const spread = layout.positions.reduce((sum, p) => sum + (p - mean) ** 2, 0)
   // Arm of the travel-direction forces about the single driving axis
   const yaw = layout.axes > 1 ? 0 : Math.abs(y - layout.positions[layout.isAxis.indexOf(true)])
   return layout.positions.map((p) => {
     const d = p - mean
-    switch (req.mounting) {
-      case 'floor':
-        return {
-          Fy: 0,
-          Fz: Math.abs(weight / n + (weight * (y - mean) * d) / spread),
-          Mx: 0,
-          My: (x * weight + z * inertial) / n,
-          Mz: (yaw * inertial) / n,
-        }
-      case 'wall':
-        return {
-          Fy: weight / n,
-          Fz: (z * weight * Math.abs(d)) / spread,
-          Mx: 0,
-          My: (z * inertial) / n,
-          Mz: (x * weight + yaw * inertial) / n,
-        }
-      case 'vertical': {
-        const axial = weight + inertial
-        return { Fy: 0, Fz: 0, Mx: 0, My: (z * axial) / n, Mz: (yaw * axial) / n }
-      }
+    return {
+      Fy: f.lateral / n,
+      // normal forces spread by the payload's lateral position; lateral forces at height z roll onto the members
+      Fz: Math.abs(f.normal * (1 / n + ((y - mean) * d) / spread)) + (z * f.lateral * Math.abs(d)) / spread,
+      Mx: 0,
+      My: (x * f.normal + z * f.travel) / n,
+      Mz: (x * f.lateral + yaw * f.travel) / n,
     }
   })
 }
+
+/**
+ * COG of the moving body of a moving-profile axis relative to the clamped slide, with the profile fully extended
+ * (the free end farthest from the slide, the worst lever): payload beyond the free end (`req.cog` measured from
+ * it), the profile's centre half a stroke out and the drive on the far end, half the base length behind the slide.
+ */
+export function movingProfileCog(req: Requirements, axis: Axis, profile: number, drive: number): Requirements['cog'] {
+  const s = req.stroke
+  const base = axis.baseLength ?? 0
+  const total = req.payload + profile + drive
+  if (!(total > 0)) return req.cog
+  const x = (req.payload * (-(s + base / 2) + req.cog.x) - (profile * s) / 2 + (drive * base) / 2) / total
+  return { x, y: (req.payload * req.cog.y) / total, z: (req.payload * req.cog.z) / total }
+}
+
+const round1 = (n: number) => Math.round(n * 10) / 10
 
 /** Labels of the LM guide loads (reference values for choosing the guides) */
 const LM_LOAD_LABELS: [keyof GuideLoads, string, string][] = [
@@ -327,17 +348,13 @@ export function guideLoads(req: Requirements, mass: number, accel: number): Guid
   const x = Math.abs(req.cog.x) / 1000
   const y = Math.abs(req.cog.y) / 1000
   const z = Math.abs(req.cog.z) / 1000
-  const weight = mass * G
-  const inertial = mass * accel
-  switch (req.mounting) {
-    case 'floor':
-      return { Fy: 0, Fz: weight, Mx: y * weight, My: x * weight + z * inertial, Mz: y * inertial }
-    case 'wall':
-      return { Fy: weight, Fz: 0, Mx: z * weight, My: z * inertial, Mz: y * inertial + x * weight }
-    case 'vertical': {
-      const axial = weight + inertial
-      return { Fy: 0, Fz: 0, Mx: 0, My: z * axial, Mz: y * axial }
-    }
+  const f = slideForces(req, mass, accel)
+  return {
+    Fy: f.lateral,
+    Fz: f.normal,
+    Mx: z * f.lateral + y * f.normal,
+    My: x * f.normal + z * f.travel,
+    Mz: x * f.lateral + y * f.travel,
   }
 }
 
@@ -384,6 +401,8 @@ function pressCycle(req: Requirements): AxisEvaluation['press'] {
 export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings): AxisEvaluation | null {
   const feed = axisFeed(axis)
   if (!feed || !(req.stroke > 0 && req.velocity > 0 && req.acceleration > 0)) return null
+  // An electric cylinder has no profile to move.
+  if (req.movingProfile && axis.rodLateralForceCurve) return null
 
   const strokeM = req.stroke / 1000
   const press = pressCycle(req)
@@ -419,10 +438,15 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const layout = parallelLayout(req)
   const share = layout.share
   const slide = axis.slideMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
+  const mAxis = axisMass(axis, builtStroke)
+  // Moving profile (gantry Z): the slide is clamped, the profile and the drive on it move instead.
+  const profile = req.movingProfile ? mAxis - axis.slideMass : 0
+  const driveMass = req.movingProfile ? Math.max(0, req.movingProfile.driveMass) : 0
+  const moved = req.movingProfile ? profile + driveMass : slide
   const axisPayload = share * req.payload + layout.guideMass
-  const mass = axisPayload + slide
+  const mass = axisPayload + moved
   const axisInertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * builtStroke) / 1000
-  const inertia = axisInertia + axis.inertiaJLPerKg * axisPayload
+  const inertia = axisInertia + axis.inertiaJLPerKg * (axisPayload + moved - slide)
   const toRad = (2 * Math.PI) / (feed / 1000)
   const down = verticalForward(req) === 'down'
 
@@ -513,8 +537,9 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
 
   // Guide loads: the whole moving system (payload, slides, LM guides) spread over the members; the more loaded
   // axis is checked.
-  const systemMass = req.payload + layout.axes * slide + layout.guideMass
-  const members = memberLoads(req, systemMass, fwd.peakAcceleration, layout)
+  const systemMass = req.payload + layout.axes * moved + layout.guideMass
+  const loadReq = req.movingProfile ? { ...req, cog: movingProfileCog(req, axis, profile, driveMass) } : req
+  const members = memberLoads(loadReq, systemMass, fwd.peakAcceleration, layout)
   const axisLoads = members.filter((_, i) => layout.isAxis[i])
   const loads = axisLoads.reduce((a, b) => (guideComparisonValue(b, axis).fv > guideComparisonValue(a, axis).fv ? b : a))
   let fv = 0
@@ -536,7 +561,6 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     })
   }
 
-  const mAxis = axisMass(axis, builtStroke)
   if (!vertical) {
     const totalLength = axis.baseLength ? req.stroke + axis.baseLength : null
     const span = settings.supportSpan > 0 ? settings.supportSpan : totalLength
@@ -563,7 +587,9 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
         ? { note: '축 1개당, 부하 분담 {share}%', noteArgs: { share: Math.round(share * 100) } }
         : layout.guides > 0
           ? { note: 'LM 가이드 {mass} kg 포함', noteArgs: { mass: layout.guideMass } }
-          : {}),
+          : req.movingProfile
+            ? { note: '프로파일 이동: 축 프로파일 {profile} kg + 구동부 {drive} kg', noteArgs: { profile: round1(profile), drive: round1(driveMass) } }
+            : {}),
     },
     { label: '축 질량', value: mAxis, unit: 'kg' },
     { label: '축 관성 모멘트 (구동축 기준)', value: trainInertia, unit: 'kg·cm²', ...(shaft ? { note: '2축 + 연결축' } : {}) },

@@ -60,7 +60,7 @@ ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide): b
 | `inertia` | kg·cm², **including the brake** for brake models |
 | `inertiaWithoutBrake`, `brakeInertia` | kg·cm² |
 | `shaftRadialLoad`, `shaftAxialLoad` | N |
-| `mass` | kg |
+| `mass` | kg; so far only Mitsubishi HK-*. The gantry adds it to the load of the axis carrying the motor (an input value stands in when it is missing) |
 | `allowableInertiaRatio` | load/rotor inertia ratio |
 | `capacitorEnergy` / `regenPower` | J / W |
 | `interfaceCode` | mounting kit code, e.g. `60PA`. Brake and non-brake models share it |

@@ -1,0 +1,106 @@
+import { describe, expect, it } from 'vitest'
+import { axes } from '../data'
+import { computeGantry, noPicks } from '../selection'
+import { evaluateAxis, G, guideLoads } from './axisSelection'
+import { defaultGantry, gantryRequirements, initialGantrySettings, slideFrame, stageOf, type GantryInputs } from './gantry'
+import { defaultSettings, type Requirements } from './types'
+
+const baseReq: Requirements = {
+  stroke: 500,
+  velocity: 1,
+  acceleration: 5,
+  jerk: 0,
+  payload: 10,
+  cog: { x: 100, y: 50, z: 200 },
+  mounting: 'floor',
+}
+const picks = { x: noPicks, y: noPicks, z: noPicks }
+
+describe('guideLoads with cross accelerations', () => {
+  it('adds the lateral and normal inertial forces at the COG', () => {
+    const base = guideLoads(baseReq, 10, 5)
+    const l = guideLoads({ ...baseReq, cross: { lateral: 3, normal: 2 } }, 10, 5)
+    // lateral 30 N at x 0.1, z 0.2; normal 20 N at x 0.1, y 0.05
+    expect(l.Fy).toBeCloseTo(30)
+    expect(l.Fz).toBeCloseTo(10 * G + 20)
+    expect(l.Mx).toBeCloseTo(base.Mx + 0.2 * 30 + 0.05 * 20)
+    expect(l.My).toBeCloseTo(base.My + 0.1 * 20)
+    expect(l.Mz).toBeCloseTo(base.Mz + 0.1 * 30)
+  })
+
+  it('is unchanged without them', () => {
+    expect(guideLoads({ ...baseReq, cross: { lateral: 0, normal: 0 } }, 10, 5)).toEqual(guideLoads(baseReq, 10, 5))
+  })
+})
+
+describe('slideFrame', () => {
+  it('has lateral = normal × travel', () => {
+    expect(slideFrame('x', 'floor').l).toEqual([0, 1, 0])
+    expect(slideFrame('y', 'floor').l).toEqual([-1, 0, 0])
+    expect(slideFrame('z', 'vertical').l).toEqual([0, 1, 0])
+  })
+})
+
+describe('gantryRequirements', () => {
+  it('gives the tool axis the payload and the accelerations of the axes carrying it', () => {
+    const req = gantryRequirements(defaultGantry, 'z', null, [])
+    expect(req.mounting).toBe('vertical')
+    expect(req.payload).toBe(defaultGantry.payload)
+    // Z faces −X: X acceleration is normal to its slide, Y acceleration lateral
+    expect(req.cross).toEqual({ lateral: defaultGantry.motion.y.acceleration, normal: defaultGantry.motion.x.acceleration })
+    // world COG (0, 0, −50) from the slide: −50 along the travel
+    expect(req.cog).toEqual({ x: -50, y: 0, z: 0 })
+  })
+
+  it('hands a selected axis with everything on it to the axis carrying it', () => {
+    const z = gantryRequirements(defaultGantry, 'z', null, [])
+    const axis = axes.find((a) => a.family === 'EGC' && a.drive === 'belt')!
+    const evaluation = evaluateAxis(axis, z, defaultSettings)!
+    const stage = stageOf('z', defaultGantry, evaluation, z, 2)
+    expect(stage.mass).toBeCloseTo(evaluation.axisMass + 2 + z.payload)
+    expect(stage.moving).toBeCloseTo(axis.slideMass + z.payload)
+    const y = gantryRequirements(defaultGantry, 'y', stage, [stage])
+    expect(y.payload).toBeCloseTo(stage.mass)
+    // floor Y: X acceleration is lateral; the Z moving part's reaction is normal
+    expect(y.cross!.lateral).toBeCloseTo(defaultGantry.motion.x.acceleration)
+    expect(y.cross!.normal).toBeCloseTo((defaultGantry.motion.z.acceleration * stage.moving) / stage.mass)
+  })
+})
+
+describe('moving profile', () => {
+  const req: Requirements = { ...baseReq, mounting: 'vertical', stroke: 200, cog: { x: -30, y: 0, z: 0 }, movingProfile: { driveMass: 3 } }
+
+  it('moves the profile and the drive instead of the slide', () => {
+    const axis = axes.find((a) => a.family === 'ELGD' && a.drive === 'spindle')!
+    const slide = evaluateAxis(axis, { ...req, movingProfile: undefined }, defaultSettings)!
+    const profile = evaluateAxis(axis, req, defaultSettings)!
+    expect(profile.movingMass).toBeCloseTo(req.payload + profile.axisMass - axis.slideMass + 3)
+    expect(profile.movingMass).toBeGreaterThan(slide.movingMass)
+  })
+
+  it('leaves out electric cylinders', () => {
+    const esbf = axes.find((a) => a.family === 'ESBF')!
+    expect(evaluateAxis(esbf, req, defaultSettings)).toBeNull()
+  })
+})
+
+describe('computeGantry', () => {
+  it('selects every axis of an XYZ gantry from the tool down', () => {
+    const results = computeGantry(defaultGantry, initialGantrySettings, picks)
+    expect(results.map((r) => r.axis)).toEqual(['z', 'y', 'x'])
+    for (const r of results) expect(r.sel?.selectedAxis).toBeTruthy()
+    const [z, y, x] = results
+    // each axis carries more than the one before it
+    expect(y.req!.payload).toBeCloseTo(z.stage!.mass)
+    expect(x.req!.payload).toBeCloseTo(y.stage!.mass)
+    expect(x.req!.payload).toBeGreaterThan(y.req!.payload)
+    expect(x.req!.parallel?.mode).toBe('twinMotor')
+  })
+
+  it('runs a moving Z profile with its selected drive', () => {
+    const g: GantryInputs = { ...defaultGantry, config: 'yz', zMode: 'profile' }
+    const [z, y] = computeGantry(g, initialGantrySettings, picks)
+    expect(z.req!.movingProfile!.driveMass).toBeCloseTo(z.drive!.mass)
+    expect(y.req!.payload).toBeCloseTo(z.stage!.mass)
+  })
+})

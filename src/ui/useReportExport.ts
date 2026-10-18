@@ -1,0 +1,34 @@
+import { useEffect, useRef, useState } from 'react'
+import { translate, type Lang } from '../i18n'
+import { openPendingTab, reportTitle, reportToPdf } from './pdfExport'
+
+/**
+ * PDF export: `start` opens the waiting tab inside the click and mounts the report (render it off screen into
+ * `reportRef` while `exporting`); the PDF then replaces the waiting page. `name` goes into the file name.
+ */
+export function useReportExport(lang: Lang, name: string | null) {
+  const [exporting, setExporting] = useState(false)
+  const reportRef = useRef<HTMLDivElement>(null)
+  const pdfTab = useRef<Window | null>(null)
+  const start = () => {
+    pdfTab.current = openPendingTab(lang)
+    setExporting(true)
+  }
+  useEffect(() => {
+    if (!exporting || !reportRef.current || !name) return
+    const title = reportTitle(name, lang)
+    reportToPdf(reportRef.current, title)
+      .then((blob) => {
+        const url = URL.createObjectURL(new File([blob], `${title}.pdf`, { type: 'application/pdf' }))
+        const tab = pdfTab.current
+        if (tab && !tab.closed) tab.location.href = url
+        else window.open(url, '_blank')
+      })
+      .catch((error: unknown) => {
+        pdfTab.current?.close()
+        window.alert(`${translate(lang, 'PDF를 만들지 못했습니다.')}\n${String(error)}`)
+      })
+      .finally(() => setExporting(false))
+  }, [exporting]) // eslint-disable-line react-hooks/exhaustive-deps -- runs once per export
+  return { exporting, start, reportRef }
+}

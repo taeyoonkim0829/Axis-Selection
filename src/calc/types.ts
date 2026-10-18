@@ -22,6 +22,20 @@ export interface Requirements {
   press?: PressConditions
   /** Second axis or LM guides parallel to the axis; absent = single axis */
   parallel?: ParallelConfig
+  /** Gantry: accelerations across the travel from the other axes; absent = none */
+  cross?: CrossAcceleration
+  /** Gantry Z axis with a moving profile: the slide is clamped, the profile moves with its drive and the payload.
+   *  The COG is then measured from the centre of the profile's free end (the end away from the drive). */
+  movingProfile?: { /** kg, motor, gearbox and kit on the profile */ driveMass: number }
+}
+
+/**
+ * Peak accelerations (m/s², magnitudes) of the payload and the moving parts in the slide's lateral (y) and normal (z)
+ * directions, caused by the other axes of a gantry. Taken as acting together with the axis's own acceleration.
+ */
+export interface CrossAcceleration {
+  lateral: number
+  normal: number
 }
 
 /**

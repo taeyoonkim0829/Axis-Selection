@@ -37,6 +37,8 @@ interface Props {
   profileView: ProfileView
   /** assembly orientation chosen in step 5 */
   assembly: ComboOptions
+  /** Gantry: which axis this report is for and what it carries (labels are Korean source text) */
+  gantry?: { axis: string; rows: [string, string][] }
 }
 
 type Row = [label: string, value: ReactNode]
@@ -87,7 +89,7 @@ function Chapter({ no, title, children }: { no: number; title: string; children:
   )
 }
 
-export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, profileView, assembly }: Props) {
+export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, profileView, assembly, gantry }: Props) {
   const kit = kitEval?.kit ?? null
   const t = useT()
   const lang = useLang()
@@ -147,6 +149,13 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
     <div className="report">
       <Chapter no={1} title={t('입력 데이터 · 선정 모델')}>
         <p className="report-meta">{t('직교 축 선정 계산서 · {date}', { date: today })}</p>
+
+        {gantry && (
+          <>
+            <h3>{t('겐트리 {axis}', { axis: gantry.axis })}</h3>
+            <SpecTable rows={gantry.rows} />
+          </>
+        )}
 
         <h3>{t('사용 조건')}</h3>
         <SpecTable

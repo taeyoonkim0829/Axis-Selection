@@ -325,6 +325,30 @@ h3 {
     color 160ms ease-out;
 }
 
+/* 단축 선정 / 겐트리 선정: the screen switch, white on the sign like the action buttons */
+.rail-mode {
+  border-color: rgb(255 255 255 / 0.55);
+  background: transparent;
+}
+
+.rail-mode button {
+  color: var(--sign-ink);
+  font-weight: 600;
+}
+
+.rail-mode button + button {
+  border-left-color: rgb(255 255 255 / 0.55);
+}
+
+.rail-mode button:hover:not(.active):not(:disabled) {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.rail-mode button.active {
+  background: var(--sign-ink);
+  color: var(--sign);
+}
+
 .rail-action:hover:not(:disabled) {
   background: var(--sign-ink);
   color: var(--sign);
@@ -426,12 +450,17 @@ h3 {
 
   .rail-actions {
     flex-direction: row;
+    flex-wrap: wrap;
     padding: 12px 16px;
     border-left: 0;
   }
 
   .rail-action {
     flex: 1;
+  }
+
+  .rail-mode {
+    flex: 1 1 100%;
   }
 }
 
@@ -1594,4 +1623,123 @@ th.num {
 
 .report .drive-package .data-table td.model {
   font-size: calc(11px + 2pt);
+}
+
+/* ---------- gantry ---------- */
+
+/* Second heading inside an input section (무게 중심 under 소재, mounting positions) */
+.inputs .subhead {
+  margin: 14px 0 8px;
+  font-size: 14px;
+}
+
+.gantry-motion + .gantry-motion,
+.gantry-motion + .grid-2 {
+  margin-top: 14px;
+}
+
+.gantry-motion h3 {
+  font-size: 13px;
+  color: var(--sign);
+  margin-bottom: 6px;
+}
+
+.gantry-note {
+  display: block;
+  margin: 10px 0;
+}
+
+/* One route sign per axis, in selection order; the open axis carries the signal edge like the rail */
+.gantry-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.gantry-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.gantry-tab:hover:not(.active) {
+  background: var(--surface-2);
+}
+
+.gantry-tab.active {
+  background: var(--signal-soft);
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.gantry-tab-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gantry-tab-order {
+  margin-right: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.gantry-tab-model {
+  font-family: var(--din);
+  font-size: 17px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gantry-tab-detail {
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 탑재 조건: what the open axis carries, as passed to its checks */
+.gantry-load-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.gantry-load-list dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.gantry-load-list dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 0;
+}
+
+.gantry-load-list .num {
+  text-align: left;
+}
+
+.gantry-load-list .muted {
+  font-size: 12px;
+}
+
+.gantry-load .small-print {
+  margin: 12px 0 0;
 }

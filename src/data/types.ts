@@ -119,6 +119,8 @@ export interface Motor {
   /** Festo: order type of the base configuration (smooth shaft, single-turn encoder …) and its part number */
   orderCode?: string | null
   partNumber?: string | null
+  /** kg; so far only Mitsubishi HK-* */
+  mass?: number | null
 }
 
 /** Festo servo drive (CMMT-AS, CMMT-ST) */
@@ -233,6 +235,8 @@ export interface Gearbox {
   driveCode?: string | null
   /** rpm (Festo EMGA, Apex AB/ABR) */
   maxInputSpeed?: number
+  /** kg (Festo EMGA, Apex AB/ABR) */
+  mass?: number | null
   // Festo EMGA only (from the Festo documentation)
   /** order number */
   partNumber?: string

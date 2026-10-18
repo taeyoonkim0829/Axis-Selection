@@ -16,7 +16,15 @@ interface Props {
   exporting: boolean
   lang: Lang
   onLang: (lang: Lang) => void
+  mode: AppMode
+  onMode: (mode: AppMode) => void
+  /** Gantry: the axis whose selection the signs show (e.g. "Y축") */
+  context?: string
 }
+
+/** single = one axis (with its parallel arrangement), gantry = XYZ combination */
+export type AppMode = 'single' | 'gantry'
+const modeLabel: Record<AppMode, string> = { single: '단축 선정', gantry: '겐트리 선정' }
 
 const stepIds = ['step-axis', 'step-motor', 'step-gearbox', 'step-kit'] as const
 
@@ -83,7 +91,7 @@ function Sign({
   )
 }
 
-export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
+export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang, mode, onMode, context }: Props) {
   const t = useT()
   const active = useActiveStep()
   const axisTight = axis && tightest(axis.checks)
@@ -102,7 +110,7 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
       <div className="rail-inner">
         <div className="rail-brand">
           <span className="rail-title">Axis Selection</span>
-          <span className="rail-sub">{t('직교 축 · 모터 · 연결키트 선정')}</span>
+          <span className="rail-sub">{context ?? t('직교 축 · 모터 · 연결키트 선정')}</span>
         </div>
         <ol className="signs" aria-label={t('선정 경로')}>
           <Sign
@@ -141,6 +149,20 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
           />
         </ol>
         <div className="rail-actions">
+          <div className="segmented small rail-mode" role="radiogroup" aria-label={t('선정 화면')}>
+            {(Object.keys(modeLabel) as AppMode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                className={mode === m ? 'active' : ''}
+                onClick={() => mode !== m && onMode(m)}
+              >
+                {t(modeLabel[m])}
+              </button>
+            ))}
+          </div>
           <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
             {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
           </button>

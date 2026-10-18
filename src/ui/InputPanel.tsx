@@ -42,8 +42,6 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
   const setPress = <K extends keyof PressConditions>(key: K, value: PressConditions[K]) =>
     onReq({ ...req, press: { ...press, [key]: value } })
   const parallel = req.parallel ?? defaultParallel
-  const setParallel = <K extends keyof ParallelConfig>(key: K, value: ParallelConfig[K]) =>
-    onReq({ ...req, parallel: { ...parallel, [key]: value } })
 
   // Acceleration can be entered directly or as the time to reach the velocity; the calculation always uses
   // req.acceleration, so in time mode it is re-derived whenever velocity, time or jerk changes.
@@ -252,142 +250,160 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
         )}
       </section>
 
-      <section className="panel application">
-        <h2>{t('축 구성')}</h2>
-        <div className="segmented segmented-grid" role="radiogroup">
-          {(Object.keys(parallelModeLabel) as ParallelMode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="radio"
-              aria-checked={parallel.mode === m}
-              className={parallel.mode === m ? 'active' : ''}
-              onClick={() => setParallel('mode', m)}
-            >
-              {t(parallelModeLabel[m])}
-            </button>
-          ))}
-        </div>
-        <p className="field-hint application-hint">{t(parallelModeHint[parallel.mode])}</p>
-        {parallel.mode === 'guides' && (
-          <div className="field">
-            <span className="field-label">{t('LM 가이드 수')}</span>
-            <RadioGroup
-              options={[1, 2] as const}
-              value={parallel.guideCount}
-              onChange={(v) => setParallel('guideCount', v)}
-              label={(v) => t(v === 1 ? '1개 (2열)' : '2개 (3열, 축이 가운데)')}
-            />
-          </div>
-        )}
-        {parallel.mode !== 'single' && (
-          <div className="grid-2">
-            <NumberField
-              label={t(parallel.mode === 'guides' ? '축–가이드 간격' : '축 간격')}
-              unit="mm"
-              value={parallel.spacing}
-              min={1}
-              onChange={(v) => setParallel('spacing', v)}
-            />
-            {parallel.mode === 'guides' && (
-              <NumberField
-                label={t('가이드 1개 이동 질량')}
-                unit="kg"
-                value={parallel.guideMass}
-                onChange={(v) => setParallel('guideMass', v)}
-                hint={t('블록 + 브래킷')}
-              />
-            )}
-            {parallel.mode === 'twinShaft' && (
-              <NumberField
-                label={t('연결축 관성')}
-                unit="kg·cm²"
-                value={parallel.shaftInertia}
-                onChange={(v) => setParallel('shaftInertia', v)}
-                hint={t('연결축 + 커플링')}
-              />
-            )}
-          </div>
-        )}
-      </section>
+      <ParallelSection parallel={parallel} onParallel={(p) => onReq({ ...req, parallel: p })} />
 
-      <details className="panel settings">
-        <summary>{t('상세 설정')}</summary>
+      <DetailSettings settings={settings} onSettings={onSettings} />
+    </aside>
+  )
+}
+
+/** 축 구성: single axis, two axes or LM guides, with spacing and the mode's own inputs. */
+export function ParallelSection({ parallel, onParallel, title = '축 구성' }: { parallel: ParallelConfig; onParallel: (p: ParallelConfig) => void; title?: string }) {
+  const t = useT()
+  const setParallel = <K extends keyof ParallelConfig>(key: K, value: ParallelConfig[K]) => onParallel({ ...parallel, [key]: value })
+  return (
+    <section className="panel application">
+      <h2>{t(title)}</h2>
+      <div className="segmented segmented-grid" role="radiogroup">
+        {(Object.keys(parallelModeLabel) as ParallelMode[]).map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="radio"
+            aria-checked={parallel.mode === m}
+            className={parallel.mode === m ? 'active' : ''}
+            onClick={() => setParallel('mode', m)}
+          >
+            {t(parallelModeLabel[m])}
+          </button>
+        ))}
+      </div>
+      <p className="field-hint application-hint">{t(parallelModeHint[parallel.mode])}</p>
+      {parallel.mode === 'guides' && (
+        <div className="field">
+          <span className="field-label">{t('LM 가이드 수')}</span>
+          <RadioGroup
+            options={[1, 2] as const}
+            value={parallel.guideCount}
+            onChange={(v) => setParallel('guideCount', v)}
+            label={(v) => t(v === 1 ? '1개 (2열)' : '2개 (3열, 축이 가운데)')}
+          />
+        </div>
+      )}
+      {parallel.mode !== 'single' && (
         <div className="grid-2">
           <NumberField
-            label={t('구동 효율 (볼스크류)')}
-            value={settings.efficiency.spindle}
-            min={0.01}
-            onChange={(v) => setS('efficiency', { ...settings.efficiency, spindle: v })}
-          />
-          <NumberField
-            label={t('구동 효율 (벨트)')}
-            value={settings.efficiency.belt}
-            min={0.01}
-            onChange={(v) => setS('efficiency', { ...settings.efficiency, belt: v })}
-          />
-          <NumberField
-            label={t('마찰 계수 (볼스크류)')}
-            value={settings.friction.spindle}
-            onChange={(v) => setS('friction', { ...settings.friction, spindle: v })}
-          />
-          <NumberField
-            label={t('마찰 계수 (벨트)')}
-            value={settings.friction.belt}
-            onChange={(v) => setS('friction', { ...settings.friction, belt: v })}
-          />
-          <NumberField
-            label={t('외부 반력 Fc')}
-            unit="N"
-            value={settings.externalForce}
-            onChange={(v) => setS('externalForce', v)}
-          />
-          <NumberField
-            label={t('가이드 저항 FG')}
-            unit="N"
-            value={settings.guideResistance}
-            onChange={(v) => setS('guideResistance', v)}
-          />
-          <NumberField
-            label={t('커플링 관성')}
-            unit="kg·cm²"
-            value={settings.couplingInertia}
-            onChange={(v) => setS('couplingInertia', v)}
-          />
-          <NumberField
-            label={t('기본 허용 관성비')}
-            unit={t('배')}
-            value={settings.defaultInertiaRatio}
-            min={0.1}
-            onChange={(v) => setS('defaultInertiaRatio', v)}
-            hint={t('모터 데이터에 없을 때')}
-          />
-          <NumberField
-            label={t('지지 간격')}
+            label={t(parallel.mode === 'guides' ? '축–가이드 간격' : '축 간격')}
             unit="mm"
-            value={settings.supportSpan}
-            onChange={(v) => setS('supportSpan', v)}
-            hint={t('0 = 양 끝만 지지')}
+            value={parallel.spacing}
+            min={1}
+            onChange={(v) => setParallel('spacing', v)}
           />
-          <NumberField
-            label={t('일 가동 시간')}
-            unit="h"
-            value={settings.hoursPerDay}
-            min={0.1}
-            onChange={(v) => setS('hoursPerDay', v)}
-          />
+          {parallel.mode === 'guides' && (
+            <NumberField
+              label={t('가이드 1개 이동 질량')}
+              unit="kg"
+              value={parallel.guideMass}
+              onChange={(v) => setParallel('guideMass', v)}
+              hint={t('블록 + 브래킷')}
+            />
+          )}
+          {parallel.mode === 'twinShaft' && (
+            <NumberField
+              label={t('연결축 관성')}
+              unit="kg·cm²"
+              value={parallel.shaftInertia}
+              onChange={(v) => setParallel('shaftInertia', v)}
+              hint={t('연결축 + 커플링')}
+            />
+          )}
         </div>
-        <div className="field">
-          <span className="field-label">{t('보수적 판정')}</span>
-          <ToggleButton
-            label={settings.conservative ? t('켜짐') : t('꺼짐')}
-            checked={settings.conservative}
-            onChange={(v) => setS('conservative', v)}
-          />
-          <span className="field-hint">{t('켜면 등속 구간 토크가 정격 토크를 넘을 때 주의 대신 부적합')}</span>
-        </div>
-      </details>
-    </aside>
+      )}
+    </section>
+  )
+}
+
+/** The collapsible 상세 설정 box: efficiencies, friction, external forces, inertia, support span, operating hours. */
+export function DetailSettings({ settings, onSettings }: { settings: Settings; onSettings: (settings: Settings) => void }) {
+  const t = useT()
+  const setS = <K extends keyof Settings>(key: K, value: Settings[K]) => onSettings({ ...settings, [key]: value })
+  return (
+    <details className="panel settings">
+      <summary>{t('상세 설정')}</summary>
+      <div className="grid-2">
+        <NumberField
+          label={t('구동 효율 (볼스크류)')}
+          value={settings.efficiency.spindle}
+          min={0.01}
+          onChange={(v) => setS('efficiency', { ...settings.efficiency, spindle: v })}
+        />
+        <NumberField
+          label={t('구동 효율 (벨트)')}
+          value={settings.efficiency.belt}
+          min={0.01}
+          onChange={(v) => setS('efficiency', { ...settings.efficiency, belt: v })}
+        />
+        <NumberField
+          label={t('마찰 계수 (볼스크류)')}
+          value={settings.friction.spindle}
+          onChange={(v) => setS('friction', { ...settings.friction, spindle: v })}
+        />
+        <NumberField
+          label={t('마찰 계수 (벨트)')}
+          value={settings.friction.belt}
+          onChange={(v) => setS('friction', { ...settings.friction, belt: v })}
+        />
+        <NumberField
+          label={t('외부 반력 Fc')}
+          unit="N"
+          value={settings.externalForce}
+          onChange={(v) => setS('externalForce', v)}
+        />
+        <NumberField
+          label={t('가이드 저항 FG')}
+          unit="N"
+          value={settings.guideResistance}
+          onChange={(v) => setS('guideResistance', v)}
+        />
+        <NumberField
+          label={t('커플링 관성')}
+          unit="kg·cm²"
+          value={settings.couplingInertia}
+          onChange={(v) => setS('couplingInertia', v)}
+        />
+        <NumberField
+          label={t('기본 허용 관성비')}
+          unit={t('배')}
+          value={settings.defaultInertiaRatio}
+          min={0.1}
+          onChange={(v) => setS('defaultInertiaRatio', v)}
+          hint={t('모터 데이터에 없을 때')}
+        />
+        <NumberField
+          label={t('지지 간격')}
+          unit="mm"
+          value={settings.supportSpan}
+          onChange={(v) => setS('supportSpan', v)}
+          hint={t('0 = 양 끝만 지지')}
+        />
+        <NumberField
+          label={t('일 가동 시간')}
+          unit="h"
+          value={settings.hoursPerDay}
+          min={0.1}
+          onChange={(v) => setS('hoursPerDay', v)}
+        />
+      </div>
+      <div className="field">
+        <span className="field-label">{t('보수적 판정')}</span>
+        <ToggleButton
+          label={settings.conservative ? t('켜짐') : t('꺼짐')}
+          checked={settings.conservative}
+          onChange={(v) => setS('conservative', v)}
+        />
+        <span className="field-hint">{t('켜면 등속 구간 토크가 정격 토크를 넘을 때 주의 대신 부적합')}</span>
+      </div>
+    </details>
   )
 }
 
