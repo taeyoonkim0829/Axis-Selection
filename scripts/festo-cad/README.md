@@ -33,4 +33,9 @@ node scripts/festo-cad/import.mjs <folder>           # copy them (--move to move
   A file already in `data/` keeps its place. It does not write the frame JSON: axes, kits and gearboxes need one
   before step 5 can place them (format in `data/README.md`); the report lists them. Motors work without one when
   the flange is at z = 0 with the shaft along +z (Festo convention).
+- Module numbers (configurable products without a part number per stroke/option, e.g. EGC GV slides, ELGD -L)
+  open in their default configuration. Configure them in the part view's 수직 (vertical) table — options are
+  buttons there (GK/GV, 5P/10P, L, PU2), the stroke a number field — then export; the file is named after the
+  configured type (`556809 EGC-120-500-BS-10P-KF-0H-ML-GV_(0)`), which `import.mjs` reads.
+- ELGT-TB-…-CS (customer solution) is not in the catalog.
 - Export as STEP AP214 or AP242 with the default (CADENAS) file name; only `.stp`/`.step` is read.

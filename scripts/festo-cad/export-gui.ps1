@@ -31,6 +31,8 @@ public static class U {
   [DllImport("user32.dll")] public static extern void mouse_event(int f, int x, int y, int d, int e);
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr h);
 }
 '@
 [U]::SetProcessDPIAware() | Out-Null
@@ -41,6 +43,10 @@ function Focus {
   [U]::ShowWindow($p.MainWindowHandle, 3) | Out-Null
   [U]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
   Start-Sleep -Milliseconds 300
+  # never click or type into another window (Windows may refuse to bring PARTdataManager forward)
+  if ([U]::GetForegroundWindow() -ne $p.MainWindowHandle -or -not [U]::IsZoomed($p.MainWindowHandle)) {
+    throw 'PARTdataManager is not the maximised foreground window'
+  }
 }
 function Click($xy, [switch]$Double) {
   [U]::SetCursorPos($xy[0], $xy[1]) | Out-Null
@@ -124,6 +130,11 @@ foreach ($r in $rows) {
     if ($product -notlike "$($r.partNumber) *") { $result = 'other part' }
   } catch {
     $result = "failed: $($_.Exception.Message)"
+    if ($result -like '*foreground*') {
+      "$(Get-Date -Format s),$($r.partNumber),""$($r.model)"",""$result"","""",0" | Out-File $log -Append -Encoding utf8
+      Write-Host "stopped: $result"
+      break
+    }
     Send '{ESC}{ESC}'
   }
   $sec = [int]((Get-Date) - $t0).TotalSeconds
