@@ -74,6 +74,8 @@ npm run lint           # oxlint
 npm test               # vitest run
 npx vitest run src/calc/motionProfile.test.ts   # single file
 npx vitest run -t "guideLoads"                  # tests matching a name
+node scripts/festo-cad/list.mjs missing.csv     # Festo CAD models still missing (see scripts/festo-cad/README.md)
+node scripts/festo-cad/import.mjs <folder>      # file exported STEP models into data/…/Drawings
 ```
 
 ## Architecture
