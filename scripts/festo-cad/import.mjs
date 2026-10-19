@@ -3,7 +3,7 @@
 // Each file is identified by its first PRODUCT name in the STEP data ("<partNumber> <model>---(…)"), else by its
 // FILE_NAME / file name, and saved as <partNumber>_<model>.stp next to the product data. Frames (the JSON next
 // to each file) are not created; the report lists the files that still need one.
-import { copyFileSync, existsSync, mkdirSync, openSync, readSync, closeSync, readdirSync, renameSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { existingDrawings, root, wantedParts } from './parts.mjs'
 
@@ -16,17 +16,10 @@ if (!src || !existsSync(src)) {
   process.exit(1)
 }
 
-function head(file, bytes = 1 << 20) {
-  const fd = openSync(file, 'r')
-  const buf = Buffer.alloc(bytes)
-  const n = readSync(fd, buf, 0, bytes, 0)
-  closeSync(fd)
-  return buf.subarray(0, n).toString('latin1')
-}
-
 /** "<partNumber> <model>" candidates of a STEP file, most specific first. */
 function identities(file) {
-  const text = head(file)
+  // the PRODUCT entities can sit anywhere in the DATA section
+  const text = readFileSync(file, 'latin1')
   const found = []
   const product = /PRODUCT\(\s*'(\d{5,})[ _]([^'(]+?)(?:---[^']*)?'/.exec(text)
   if (product) found.push({ partNumber: product[1], model: product[2].trim() })
