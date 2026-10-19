@@ -57,17 +57,18 @@ function Click($xy, [switch]$Double) {
 function Send([string]$keys) { [System.Windows.Forms.SendKeys]::SendWait($keys) }
 function Literal([string]$s) { $s -replace '([+^%~(){}\[\]])', '{$1}' }
 $A = [System.Windows.Automation.AutomationElement]
-# the export dialog is a child window of the main window; returns its top left corner or $null
-function Dialog {
+# dialogs are child windows of the main window; returns the rectangle (x, y, width, height) of the one whose
+# title matches, or $null
+function Dialog([string]$Title = 'STEP*') {
   $p = Get-Process pdatamgr | Select-Object -First 1
   $main = $A::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Children,
     (New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, $p.Id)))
   if (-not $main) { return $null }
   $d = $main.FindFirst([System.Windows.Automation.TreeScope]::Children,
     (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Window)))
-  if (-not $d -or $d.Current.Name -notlike 'STEP*') { return $null }
+  if (-not $d -or $d.Current.Name -notlike $Title) { return $null }
   $r = $d.Current.BoundingRectangle
-  , @([int]$r.X, [int]$r.Y)
+  , @([int]$r.X, [int]$r.Y, [int]$r.Width, [int]$r.Height)
 }
 function At($corner, $offset) { , @(($corner[0] + $offset[0]), ($corner[1] + $offset[1])) }
 function FirstProduct([string]$file) {
@@ -101,6 +102,15 @@ foreach ($r in $rows) {
     Send '^a'; Send (Literal $r.partNumber); Send '{ENTER}'
     Start-Sleep -Milliseconds 3500
     Click $pos.result -Double
+    Start-Sleep -Milliseconds 1500
+    # a discontinued part asks whether to open it or its successor (the only dialog opening a part brings up; its
+    # title is Korean, which Windows PowerShell would misread here): pick the part itself (left tile), then open
+    $old = Dialog '*'
+    if ($old) {
+      Click @(($old[0] + [int]($old[2] * 0.24)), ($old[1] + [int]($old[3] * 0.48))); Start-Sleep -Milliseconds 400
+      Click @(($old[0] + $old[2] - 62), ($old[1] + $old[3] - 29))
+      $result = 'ok (discontinued)'
+    }
     Start-Sleep -Milliseconds $OpenWait
 
     $dlg = $null
