@@ -14,7 +14,7 @@ import {
 } from './drawings'
 import { add, apply, cross, dot, identity, mate, rotate, scale, sub, turnAbout, type Frame, type Transform } from './geometry'
 import { parseStep, writeStep, type Vec3 } from './step'
-import { stretchPart } from './stretch'
+import { stretchedOrigin, stretchPart } from './stretch'
 
 export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor'
 
@@ -149,19 +149,23 @@ export async function buildCombo(
 
   let axisFile = parseStep(axisText)
   const stretch = sel.stroke - axisMeta.stroke
+  let { drive, slide } = axisMeta
   if (stretch !== 0) {
     if (!axisMeta.stretch) throw new Error(`no stretch data for ${found.axis.model}`)
     axisFile = stretchPart(axisFile, axisMeta.stretch, stretch).file
+    // a slide or drive at the moving end moves with it
+    drive = { ...drive, origin: stretchedOrigin(drive.origin, axisMeta.stretch, stretch) }
+    slide = { ...slide, origin: stretchedOrigin(slide.origin, axisMeta.stretch, stretch) }
   }
 
   // axis → world: slide centre at the origin, travel and slide normal by the mounting
   const world = mountingFrame(req.mounting)
-  const slideFrame: Frame = { origin: axisMeta.slide.origin, axis: axisMeta.slide.travel, up: axisMeta.slide.normal }
+  const slideFrame: Frame = { origin: slide.origin, axis: slide.travel, up: slide.normal }
   const axisToWorld = mate(identity, { origin: [0, 0, 0], axis: world.travel, up: world.normal }, slideFrame)
-  let kitToWorld = mate(axisToWorld, axisMeta.drive, kitMeta.axisFace)
+  let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
   // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
-  const out = rotate(axisToWorld, axisMeta.drive.axis)
-  const up = rotate(axisToWorld, axisMeta.drive.up)
+  const out = rotate(axisToWorld, drive.axis)
+  const up = rotate(axisToWorld, drive.up)
   const right = cross(up, out)
   const sideVector = (side: Side) =>
     side === 'up' ? up : side === 'down' ? scale(up, -1) : side === 'right' ? right : scale(right, -1)
@@ -170,7 +174,7 @@ export async function buildCombo(
     const offset = sub(apply(kitToWorld, kitMeta.motorFace.origin), apply(kitToWorld, kitMeta.axisFace.origin))
     const radial = sub(offset, scale(out, dot(offset, out)))
     if (Math.hypot(...radial) > 1)
-      kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, axisMeta.drive.origin), out, radial, sideVector(options.kitSide))
+      kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, drive.origin), out, radial, sideVector(options.kitSide))
   }
   const parts: (AssemblyPart & { role: PartRole })[] = [
     { role: 'axis', name: sel.axisModel, file: axisFile, transform: axisToWorld },

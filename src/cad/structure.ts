@@ -1,4 +1,4 @@
-import { args, refList, refs, typeOf, type StepFile } from './step'
+import { args, pointOf, refList, refs, typeOf, type StepFile, type Vec3 } from './step'
 
 // Product structure of a STEP file: PRODUCT → formation → PRODUCT_DEFINITION → shape → representations.
 
@@ -30,6 +30,30 @@ export function definitionByName(file: StepFile, name: string): number | null {
     ([, b]) => typeOf(b).startsWith('PRODUCT_DEFINITION_FORMATION') && refs(b)[0] === product,
   )?.[0]
   return ofType(file, 'PRODUCT_DEFINITION').find(([, b]) => refs(b)[0] === formation)?.[0] ?? null
+}
+
+/**
+ * Where a part's shape representation sits in its assembly: the origin and axes (columns) of the placement its
+ * ITEM_DEFINED_TRANSFORMATION maps it to, or null when it is not placed (the root, a single-part file). Assumes the
+ * transformation's first placement is the identity, as CADENAS writes it.
+ */
+export function placementOf(file: StepFile, rep: number): { origin: Vec3; axes: [Vec3, Vec3, Vec3] } | null {
+  for (const body of file.entities.values()) {
+    const rel = /REPRESENTATION_RELATIONSHIP\s*\([^()]*?,\s*#(\d+)\s*,\s*#\d+\s*\)/.exec(body)
+    const idt = /REPRESENTATION_RELATIONSHIP_WITH_TRANSFORMATION\s*\(\s*#(\d+)\s*\)/.exec(body)
+    if (!rel || !idt || Number(rel[1]) !== rep) continue
+    const placement = file.entities.get(refs(file.entities.get(Number(idt[1])) ?? '')[1] ?? -1) ?? ''
+    const [location, z, x] = refs(placement)
+    const origin = pointOf(file.entities.get(location) ?? '')
+    if (!origin) return null
+    const dir = (id: number | undefined, fallback: Vec3) =>
+      id == null ? fallback : (pointOf((file.entities.get(id) ?? '').replace(/^DIRECTION/, 'CARTESIAN_POINT')) ?? fallback)
+    const zz = dir(z, [0, 0, 1])
+    const xx = dir(x, [1, 0, 0])
+    const yy: Vec3 = [zz[1] * xx[2] - zz[2] * xx[1], zz[2] * xx[0] - zz[0] * xx[2], zz[0] * xx[1] - zz[1] * xx[0]]
+    return { origin, axes: [xx, yy, zz] }
+  }
+  return null
 }
 
 /** Solids (MANIFOLD_SOLID_BREP, BREP_WITH_VOIDS) of a shape representation, directly or via a relationship */

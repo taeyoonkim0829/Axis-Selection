@@ -1,21 +1,40 @@
 import { args, closure, pointBody, pointOf, refList, refs, referrers, typeOf, type StepFile, type Vec3 } from './step'
-import { definitionByName, shapeOf, solidsOf } from './structure'
+import { definitionByName, placementOf, shapeOf, solidsOf } from './structure'
 
 /**
- * Length change of a prismatic axis body (profile, cover strip) in its own coordinates: everything beyond a cut
- * plane moves along the axis. Lengthening opens a gap at the cut; shortening removes a window behind the cut,
- * dropping the features (holes, slots) that lie entirely inside it. The cut is placed where only edges parallel
- * to the axis cross it, so the B-rep stays valid.
+ * Length change of a prismatic axis body (profile, cover strip): everything beyond a cut plane moves along the
+ * axis. Lengthening opens a gap at the cut; shortening removes a window behind the cut, dropping the features
+ * (holes, slots) that lie entirely inside it. The cut is placed where only edges parallel to the axis cross it, so
+ * the B-rep stays valid. All values are in the file's (assembly) coordinates, like the other frames; they are
+ * turned into the part's own coordinates by its placement, which must keep the length along a coordinate axis.
  */
 export interface StretchSpec {
   /** text in the PRODUCT name of the part to stretch */
   part: string
-  /** coordinate index of the length direction in the part's coordinates */
+  /** further parts stretched the same way (an electric cylinder's piston rod) */
+  also?: string[]
+  /** coordinate index of the length direction */
   axis: 0 | 1 | 2
   /** +1 / −1: side of the cut that moves (the far end) */
   dir: 1 | -1
-  /** where the cut may go, part coordinates along `axis` */
+  /** where the cut may go, along `axis` */
   range: [number, number]
+  /**
+   * Other parts at the moving end (end caps, the slide when it sits there …), by the id of their placement in the
+   * assembly (the second AXIS2_PLACEMENT_3D of their ITEM_DEFINED_TRANSFORMATION): moved along with it.
+   */
+  move?: number[]
+}
+
+/** The spec in the part's own coordinates */
+function partSpec(file: StepFile, rep: number, spec: StretchSpec, part: string): Pick<StretchSpec, 'axis' | 'dir' | 'range'> {
+  const placed = placementOf(file, rep)
+  if (!placed) return spec
+  const j = placed.axes.findIndex((a) => Math.abs(a[spec.axis]) > 0.9999)
+  if (j < 0) throw new Error(`STEP: part "${part}" is placed at an angle to its length`)
+  const s = Math.sign(placed.axes[j][spec.axis]) as 1 | -1
+  const local = spec.range.map((v) => (v - placed.origin[spec.axis]) * s)
+  return { axis: j as 0 | 1 | 2, dir: (spec.dir * s) as 1 | -1, range: [Math.min(...local), Math.max(...local)] }
 }
 
 export interface StretchResult {
@@ -40,12 +59,34 @@ export function stretchPart(source: StepFile, spec: StretchSpec, delta: number):
   const file: StepFile = { header: source.header, entities: new Map(source.entities) }
   if (Math.abs(delta) < 1e-6) return { file, cut: NaN, removedFaces: 0 }
   const e = file.entities
-  const pd = definitionByName(file, spec.part)
+  const { cut, removedFaces } = stretchOne(file, spec.part, spec, delta)
+  for (const part of spec.also ?? []) stretchOne(file, part, spec, delta)
+
+  // Parts at the moving end: shift their placement (a new point, the old one may be shared)
+  let nextId = Math.max(...e.keys()) + 1
+  for (const placement of spec.move ?? []) {
+    const body = e.get(placement)
+    if (!body || typeOf(body) !== 'AXIS2_PLACEMENT_3D') throw new Error(`STEP: #${placement} is not a placement`)
+    const location = pointOf(e.get(refs(body)[0]) ?? '')
+    if (!location) throw new Error(`STEP: placement #${placement} has no location`)
+    location[spec.axis] += spec.dir * delta
+    const point = nextId++
+    e.set(point, pointBody(location))
+    e.set(placement, replaceArg(body, 1, `#${point}`))
+  }
+  return { file, cut, removedFaces }
+}
+
+/** Stretches one part of `file` in place; returns the cut in the part's coordinates */
+function stretchOne(file: StepFile, part: string, spec: StretchSpec, delta: number): Omit<StretchResult, 'file'> {
+  const e = file.entities
+  const pd = definitionByName(file, part)
   const rep = pd != null ? shapeOf(file, pd) : null
   const solids = rep != null ? solidsOf(file, rep) : []
-  if (solids.length === 0) throw new Error(`STEP: part "${spec.part}" not found`)
+  if (solids.length === 0) throw new Error(`STEP: part "${part}" not found`)
 
-  const k = spec.axis
+  const local = partSpec(file, rep!, spec, part)
+  const k = local.axis
   const coord = (id: number) => pointOf(e.get(id) ?? '')?.[k]
   const extentCache = new Map<number, Edge>()
   const edgeOf = (id: number): Edge => {
@@ -113,11 +154,11 @@ export function stretchPart(source: StepFile, spec: StretchSpec, delta: number):
   }
 
   const span = Math.abs(delta)
-  const [r0, r1] = [Math.min(...spec.range), Math.max(...spec.range)]
+  const [r0, r1] = [Math.min(...local.range), Math.max(...local.range)]
   const mid = (r0 + r1) / 2
   // window [w0, w1] behind the cut (on the moving side); empty when lengthening
   const windowOf = (c: number): [number, number] => {
-    const far = delta < 0 ? c + spec.dir * span : c
+    const far = delta < 0 ? c + local.dir * span : c
     return [Math.min(c, far), Math.max(c, far)]
   }
   const inside = (x: Edge, [w0, w1]: [number, number]) => x.lo > w0 + MARGIN && x.hi < w1 - MARGIN
@@ -172,10 +213,10 @@ export function stretchPart(source: StepFile, spec: StretchSpec, delta: number):
   for (const id of inSolids) {
     const p = pointOf(e.get(id) ?? '')
     if (!p) continue
-    const u = (p[k] - cut) * spec.dir
+    const u = (p[k] - cut) * local.dir
     if (u <= 0) continue
     const moved: Vec3 = [...p]
-    moved[k] = delta > 0 ? p[k] + spec.dir * delta : u >= span ? p[k] - spec.dir * span : cut
+    moved[k] = delta > 0 ? p[k] + local.dir * delta : u >= span ? p[k] - local.dir * span : cut
     const outside = (by.get(id) ?? []).filter((r) => !inSolids.has(r))
     if (outside.length > 0) {
       // keep the original for the other users, give the solid its own copy
@@ -185,7 +226,16 @@ export function stretchPart(source: StepFile, spec: StretchSpec, delta: number):
         if (inSolids.has(r)) e.set(r, e.get(r)!.replace(new RegExp(`#${id}(?!\\d)`, 'g'), `#${copy}`))
     } else e.set(id, pointBody(moved))
   }
-  return { file, cut, removedFaces }
+  return { cut, removedFaces }
+}
+
+/** A frame on the axis after the length change: frames at the moving end (beyond the cut range) move along. */
+export function stretchedOrigin(origin: Vec3, spec: StretchSpec, delta: number): Vec3 {
+  const edge = spec.dir > 0 ? Math.max(...spec.range) : Math.min(...spec.range)
+  if ((origin[spec.axis] - edge) * spec.dir <= 0) return origin
+  const moved: Vec3 = [...origin]
+  moved[spec.axis] += spec.dir * delta
+  return moved
 }
 
 const directionOf = (body: string) => pointOf(body.replace(/^DIRECTION/, 'CARTESIAN_POINT'))!
