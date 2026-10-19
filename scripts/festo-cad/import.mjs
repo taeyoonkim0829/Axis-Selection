@@ -21,7 +21,8 @@ function identities(file) {
   // the PRODUCT entities can sit anywhere in the DATA section
   const text = readFileSync(file, 'latin1')
   const found = []
-  const product = /PRODUCT\(\s*'(\d{5,})[ _]([^'(]+?)(?:---[^']*)?'/.exec(text)
+  // configured products (module numbers) end in "_(0)" instead of "---(…)"
+  const product = /PRODUCT\(\s*'(\d{5,})[ _]([^'(]+?)(?:---[^']*|_\([^']*\))?'/.exec(text)
   if (product) found.push({ partNumber: product[1], model: product[2].trim() })
   const fileName = /FILE_NAME\(\s*(?:\/\*[^*]*\*\/\s*)?'(\d{5,})_([^']+)'/.exec(text)
   if (fileName) found.push({ partNumber: fileName[1], model: fileName[2].trim() })
