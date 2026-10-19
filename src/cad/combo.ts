@@ -190,8 +190,11 @@ export async function buildCombo(
   let motorToWorld = mate(motorParent.transform, motorParent.frame, motorMeta.flange)
   const shaft = rotate(motorToWorld, motorMeta.flange.axis)
   const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
-  const target = sideVector(connectorSide(options, parallel))
-  motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
+  // the side across the shaft; behind an angle gearbox the shaft itself can point to that side: the motor keeps its turn
+  const side = sideVector(connectorSide(options, parallel))
+  const target = sub(side, scale(shaft, dot(side, shaft)))
+  if (Math.hypot(...target) > 1e-6)
+    motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
   parts.push({ role: 'motor', name: found.motor.model, file: parseStep(motorText), transform: motorToWorld })
 
   const lateral = cross(world.normal, world.travel)

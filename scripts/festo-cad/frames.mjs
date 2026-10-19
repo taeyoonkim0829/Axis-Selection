@@ -1,4 +1,5 @@
-// Writes the frame JSON (data/README.md, "Drawings") for Festo axis STEP files that have none, from their geometry:
+// Writes the frame JSON (data/README.md, "Drawings") for Festo axis, kit and gearbox STEP files that have none, from
+// their geometry:
 //   node scripts/festo-cad/frames.mjs [--dry-run] [--force] [file.stp …]
 // Festo's CADENAS models share one layout: length along z, base at y = 0, slide on top (+y), centred on x = 0.
 // Per family: the motor end (+z for ELGT, ELGD and EGC/EGC-HD spindle axes, −z for ESBF; belt axes: the head and
@@ -7,6 +8,11 @@
 // shaft tip; belt: the cover cap on the other side of that head), the slide mounting surface (top of the slide
 // part; ESBF: the piston rod end) and the length change (the profile's longest stretch without end features, the
 // parts beyond it moving along). Prints what it found; check new families in the 3D preview.
+// Mounting kits (EAMM-A axial: axis face below, motor face on top, at the coupling; EAMM-U parallel: both faces on
+// +z, the axis shaft at the lower y — the pulley kits' axis pulley at the origin, the coupling kits' motor coupling at
+// the origin with the axis the centre distance towards −y) take the outermost housing face around each shaft that
+// the bolts crossing it pass through. Gearboxes (EMGA: output flange on top, input below or, -A- angle gearboxes, on
+// the side the body reaches out to) take the outermost flange face with no wider face right behind it.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
@@ -89,7 +95,7 @@ function meshes(text) {
         lo[k] = Math.min(lo[k], p[i + k])
         hi[k] = Math.max(hi[k], p[i + k])
       }
-    // planar faces perpendicular to x (k = 0) or z (k = 2)
+    // planar faces perpendicular to a coordinate axis k
     const faces = []
     for (const f of m.brep_faces) {
       let area = 0
@@ -118,7 +124,7 @@ function meshes(text) {
           }
       }
       if (!ok || !normal || area < 1) continue
-      for (const k of [0, 2])
+      for (const k of [0, 1, 2])
         if (Math.abs(Math.abs(normal[k]) - 1) < 1e-4) faces.push({ k, sign: Math.sign(normal[k]), pos: flo[k], area, lo: flo, hi: fhi })
     }
     return { name: m.name ?? '', lo, hi, faces }
@@ -251,6 +257,110 @@ function frames(file, model) {
   return { json, info: `${family} motor ${motor > 0 ? '+z' : '-z'}${family === 'TB' ? ` side ${side > 0 ? '+x' : '-x'}` : ''}, range ${range}, moving ${move.length}` }
 }
 
+// ---- mounting kits and gearboxes ----
+/** screws (their thread runs into the mating part) */
+const screw = (name) => /(ISO|DIN)[- ]?\d+.*M\d+x/i.test(name)
+/** not the housing: fasteners, nuts, sealing washers (NBR), couplings (EAMC/EAMD), pulleys (EAMH), the centring
+ * ring going into the axis (EAML), the counter bearing (EAMG) */
+const kitHardware = (name) => hardware(name) || /(^|\s)M\d+(-\w+)?\s*$|NBR|(^|\s)EAM[CDGHL]-/i.test(name)
+const contains = (f, c, k) => [0, 1, 2].filter((j) => j !== k).every((j, i) => f.lo[j] - 0.5 <= c[i] && f.hi[j] + 0.5 >= c[i])
+const fill = (f, k) => {
+  const [a, b] = [0, 1, 2].filter((j) => j !== k)
+  return f.area / Math.max(1e-9, (f.hi[a] - f.lo[a]) * (f.hi[b] - f.lo[b]))
+}
+
+/**
+ * Kit flange face at shaft centre c = [x, y] facing `sign` along z: the outermost housing face around the centre
+ * that the bolts crossing it pass through (a centring spigot is smaller than the bolt pattern, a raised pad the
+ * partner sits on is not), and not a thin ring (a spigot without bolts nearby)
+ */
+function kitFace(ms, c, sign, bolts) {
+  const faces = ms
+    .filter((m) => !kitHardware(m.name))
+    .flatMap((m) => m.faces)
+    .filter((f) => f.k === 2 && f.sign === sign && contains(f, c, 2))
+  if (faces.length === 0) throw new Error(`no face at ${c} facing ${sign > 0 ? '+z' : '-z'}`)
+  const largest = Math.max(...faces.map((f) => f.area))
+  const ok = faces.filter((f) => {
+    if (f.area < 0.05 * largest || fill(f, 2) < 0.2) return false
+    const crossing = bolts.filter((b) => b.lo[2] < f.pos - 0.1 && b.hi[2] > f.pos + 0.1)
+    return crossing.every((b) => contains(f, [centre(b.lo, b.hi, 0), centre(b.lo, b.hi, 1)], 2))
+  })
+  if (ok.length === 0) throw new Error(`no flange face at ${c}`)
+  return ok.reduce((a, b) => (b.pos * sign > a.pos * sign ? b : a))
+}
+
+function kitFrames(file, model) {
+  const ms = meshes(readFileSync(file, 'latin1'))
+  const screws = ms.filter((m) => screw(m.name))
+  const xy = (m) => [centre(m.lo, m.hi, 0), centre(m.lo, m.hi, 1)]
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
+  const frame = (c, pos, axis, up) => ({ origin: [fixed(c[0]), fixed(c[1]), fixed(pos)], axis, up })
+  if (/^EAMM-U-/.test(model)) {
+    // parallel: both flanges face +z, the axis at the lower y (pulley kits: the two pulleys, the axis one at the
+    // origin with the centring ring and counter bearing; coupling kits (T42/T46): the motor coupling at the origin,
+    // the axis the centre distance (last number of the type) towards −y)
+    const pulleys = ms.filter((m) => /(^|\s)EAMH-/.test(m.name)).map(xy).sort((a, b) => a[1] - b[1])
+    let axis, motor
+    if (pulleys.length === 2) [axis, motor] = pulleys
+    else {
+      const coupling = ms.find((m) => /(^|\s)EAMC-/.test(m.name))
+      if (!coupling) throw new Error('no pulleys or coupling')
+      motor = xy(coupling)
+      axis = [motor[0], motor[1] - Number(/-(\d+)(-S1)?$/.exec(model)[1])]
+    }
+    const near = (c, other) => screws.filter((s) => dist(xy(s), c) < dist(xy(s), other))
+    const a = kitFace(ms, axis, 1, near(axis, motor))
+    const m = kitFace(ms, motor, 1, near(motor, axis))
+    const json = { axisFace: frame(axis, a.pos, [0, 0, -1], [0, -1, 0]), motorFace: frame(motor, m.pos, [0, 0, 1], [0, 1, 0]) }
+    return { json, info: `parallel, axis at y ${fixed(axis[1])}, motor at y ${fixed(motor[1])}, faces z ${fixed(a.pos)} / ${fixed(m.pos)}` }
+  }
+  // axial: the axis below (−z), the motor on top, the shaft through the coupling
+  const coupling = ms.find((m) => /(^|\s)EAM[CD]-/.test(m.name))
+  const c = coupling ? xy(coupling) : [0, 0]
+  const a = kitFace(ms, c, -1, screws)
+  const m = kitFace(ms, c, 1, screws)
+  if (m.pos <= a.pos) throw new Error('motor face not above the axis face')
+  const json = { axisFace: frame(c, a.pos, [0, 0, 1], [0, 1, 0]), motorFace: frame(c, m.pos, [0, 0, 1], [0, 1, 0]) }
+  return { json, info: `axial, faces z ${fixed(a.pos)} / ${fixed(m.pos)}` }
+}
+
+/**
+ * EMGA: output flange at the top (shaft +z), input at the bottom (−z) or, for the angle gearboxes (-A-), on the side
+ * the body reaches out to; each the largest face there (not the output spigot or shaft)
+ */
+function gearboxFrames(file, model) {
+  const ms = meshes(readFileSync(file, 'latin1'))
+  const body = ms.filter((m) => !hardware(m.name))
+  const faces = body.flatMap((m) => m.faces)
+  const lo = [0, 1, 2].map((k) => Math.min(...body.map((m) => m.lo[k])))
+  const hi = [0, 1, 2].map((k) => Math.max(...body.map((m) => m.hi[k])))
+  // flange face: the outermost face of half the body width or more with no wider face right behind it (a centring
+  // spigot sits on the flange, a pocket for the partner's spigot lies behind it; either may have the larger area)
+  const width = (f) => f.hi[0] - f.lo[0]
+  const flangeFace = (k, sign, centred) => {
+    const list = faces.filter((f) => f.k === k && f.sign === sign && (!centred || contains(f, [0, 0], k)) && width(f) >= 0.5 * (hi[0] - lo[0]))
+    const ok = list.filter((f) => !list.some((g) => (f.pos - g.pos) * sign > 0 && (f.pos - g.pos) * sign <= 15 && width(g) > 1.1 * width(f)))
+    if (ok.length === 0) throw new Error(`no flange face facing ${sign > 0 ? '+' : '-'}${'xyz'[k]}`)
+    return ok.reduce((a, b) => (b.pos * sign > a.pos * sign ? b : a))
+  }
+  const output = flangeFace(2, 1, true)
+  let input
+  if (/^EMGA-\d+-A-/.test(model)) {
+    const [k, sign] = [[0, 1], [0, -1], [1, 1], [1, -1]].reduce((a, b) =>
+      (b[1] > 0 ? hi[b[0]] : -lo[b[0]]) > (a[1] > 0 ? hi[a[0]] : -lo[a[0]]) ? b : a,
+    )
+    const f = flangeFace(k, sign, false)
+    const origin = [0, 1, 2].map((j) => fixed(j === k ? f.pos : centre(f.lo, f.hi, j)))
+    input = { origin, axis: [0, 1, 2].map((j) => (j === k ? sign : 0)), up: [0, 0, 1] }
+  } else {
+    const f = flangeFace(2, -1, true)
+    input = { origin: [0, 0, fixed(f.pos)], axis: [0, 0, -1], up: [0, 1, 0] }
+  }
+  const json = { output: { origin: [0, 0, fixed(output.pos)], axis: [0, 0, -1], up: [0, 1, 0] }, input }
+  return { json, info: `output z ${fixed(output.pos)}, input ${JSON.stringify(input.origin)} → ${JSON.stringify(input.axis)}` }
+}
+
 /** The instance whose child geometry, transformed, has the box closest to the mesh's. */
 function matchInstance(inst, mesh, text) {
   const e = (matchInstance.cache ??= new Map()).get(text) ?? parseEntities(text)
@@ -327,14 +437,17 @@ const format = (json) =>
     .map(([k, v]) => `  ${JSON.stringify(k)}: ${inline(v)}`)
     .join(',\n')}\n}\n`
 
-const files = only.length ? only : walk(axesDir)
+const files = only.length
+  ? only
+  : [axesDir, join(root, 'data/kits/Festo/Drawings'), join(root, 'data/gearboxes/Festo/Drawings')].flatMap(walk)
 let written = 0
 for (const file of files) {
   const out = file.replace(/\.stp$/i, '.json')
   if (existsSync(out) && !force && !dryRun) continue
   const model = /^\d+_(.+)\.stp$/i.exec(file.split(/[\\/]/).pop())[1]
+  const make = /^EAMM-/.test(model) ? kitFrames : /^EMGA-/.test(model) ? gearboxFrames : frames
   try {
-    const { json, info } = frames(file, model)
+    const { json, info } = make(file, model)
     console.log(`${model}: ${info}`)
     if (dryRun) console.log(JSON.stringify(json))
     else {

@@ -31,7 +31,8 @@ node scripts/festo-cad/import.mjs <folder>           # copy them (--move to move
 - `import.mjs`: reads each STEP file's first `PRODUCT` name (`<partNumber> <model>---(…)`, as CADENAS writes it),
   else its `FILE_NAME` or file name, matches it to a part in `data/` and saves it as `<partNumber>_<model>.stp`.
   A file already in `data/` keeps its place. It does not write the frame JSON: axes, kits and gearboxes need one
-  before step 5 can place them (format in `data/README.md`); the report lists them. Motors work without one when
+  before step 5 can place them (format in `data/README.md`); the report lists them, and `frames.mjs` writes them
+  from the geometry for Festo axes, EAMM-A/-U kits and EMGA gearboxes. Motors work without one when
   the flange is at z = 0 with the shaft along +z (Festo convention).
 - Module numbers (configurable products without a part number per stroke/option, e.g. EGC GV slides, ELGD -L)
   open in their default configuration. Configure them in the part view's 수직 (vertical) table — options are
