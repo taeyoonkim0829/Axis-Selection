@@ -2,7 +2,6 @@
 // entry here, so add the English when adding UI text. `{name}` placeholders must match the key.
 export const en: Record<string, string> = {
   // App frame, route rail
-  '직교 축 · 모터 · 연결키트 선정': 'Axis · motor · kit sizing',
   '선정 경로': 'Selection route',
   '직교 축': 'Linear axis',
   '모터': 'Motor',
@@ -476,7 +475,6 @@ export const en: Record<string, string> = {
   '단축 선정': 'Single axis',
   '겐트리 선정': 'Gantry',
   '선정 화면': 'Selection screen',
-  '겐트리 · {axis}축 선정': 'Gantry · {axis} axis',
   '겐트리 {axis}': 'Gantry {axis}',
   '겐트리 구성': 'Gantry configuration',
   '겐트리 축': 'Gantry axes',

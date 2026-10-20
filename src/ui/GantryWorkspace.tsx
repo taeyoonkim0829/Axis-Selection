@@ -57,7 +57,6 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
           onLang={setLang}
           mode={mode}
           onMode={setMode}
-          context={t('겐트리 · {axis}축 선정', { axis: axisName(active) })}
         />
         <main className="layout">
           <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} />
