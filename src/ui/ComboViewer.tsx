@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { PartRole } from '../cad/combo'
-import type { PartMesh } from '../cad/occt'
+import { EDGE_ANGLE, type PartMesh } from '../cad/occt'
 import type { Vec3 } from '../cad/step'
 import { useT } from '../i18n'
 
@@ -61,13 +61,17 @@ export default function ComboViewer({ meshes, roles, cog }: { meshes: PartMesh[]
     materials.push(edgeMaterial)
     for (const m of meshes) {
       const g = new THREE.BufferGeometry()
-      g.setAttribute('position', new THREE.Float32BufferAttribute(m.positions as number[], 3))
-      if (m.normals) g.setAttribute('normal', new THREE.Float32BufferAttribute(m.normals as number[], 3))
-      g.setIndex(Array.from(m.index))
+      g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3))
+      if (m.normals) g.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3))
+      g.setIndex(new THREE.BufferAttribute(m.index, 1))
       if (!m.normals) g.computeVertexNormals()
       geometries.push(g)
       group.add(new THREE.Mesh(g, byRole[roles[m.part] ?? 'axis']))
-      const edges = new THREE.EdgesGeometry(g, 25)
+      let edges: THREE.BufferGeometry
+      if (m.edges) {
+        edges = new THREE.BufferGeometry()
+        edges.setAttribute('position', new THREE.BufferAttribute(m.edges, 3))
+      } else edges = new THREE.EdgesGeometry(g, EDGE_ANGLE)
       geometries.push(edges)
       group.add(new THREE.LineSegments(edges, edgeMaterial))
     }

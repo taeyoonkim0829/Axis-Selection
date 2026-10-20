@@ -8,4 +8,6 @@ export default defineConfig({
   base: './',
   // Product data (Data/*.json) is bundled on purpose; it dominates the chunk size.
   build: { chunkSizeWarningLimit: 1000 },
+  // The OpenCascade tessellation worker (src/cad/occt.worker.ts) loads its WebAssembly with dynamic imports.
+  worker: { format: 'es' },
 })

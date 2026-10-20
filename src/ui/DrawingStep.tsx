@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { axisCog, type AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Requirements } from '../calc/types'
@@ -116,6 +116,8 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const [error, setError] = useState<string | null>(null)
   const cache = useRef<{ key: string; combo: Promise<Combo>; meshes?: Promise<PartMesh[]> } | null>(null)
   const [shown, setShown] = useState<{ key: string; combo: Combo; meshes: PartMesh[] } | null>(null)
+  // stable between renders: the viewer rebuilds its scene (and WebGL context) whenever a prop changes
+  const shownRoles = useMemo(() => shown?.combo.parts.map((p) => p.role) ?? [], [shown])
 
   const entryFor = () => {
     if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText, sides, twin) }
@@ -321,7 +323,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
           {error && <p className="fail-text small-print">{t('도면을 만들지 못했습니다: {error}', { error })}</p>}
           {preview && shown && (
             <Suspense fallback={<p className="muted small-print">{t('3D 뷰어를 불러오는 중…')}</p>}>
-              <ComboViewer meshes={shown.meshes} roles={shown.combo.parts.map((p) => p.role)} cog={shown.combo.cog} />
+              <ComboViewer meshes={shown.meshes} roles={shownRoles} cog={shown.combo.cog} />
             </Suspense>
           )}
           <p className="muted small-print">

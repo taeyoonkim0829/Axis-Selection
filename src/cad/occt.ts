@@ -1,50 +1,64 @@
-import type { Occt, OcctNode } from 'occt-import-js'
 import type { DrawMesh } from './dxf'
 
-// OpenCascade (occt-import-js, WebAssembly ~7.6 MB) tessellates the assembled STEP for the 3D view and the DXF.
-// Loaded on first use only.
+// The assembled STEP is tessellated by OpenCascade in a web worker (`occt.worker.ts`, loaded on first use): reading
+// a combination takes a few seconds, which would otherwise freeze the page each time the open preview follows the
+// selection. Without worker support (tests) it runs on the calling thread.
 
 export interface PartMesh extends DrawMesh {
   /** index of the assembly part (order of `Combo.parts`) */
   part: number
-  normals: ArrayLike<number> | null
+  positions: Float32Array
+  index: Uint32Array
+  normals: Float32Array | null
+  /** feature edges for the 3D view (line segment pairs, xyz), computed in the worker */
+  edges?: Float32Array
   name: string
 }
 
-let occt: Promise<Occt> | null = null
+/** Crease angle (degrees) above which a mesh edge is drawn in the 3D view */
+export const EDGE_ANGLE = 25
 
-function loadOcct(): Promise<Occt> {
-  occt ??= Promise.all([import('occt-import-js'), import('occt-import-js/dist/occt-import-js.wasm?url')]).then(
-    ([{ default: init }, { default: wasmUrl }]) => init({ locateFile: () => wasmUrl }),
-  )
-  return occt
+export interface TessellateRequest {
+  id: number
+  step: Uint8Array
+  partCount: number
+}
+export type TessellateReply = { id: number; meshes: PartMesh[] } | { id: number; error: string }
+
+let worker: Worker | null = null
+let nextId = 0
+const pending = new Map<number, { resolve: (m: PartMesh[]) => void; reject: (e: Error) => void }>()
+
+function getWorker(): Worker {
+  if (worker) return worker
+  const w = new Worker(new URL('./occt.worker.ts', import.meta.url), { type: 'module' })
+  w.addEventListener('message', (e: MessageEvent<TessellateReply>) => {
+    const job = pending.get(e.data.id)
+    if (!job) return
+    pending.delete(e.data.id)
+    if ('error' in e.data) job.reject(new Error(e.data.error))
+    else job.resolve(e.data.meshes)
+  })
+  // a crashed worker (e.g. out of memory) fails its jobs; the next request starts a new one
+  w.addEventListener('error', (e) => {
+    e.preventDefault()
+    for (const job of pending.values()) job.reject(new Error(e.message || 'Tessellation worker failed'))
+    pending.clear()
+    w.terminate()
+    if (worker === w) worker = null
+  })
+  worker = w
+  return w
 }
 
 /** Meshes of the assembly, each tagged with the top-level part it belongs to. */
 export async function tessellate(step: string, partCount: number): Promise<PartMesh[]> {
-  const lib = await loadOcct()
-  const result = lib.ReadStepFile(new TextEncoder().encode(step), {
-    linearUnit: 'millimeter',
-    linearDeflectionType: 'bounding_box_ratio',
-    linearDeflection: 0.0005,
-    angularDeflection: 0.3,
+  const bytes = new TextEncoder().encode(step)
+  if (typeof Worker === 'undefined') return (await import('./occtMesh')).meshStep(bytes, partCount)
+  const id = nextId++
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject })
+    const request: TessellateRequest = { id, step: bytes, partCount }
+    getWorker().postMessage(request, [bytes.buffer])
   })
-  if (!result.success) throw new Error('STEP could not be read')
-  // descend through wrapper nodes to the level holding one node per part
-  let level: OcctNode[] = [result.root]
-  while (level.length === 1 && level[0].children.length > 0 && level[0].meshes.length === 0) level = level[0].children
-  const partOf = new Map<number, number>()
-  const walk = (node: OcctNode, part: number) => {
-    for (const m of node.meshes) partOf.set(m, part)
-    node.children.forEach((c) => walk(c, part))
-  }
-  if (level.length === partCount) level.forEach((node, i) => walk(node, i))
-  return result.meshes.map((m, i) => ({
-    part: partOf.get(i) ?? 0,
-    name: m.name,
-    positions: m.attributes.position.array,
-    normals: m.attributes.normal?.array ?? null,
-    index: m.index.array,
-    faces: m.brep_faces,
-  }))
 }
