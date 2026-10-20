@@ -3,8 +3,9 @@ import { axes, kits, motors } from '../data'
 import { buildCombo, comboDrawings, type ComboSelection } from './combo'
 import { motorDrawingFor, parseDrawingPath, type Drawing } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
-import { parseStep, writeStep } from './step'
+import { closure, parseStep, pointOf, refs, typeOf, writeStep, type StepFile } from './step'
 import { stretchPart, type StretchSpec } from './stretch'
+import { definitionByName, shapeOf, solidsOf } from './structure'
 
 const files = [
   'data/axes/Festo/Drawings/ELGT/BS/8124427_ELGT-BS-90-500-20P.stp',
@@ -90,6 +91,40 @@ describe('axis stretch', () => {
     // the file is 738.5 mm long along z (−698.5 … 40)
     expect(box.hi[2]).toBeCloseTo(57.4, 0)
     expect(box.lo[2]).toBeCloseTo(-698.5 - delta, 0)
+  })
+
+  // the profile's mounting holes (x = 36, on the base y = 0) at z = −650 … −50, every 100 mm; the circle at −100
+  // (fixed end) is another feature
+  const holes = (file: StepFile) => {
+    const rep = shapeOf(file, definitionByName(file, spec.stretch.part)!)!
+    const z = new Set<number>()
+    for (const solid of solidsOf(file, rep))
+      for (const id of closure(file, solid)) {
+        const body = file.entities.get(id)!
+        if (typeOf(body) !== 'CIRCLE') continue
+        const centre = pointOf(file.entities.get(refs(file.entities.get(refs(body)[0])!)[0])!)!
+        if (Math.abs(centre[0] - 36) < 0.01 && Math.abs(centre[1]) < 0.01) z.add(Math.round(centre[2] * 10) / 10)
+      }
+    return [...z].filter((v) => v !== -100).sort((a, b) => a - b)
+  }
+
+  it.each([
+    [137, 8],
+    [300, 10],
+    [-57, 6],
+    [-130, 5],
+  ])('keeps the hole pitch when the length changes by %i mm', async (delta, count) => {
+    expect(holes(axisFile)).toEqual([-650, -550, -450, -350, -250, -150, -50])
+    const { file, pitch } = stretchPart(axisFile, spec.stretch, delta)
+    expect(pitch).toBe(100)
+    const z = holes(file)
+    expect(z.length).toBe(count)
+    expect(z.slice(1).map((v, i) => v - z[i])).toEqual(Array(count - 1).fill(100))
+    // the holes at the fixed end stay; the rest of the length goes between the pattern and the moving end
+    expect(z.at(-1)).toBe(-50)
+    const end = (await meshBox(writeStep(file))).lo[2]
+    expect(end).toBeCloseTo(-698.5 - delta, 0)
+    expect(z[0] - end).toBeGreaterThan(40)
   })
 })
 
