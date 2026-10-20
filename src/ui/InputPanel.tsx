@@ -23,6 +23,11 @@ const parallelModeHint: Record<ParallelMode, string> = {
   guides: '축과 평행한 LM 가이드가 부하를 나눠 지지. 구동은 축 1개',
 }
 
+type GuideArrangement = 'one' | 'middle' | 'edge'
+const guideArrangementLabel: Record<GuideArrangement, string> = { one: '1개', middle: '2개 · 축 가운데', edge: '2개 · 축 가장자리' }
+const guideArrangement = (p: ParallelConfig): GuideArrangement =>
+  p.guideCount === 1 ? 'one' : p.guideAxisEdge ? 'edge' : 'middle'
+
 type AccelMode = 'acceleration' | 'time'
 const accelModeLabel: Record<AccelMode, string> = { acceleration: '가속도', time: '가속 시간' }
 
@@ -102,7 +107,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
           </div>
           <div className="grid-2">
             <NumberField label={t('스트로크')} unit="mm" value={req.stroke} min={1} onChange={(v) => set('stroke', v)} />
-            <NumberField label={t('소재 무게')} unit="kg" value={req.payload} onChange={(v) => set('payload', v)} />
+            <NumberField label={t('하중')} unit="kg" value={req.payload} onChange={(v) => set('payload', v)} />
           </div>
           <div className="field">
             <span className="field-label">{t('가속 입력')}</span>
@@ -205,11 +210,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
             </button>
           ))}
         </div>
-        <p className="field-hint application-hint">
-          {press.enabled
-            ? t('전진 끝에서 압착 구간을 압착 속도로 누른 뒤 유지하고 복귀')
-            : t('스트로크를 왕복 이송')}
-        </p>
+        {!press.enabled && <p className="field-hint application-hint">{t('스트로크를 왕복 이송')}</p>}
         {press.enabled && req.mounting === 'vertical' && (
           <div className="field">
             <span className="field-label">{t('압착 방향')}</span>
@@ -236,7 +237,6 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
               value={press.distance}
               min={0.001}
               onChange={(v) => setPress('distance', v)}
-              hint={press.distance >= req.stroke ? t('스트로크 전체를 압착') : t('스트로크 끝에서')}
             />
             <NumberField
               label={t('압착 속도')}
@@ -283,10 +283,10 @@ export function ParallelSection({ parallel, onParallel, title = '축 구성' }: 
         <div className="field">
           <span className="field-label">{t('LM 가이드 수')}</span>
           <RadioGroup
-            options={[1, 2] as const}
-            value={parallel.guideCount}
-            onChange={(v) => setParallel('guideCount', v)}
-            label={(v) => t(v === 1 ? '1개 (2열)' : '2개 (3열, 축이 가운데)')}
+            options={['one', 'middle', 'edge'] as const}
+            value={guideArrangement(parallel)}
+            onChange={(v) => onParallel({ ...parallel, guideCount: v === 'one' ? 1 : 2, guideAxisEdge: v === 'edge' })}
+            label={(v) => t(guideArrangementLabel[v])}
           />
         </div>
       )}

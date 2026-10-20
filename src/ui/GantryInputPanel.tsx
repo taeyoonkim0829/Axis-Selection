@@ -69,7 +69,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings }: Pro
         <section>
           <h2>{t('소재')}</h2>
           <div className="grid-2">
-            <NumberField label={t('소재 무게')} unit="kg" value={gantry.payload} onChange={(v) => set('payload', v)} />
+            <NumberField label={t('하중')} unit="kg" value={gantry.payload} onChange={(v) => set('payload', v)} />
           </div>
           <h2 className="subhead">
             {t('소재 무게 중심')} <span className="heading-unit">(mm)</span>

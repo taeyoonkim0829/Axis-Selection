@@ -58,6 +58,16 @@ describe('parallel arrangement', () => {
     expect(ev.checks.some((c) => c.label === '구동 토크 (연결축 포함)')).toBe(true)
   })
 
+  it('puts the axis in the middle or at the edge of two LM guides', () => {
+    const guides = (guideAxisEdge: boolean) =>
+      parallelLayout({ ...baseReq, parallel: { ...defaultParallel, mode: 'guides', spacing: 200, guideCount: 2, guideAxisEdge } })
+    expect(guides(false).isAxis).toEqual([false, true, false])
+    const edge = guides(true)
+    expect(edge.positions).toEqual([-0.2, 0, 0.2])
+    expect(edge.isAxis).toEqual([true, false, false])
+    expect(edge.guides).toBe(2)
+  })
+
   it('turns the rolling moment into normal forces across the members', () => {
     const layout = parallelLayout({ ...baseReq, parallel: { ...defaultParallel, mode: 'guides', spacing: 200 } })
     // Payload over the guide (y = +100, the guide side): the guide takes the whole weight, the axis nothing

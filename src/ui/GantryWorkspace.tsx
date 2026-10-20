@@ -142,7 +142,7 @@ function GantrySummary({ results, active, onTab }: { results: GantryAxisResult[]
                 {s?.selectedKitEval ? ` · ${s.selectedKitEval.kit.product}` : ''}
               </span>
               <span className="gantry-tab-detail">
-                {r.req ? t('탑재 {mass} kg', { mass: fmt(r.req.payload, 1) }) : t('하위 축 선정 필요')}
+                {r.req ? t('하중 {mass} kg', { mass: fmt(r.req.payload, 1) }) : t('하위 축 선정 필요')}
               </span>
             </button>
           )
@@ -167,7 +167,7 @@ function CarriedLoad({ result, gantry }: { result: GantryAxisResult; gantry: Gan
   return (
     <section className="panel gantry-load">
       <header className="step-head">
-        <h2>{t('{axis}축 탑재 조건', { axis: a })}</h2>
+        <h2>{t('{axis}축 하중 조건', { axis: a })}</h2>
         <span className="muted">
           {t(mountingLabel[req.mounting])}
           {req.movingProfile ? ` · ${t('프로파일 이동')}` : ''}
@@ -175,7 +175,7 @@ function CarriedLoad({ result, gantry }: { result: GantryAxisResult; gantry: Gan
       </header>
       <dl className="gantry-load-list">
         <div>
-          <dt>{t('탑재 질량')}</dt>
+          <dt>{t('하중')}</dt>
           <dd>
             <strong className="num">{fmt(req.payload, 2)} kg</strong>
             <span className="muted">
@@ -224,12 +224,12 @@ function CarriedLoad({ result, gantry }: { result: GantryAxisResult; gantry: Gan
   )
 }
 
-/** The 탑재 조건 for the report (labels are Korean source text). */
+/** The 하중 조건 for the report (labels are Korean source text). */
 function gantryReportRows(r: GantryAxisResult, g: GantryInputs): [string, string][] {
   const req = r.req!
   return [
     ['겐트리 구성', g.config.toUpperCase()],
-    ['탑재 질량', `${fmt(req.payload, 2)} kg`],
+    ['하중', `${fmt(req.payload, 2)} kg`],
     ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
     ['교차 가속도 (측면 / 수직)', `${fmt(req.cross?.lateral ?? 0)} / ${fmt(req.cross?.normal ?? 0)} m/s²`],
     ...(req.movingProfile ? ([['함께 움직이는 구동부', `${fmt(req.movingProfile.driveMass, 2)} kg`]] as [string, string][]) : []),

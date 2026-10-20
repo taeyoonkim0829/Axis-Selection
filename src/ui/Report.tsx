@@ -162,7 +162,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
           rows={[
             ['축 설치 방향', t(mountingLabel[req.mounting])],
             ['스트로크', q(req.stroke, 'mm')],
-            ['소재 무게', q(req.payload, 'kg')],
+            ['하중', q(req.payload, 'kg')],
             ['속도', q(req.velocity, 'm/s')],
             ['가속도', q(req.acceleration, 'm/s²')],
             ['가속 시간', q(accelTimeFor(req.velocity, req.acceleration, req.jerk), 's')],
@@ -185,7 +185,12 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                   [layout.guides ? '축–가이드 간격' : '축 간격', q(req.parallel!.spacing, 'mm')],
                   ...(layout.guides
                     ? ([
-                        ['LM 가이드 수', String(layout.guides)],
+                        [
+                          'LM 가이드 수',
+                          layout.guides === 2
+                            ? t(layout.isAxis[0] ? '2개 · 축 가장자리' : '2개 · 축 가운데')
+                            : t('1개'),
+                        ],
                         ['가이드 1개 이동 질량', q(req.parallel!.guideMass, 'kg')],
                       ] as Row[])
                     : ([['축 1개 부하 분담', `${Math.round(layout.share * 100)}%`]] as Row[])),

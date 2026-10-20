@@ -229,8 +229,8 @@ const SINGLE: ParallelLayout = {
 
 /**
  * The arrangement from the requirements, centred on y = 0 (the payload's y is measured from the centre). Two axes
- * or the axis and one LM guide sit at ∓spacing/2 (the first axis at −); two LM guides at ±spacing with the axis in
- * the middle. With two axes the drive forces split by the lever rule about the payload's y position: half each
+ * or the axis and one LM guide sit at ∓spacing/2 (the first axis at −); three members (axis + two LM guides) at
+ * −spacing, 0 and +spacing, the axis in the middle or at the edge (−spacing). With two axes the drive forces split by the lever rule about the payload's y position: half each
  * when centred, more on the axis on the payload side.
  */
 export function parallelLayout(req: Requirements): ParallelLayout {
@@ -243,7 +243,7 @@ export function parallelLayout(req: Requirements): ParallelLayout {
       ...SINGLE,
       mode: 'guides',
       positions: two ? [-s, 0, s] : [-s / 2, s / 2],
-      isAxis: two ? [false, true, false] : [true, false],
+      isAxis: two ? (p.guideAxisEdge ? [true, false, false] : [false, true, false]) : [true, false],
       guides: two ? 2 : 1,
       guideMass: (two ? 2 : 1) * Math.max(0, p.guideMass),
     }
