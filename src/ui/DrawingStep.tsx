@@ -20,6 +20,7 @@ import type { Kit } from '../data/types'
 import { useT } from '../i18n'
 import { RadioGroup } from './common'
 import { mountingLabel, sideLabel } from './format'
+import { isStaleBuild, STALE_BUILD_NOTICE } from './staleBuild'
 
 const ComboViewer = lazy(() => import('./ComboViewer'))
 
@@ -136,7 +137,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
       await job()
     } catch (e) {
       cache.current = null
-      setError(String(e instanceof Error ? e.message : e))
+      setError(isStaleBuild(e) ? STALE_BUILD_NOTICE : String(e instanceof Error ? e.message : e))
     } finally {
       setBusy(null)
     }
@@ -218,7 +219,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         })
         .catch((e: unknown) => {
           cache.current = null
-          if (!cancelled) setError(String(e instanceof Error ? e.message : e))
+          if (!cancelled) setError(isStaleBuild(e) ? STALE_BUILD_NOTICE : String(e instanceof Error ? e.message : e))
         })
     }, REBUILD_DELAY)
     return () => {
@@ -320,7 +321,16 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             </button>
             {(busy ?? (stale && t('3D 모델을 만드는 중…'))) && <span className="muted">{busy ?? t('3D 모델을 만드는 중…')}</span>}
           </div>
-          {error && <p className="fail-text small-print">{t('도면을 만들지 못했습니다: {error}', { error })}</p>}
+          {error === STALE_BUILD_NOTICE ? (
+            <p className="fail-text small-print">
+              {t(STALE_BUILD_NOTICE)}{' '}
+              <button type="button" className="action-btn" onClick={() => window.location.reload()}>
+                {t('새로 고침')}
+              </button>
+            </p>
+          ) : (
+            error && <p className="fail-text small-print">{t('도면을 만들지 못했습니다: {error}', { error })}</p>
+          )}
           {preview && shown && (
             <Suspense fallback={<p className="muted small-print">{t('3D 뷰어를 불러오는 중…')}</p>}>
               <ComboViewer meshes={shown.meshes} roles={shownRoles} cog={shown.combo.cog} />

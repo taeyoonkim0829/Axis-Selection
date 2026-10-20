@@ -414,6 +414,9 @@ export const en: Record<string, string> = {
   'STEP 파일을 만드는 중…': 'Writing the STEP file…',
   'DXF 도면을 만드는 중…': 'Drawing the DXF…',
   '도면을 만들지 못했습니다: {error}': 'Could not make the drawing: {error}',
+  '새 버전이 배포되었습니다. 페이지를 새로 고침해 주세요. 입력값은 초기화됩니다.':
+    'A new version has been published. Please reload the page. Your inputs will be reset.',
+  '새로 고침': 'Reload',
   '3D 뷰어를 불러오는 중…': 'Loading the 3D viewer…',
   '제조사 CAD 데이터(STEP)를 그대로 조립합니다. 무게 중심(빨간 점)은 슬라이드 중심(시작 위치) 기준입니다. DXF는 정면·평면·우측면도(제3각법)입니다.':
     "The manufacturers' CAD data (STEP) is assembled as is. The centre of gravity (red dot) is relative to the slide centre at the start position. The DXF has front, top and right side views (third-angle projection).",

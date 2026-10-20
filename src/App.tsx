@@ -14,6 +14,7 @@ import type { ProfileView } from './ui/ProfileChart'
 import { Report } from './ui/Report'
 import { RouteRail, type AppMode } from './ui/RouteRail'
 import { useReportExport } from './ui/useReportExport'
+import { isStaleBuild, STALE_BUILD_NOTICE } from './ui/staleBuild'
 
 const initialRequirements: Requirements = {
   stroke: 500,
@@ -121,6 +122,15 @@ function GantryFallback({ gantry, setGantry, gantrySettings, setGantrySettings, 
 /** An error notice in place of the results. */
 function ErrorPanel({ error, retry }: { error: Error; retry: () => void }) {
   const t = useT()
+  if (isStaleBuild(error))
+    return (
+      <section className="panel error-panel" role="alert">
+        <h2>{t(STALE_BUILD_NOTICE)}</h2>
+        <button type="button" className="error-retry" onClick={() => window.location.reload()}>
+          {t('새로 고침')}
+        </button>
+      </section>
+    )
   return (
     <section className="panel error-panel" role="alert">
       <h2>{t('계산 중 오류가 발생했습니다')}</h2>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { translate, type Lang } from '../i18n'
 import { openPendingTab, reportTitle, reportToPdf } from './pdfExport'
+import { isStaleBuild, STALE_BUILD_NOTICE } from './staleBuild'
 
 /**
  * PDF export: `start` opens the waiting tab inside the click and mounts the report (render it off screen into
@@ -26,7 +27,11 @@ export function useReportExport(lang: Lang, name: string | null) {
       })
       .catch((error: unknown) => {
         pdfTab.current?.close()
-        window.alert(`${translate(lang, 'PDF를 만들지 못했습니다.')}\n${String(error)}`)
+        window.alert(
+          isStaleBuild(error)
+            ? translate(lang, STALE_BUILD_NOTICE)
+            : `${translate(lang, 'PDF를 만들지 못했습니다.')}\n${String(error)}`,
+        )
       })
       .finally(() => setExporting(false))
   }, [exporting]) // eslint-disable-line react-hooks/exhaustive-deps -- runs once per export
