@@ -128,7 +128,7 @@ Restrained workspace under a committed blue shell.
 **Character:** Korean text in a neutral workhorse sans; every figure and part number in a narrow road-sign face so long codes fit and columns align.
 
 ### Hierarchy
-- **Rail logo** (`.rail-logo`, 40px high): the AxisPilot logo in the rail only, its dark-background version (`axispilot-logo-dark.svg`) in both themes because the rail stays sign blue.
+- **Rail logo** (`.rail-logo`, 32px high, filling the 176px brand block): the AxisPilot logo in the rail only, its dark-background version (`axispilot-logo-dark.svg`) in both themes because the rail stays sign blue.
 - **Sign value** (600, 20px, 1.15): part numbers on the rail.
 - **Step title** (650, 17px): panel headings.
 - **Body** (400, 14px, 1.5): labels, notes, Korean copy.

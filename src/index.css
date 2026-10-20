@@ -136,9 +136,9 @@ h3 {
   display: block;
   align-self: flex-start;
   width: auto;
-  /* the SVG has 20/80 of its height empty above and below the mark */
-  height: 40px;
-  margin: -6px 0 -6px -2px;
+  height: 32px;
+  /* the mark starts 4/48 of the height in from the SVG's left edge */
+  margin-left: -3px;
 }
 
 .rail-sub {
