@@ -1,14 +1,14 @@
 /*
  * AxisPilot — route-sign system.
- * Sign blue owns the top rail; signal yellow marks only the selected route
+ * Sign blue (the logo's deep blue) owns the top rail; signal yellow marks only the selected route
  * (active sign, selected rows). Green / amber / red carry verdicts and nothing else.
  */
 :root,
 .report-stage {
-  --sign: #1f4e8c;
-  --sign-deep: #183f73;
+  --sign: #005a8c;
+  --sign-deep: #004a73;
   --sign-ink: #ffffff;
-  --sign-ink-2: #c9d8ec;
+  --sign-ink-2: #c4e3f5;
   --signal: #ffcc00;
   --signal-ink: #1a1d21;
   --signal-soft: #fff5cc;
@@ -20,8 +20,8 @@
   --line-strong: #c3ccd5;
   --text: #1a1d21;
   --muted: #5b6672;
-  --accent: #1f4e8c;
-  --accent-soft: #e4ecf6;
+  --accent: #0077b6;
+  --accent-soft: #e0f2fb;
 
   --ok: #1d8049;
   --ok-soft: #e1f3e8;
@@ -43,9 +43,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --sign: #1c477f;
-    --sign-deep: #163a68;
-    --sign-ink-2: #b3c6df;
+    --sign: #0a4d75;
+    --sign-deep: #083f60;
+    --sign-ink-2: #b5d9ee;
     --signal-soft: #3a3214;
     --bg: #12171d;
     --surface: #1a2129;
@@ -54,8 +54,8 @@
     --line-strong: #3b4855;
     --text: #e6ebf0;
     --muted: #9aa7b5;
-    --accent: #7fb0ea;
-    --accent-soft: #1d3150;
+    --accent: #38bdf8;
+    --accent-soft: #0f3247;
     --ok: #4cc37f;
     --ok-soft: #163322;
     --warn: #f0943a;

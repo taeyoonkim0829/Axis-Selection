@@ -21,7 +21,7 @@ Vendor tools (Festo Electric Motion Sizing, Rexroth LinSelect, SigmaSelect, Moto
 
 ## Operating Context
 
-- Browser-only, runs locally (Vite dev server via `Axis Selection.bat`); no backend, product data bundled as JSON.
+- Browser-only, runs locally (Vite dev server via `AxisPilot.bat`); no backend, product data bundled as JSON.
 - Used at a desk on a wide screen; also shown on screen during customer meetings.
 - Results leave the app as: a part-number list (BOM) pasted into quotes/orders, a printed/PDF calculation sheet for the customer, or simply read on screen.
 

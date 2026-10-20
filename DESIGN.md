@@ -2,10 +2,10 @@
 name: AxisPilot
 description: Festo axis, motor, gearbox and kit sizing, laid out as a route sign
 colors:
-  sign-blue: "#1f4e8c"
-  sign-blue-deep: "#183f73"
+  sign-blue: "#005a8c"
+  sign-blue-deep: "#004a73"
   sign-ink: "#ffffff"
-  sign-ink-2: "#c9d8ec"
+  sign-ink-2: "#c4e3f5"
   signal-yellow: "#ffcc00"
   signal-ink: "#1a1d21"
   signal-soft: "#fff5cc"
@@ -16,7 +16,8 @@ colors:
   line-strong: "#c3ccd5"
   text: "#1a1d21"
   muted: "#5b6672"
-  accent-soft: "#e4ecf6"
+  accent: "#0077b6"
+  accent-soft: "#e0f2fb"
   ok: "#1d8049"
   warn: "#c25e00"
   fail: "#c8322b"
@@ -102,7 +103,8 @@ It is an operating tool, so the world contributes only type, palette, density an
 Restrained workspace under a committed blue shell.
 
 ### Primary
-- **Sign Blue** (#1f4e8c): the route rail, step number boxes, active segmented buttons, the motion profile trace. Deep variant (#183f73) for rail hover.
+- **Sign Blue** (#005a8c, dark mode #0a4d75): the route rail, step number boxes, active segmented buttons. A deep tone of the logo blue (#0091dc), which itself is too light for white text (3.5:1); white on sign blue is 7.4:1. Deep variant (#004a73) for rail hover.
+- **Accent** (#0077b6, dark mode #38bdf8): input borders and focus, links, the motion profile trace. The logo blue darkened to 4.9:1 on white. The logo's teal (#14b8a6) is not a UI colour: green tones are reserved for verdicts.
 
 ### Secondary
 - **Signal Yellow** (#ffcc00): the active route box on the rail, the selected row outline, selection highlight, focus ring. Soft variant (#fff5cc) fills the selected row.

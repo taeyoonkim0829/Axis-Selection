@@ -11,10 +11,17 @@ export type Args = Record<string, string | number>
 /** Text of the language switch: the language it switches to. */
 export const langSwitchLabel: Record<Lang, string> = { ko: 'English', en: '한국어' }
 
-const STORAGE_KEY = 'axis-selection.lang'
+const STORAGE_KEY = 'axispilot.lang'
+/** Key used before the rename to AxisPilot; read once and moved to the new key */
+const OLD_STORAGE_KEY = 'axis-selection.lang'
 
 export function storedLang(): Lang {
   try {
+    const old = localStorage.getItem(OLD_STORAGE_KEY)
+    if (old != null) {
+      if (localStorage.getItem(STORAGE_KEY) == null) localStorage.setItem(STORAGE_KEY, old)
+      localStorage.removeItem(OLD_STORAGE_KEY)
+    }
     return localStorage.getItem(STORAGE_KEY) === 'en' ? 'en' : 'ko'
   } catch {
     return 'ko'
