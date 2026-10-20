@@ -473,7 +473,7 @@ export const en: Record<string, string> = {
 
   // Gantry screen
   '단축 선정': 'Single axis',
-  '겐트리 선정': 'Gantry',
+  '조합축 선정': 'Multi-axis',
   '선정 화면': 'Selection screen',
   '겐트리 {axis}': 'Gantry {axis}',
   '겐트리 구성': 'Gantry configuration',

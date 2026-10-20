@@ -22,7 +22,7 @@ interface Props {
 
 /** single = one axis (with its parallel arrangement), gantry = XYZ combination */
 export type AppMode = 'single' | 'gantry'
-const modeLabel: Record<AppMode, string> = { single: '단축 선정', gantry: '겐트리 선정' }
+const modeLabel: Record<AppMode, string> = { single: '단축 선정', gantry: '조합축 선정' }
 
 const stepIds = ['step-axis', 'step-motor', 'step-gearbox', 'step-kit'] as const
 

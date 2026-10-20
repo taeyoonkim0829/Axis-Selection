@@ -319,7 +319,7 @@ h3 {
     color 160ms ease-out;
 }
 
-/* 단축 선정 / 겐트리 선정: the screen switch, white on the sign like the action buttons */
+/* 단축 선정 / 조합축 선정: the screen switch, white on the sign like the action buttons */
 .rail-mode {
   border-color: rgb(255 255 255 / 0.55);
   background: transparent;
