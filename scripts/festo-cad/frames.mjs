@@ -177,7 +177,7 @@ function frames(file, model) {
       (m) =>
         !hardware(m.name) &&
         m.hi[0] - m.lo[0] > 0.6 * width &&
-        m.hi[2] - m.lo[2] < 0.6 * length &&
+        m.hi[2] - m.lo[2] < 0.9 * length &&
         m.lo[2] > profile.lo[2] &&
         m.hi[2] < profile.hi[2] &&
         m.hi[1] > 0.8 * profile.hi[1],

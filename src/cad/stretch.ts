@@ -351,14 +351,19 @@ function pitchBefore(body: Body, c: number, pitch: number): [number, number] {
 function periodic(body: Body, c: number, delta: number, pitch: number): boolean {
   const [w0, w1] = pitchBefore(body, c, pitch)
   const shift = body.dir * (pitch + Math.max(0, -delta))
-  const within = (a: number, b: number) =>
-    body.faces.flatMap((f) => f.bounds).filter((x) => isFeature(x) && centreOf(x) > a && centreOf(x) < b)
-  const before = within(w0, w1)
-  const after = within(w0 + shift, w1 + shift)
+  const all = body.faces.flatMap((f) => f.bounds).filter(isFeature)
+  const repeats = (x: Bound) => all.some((y) => y.key === x.key && Math.abs(Math.abs(centreOf(y) - centreOf(x)) - pitch) < TOL)
+  // shortening keeps one-off features (as the ELGT-160's centring slot near the moving end) in place: they are left
+  // out of the comparison, and the removed window must hold pattern only
+  const counted = (x: Bound) => delta > 0 || repeats(x)
+  const within = (a: number, b: number) => all.filter((x) => centreOf(x) > a && centreOf(x) < b)
+  const before = within(w0, w1).filter(counted)
+  const after = within(w0 + shift, w1 + shift).filter(counted)
   return (
     before.length > 0 &&
     before.length === after.length &&
-    before.every((x) => after.some((y) => y.key === x.key && Math.abs(centreOf(y) - centreOf(x) - shift) < TOL))
+    before.every((x) => after.some((y) => y.key === x.key && Math.abs(centreOf(y) - centreOf(x) - shift) < TOL)) &&
+    (delta > 0 || within(...windowOf(body, c, delta)).every(repeats))
   )
 }
 

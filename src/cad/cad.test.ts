@@ -126,6 +126,30 @@ describe('axis stretch', () => {
     expect(end).toBeCloseTo(-698.5 - delta, 0)
     expect(z[0] - end).toBeGreaterThan(40)
   })
+
+  it('keeps a one-off feature in place when whole pitches are removed', () => {
+    // ELGT-BS-160-500: mounting holes every 100 mm, a centring slot (x = 0, r 4, z ≈ −600) 126.5 mm from the moving
+    // end; Festo's 300 model has it at −400
+    const path = 'data/axes/Festo/Drawings/ELGT/8124517_ELGT-BS-160-500-10P'
+    const meta = metas[`../../${path}.json`] as { stretch: StretchSpec }
+    const slot = (file: StepFile) => {
+      const rep = shapeOf(file, definitionByName(file, meta.stretch.part)!)!
+      const z = new Set<number>()
+      for (const solid of solidsOf(file, rep))
+        for (const id of closure(file, solid)) {
+          const body = file.entities.get(id)!
+          if (typeOf(body) !== 'CIRCLE' || !/,4\.?\)/.test(body)) continue
+          const centre = pointOf(file.entities.get(refs(file.entities.get(refs(body)[0])!)[0])!)!
+          if (Math.abs(centre[0]) < 0.01) z.add(Math.round(centre[2]))
+        }
+      return [...z].sort((a, b) => a - b)
+    }
+    const file = parseStep(text(`${path}.stp`))
+    expect(slot(file)).toEqual([-601, -599, -201, -199, -100])
+    const r = stretchPart(file, meta.stretch, -200)
+    expect(r.pitch).toBe(100)
+    expect(slot(r.file)).toEqual([-401, -399, -201, -199, -100])
+  })
 })
 
 describe('drawing files', () => {
