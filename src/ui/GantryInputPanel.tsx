@@ -81,7 +81,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
             {t('소재 무게 중심')} <span className="heading-unit">(mm)</span>
           </h2>
           <VecFields value={gantry.cog} onChange={(v) => set('cog', v)} />
-          <p className="field-hint">{t('{ref}, 장비 좌표 X / Y / Z (Z = 위쪽)', { ref: toolRef })}</p>
+          <p className="field-hint">{t('{ref}, 장비 좌표 X / Y / Z (+Z = 아래쪽)', { ref: toolRef })}</p>
         </section>
 
         <section>

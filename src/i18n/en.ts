@@ -488,7 +488,7 @@ export const en: Record<string, string> = {
   'Y축 슬라이드 중심 기준': 'From the Y slide centre',
   'Z축 슬라이드 중심 기준': 'From the Z slide centre',
   'Z축 프로파일 끝단 중심 기준': 'From the centre of the Z profile end',
-  '{ref}, 장비 좌표 X / Y / Z (Z = 위쪽)': '{ref}, machine coordinates X / Y / Z (Z = up)',
+  '{ref}, 장비 좌표 X / Y / Z (+Z = 아래쪽)': '{ref}, machine coordinates X / Y / Z (+Z = down)',
   '축별 운전 조건': 'Motion per axis',
   '{axis}축': '{axis} axis',
   '{axis}축 구동부': '{axis} drive',

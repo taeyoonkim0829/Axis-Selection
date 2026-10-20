@@ -51,7 +51,7 @@ export interface GantryInputs {
 export const defaultGantry: GantryInputs = {
   config: 'xyz',
   payload: 5,
-  cog: { x: 0, y: 0, z: -50 },
+  cog: { x: 0, y: 0, z: 50 },
   motion: {
     x: { stroke: 1000, velocity: 1, acceleration: 5, jerk: 0 },
     y: { stroke: 500, velocity: 1, acceleration: 5, jerk: 0 },
@@ -184,8 +184,8 @@ export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stag
     cog = toSlide(add(carried.cog, offset), f)
   } else {
     payload = g.payload
-    // the 소재 무게 중심 input counts X the other way (+ = world −X, away from the Z slide face)
-    cog = toSlide([-g.cog.x, g.cog.y, g.cog.z], f)
+    // the 소재 무게 중심 input counts X and Z the other way (+X = world −X, away from the Z slide face; +Z = down)
+    cog = toSlide([-g.cog.x, g.cog.y, -g.cog.z], f)
   }
   // Accelerations across the travel: axes below move all of it; axes above react with their moving part only.
   const parts: [V3, number][] = [

@@ -48,15 +48,15 @@ describe('gantryRequirements', () => {
     expect(req.payload).toBe(defaultGantry.payload)
     // Z faces −X: X acceleration is normal to its slide, Y acceleration lateral
     expect(req.cross).toEqual({ lateral: defaultGantry.motion.y.acceleration, normal: defaultGantry.motion.x.acceleration })
-    // world COG (0, 0, −50) from the slide: −50 along the travel
+    // input COG z +50 = world (0, 0, −50) from the slide: −50 along the travel
     expect(req.cog).toEqual({ x: -50, y: 0, z: 0 })
   })
 
-  it('counts the payload COG X the other way round (+ = away from the Z slide face)', () => {
-    const cog = { x: 30, y: 20, z: -50 }
-    // Z faces −X: +X input lies in front of the slide
+  it('counts the payload COG X and Z the other way round (+X = away from the Z slide face, +Z = down)', () => {
+    const cog = { x: 30, y: 20, z: 50 }
+    // Z faces −X: +X input lies in front of the slide, +Z below it (−Z travel)
     expect(gantryRequirements({ ...defaultGantry, cog }, 'z', null, []).cog).toEqual({ x: -50, y: 20, z: 30 })
-    // XY: the tool axis Y on the floor has lateral −X
+    // XY: the tool axis Y on the floor has lateral −X and normal +Z
     expect(gantryRequirements({ ...defaultGantry, config: 'xy', cog }, 'y', null, []).cog).toEqual({ x: 20, y: 30, z: -50 })
   })
 
