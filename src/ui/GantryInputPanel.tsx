@@ -2,6 +2,7 @@ import { gantryChain, type AxisMotion, type GantryAxis, type GantryConfig, type 
 import type { Settings } from '../calc/types'
 import { useT } from '../i18n'
 import { NumberField, RadioGroup } from './common'
+import { ModeSwitch, type AppMode } from './ModeSwitch'
 import { fmt, mountingLabel } from './format'
 import { DetailSettings, ParallelSection } from './InputPanel'
 import { accelTimeFor } from '../calc/motionProfile'
@@ -37,9 +38,11 @@ interface Props {
   onGantry: (g: GantryInputs) => void
   settings: GantrySettings
   onSettings: (s: GantrySettings) => void
+  mode: AppMode
+  onMode: (mode: AppMode) => void
 }
 
-export function GantryInputPanel({ gantry, onGantry, settings, onSettings }: Props) {
+export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode }: Props) {
   const t = useT()
   const chain = gantryChain(gantry.config)
   const set = <K extends keyof GantryInputs>(key: K, value: GantryInputs[K]) => onGantry({ ...gantry, [key]: value })
@@ -59,6 +62,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings }: Pro
 
   return (
     <aside className="inputs">
+      <ModeSwitch mode={mode} onMode={onMode} />
       <div className="panel inputs-main">
         <section>
           <h2>{t('조합축 구성')}</h2>

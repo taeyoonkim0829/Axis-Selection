@@ -14,6 +14,7 @@ import {
 import { useT } from '../i18n'
 import cogImage from '../../images/center_of_gravity.png'
 import { NumberField, RadioGroup, ToggleButton } from './common'
+import { ModeSwitch, type AppMode } from './ModeSwitch'
 import { fmt, kgf, mountingLabel, parallelModeLabel, pressDirectionLabel } from './format'
 
 const parallelModeHint: Record<ParallelMode, string> = {
@@ -36,9 +37,11 @@ interface Props {
   settings: Settings
   onReq: (req: Requirements) => void
   onSettings: (settings: Settings) => void
+  mode: AppMode
+  onMode: (mode: AppMode) => void
 }
 
-export function InputPanel({ req, settings, onReq, onSettings }: Props) {
+export function InputPanel({ req, settings, onReq, onSettings, mode, onMode }: Props) {
   const t = useT()
   const set = <K extends keyof Requirements>(key: K, value: Requirements[K]) => onReq({ ...req, [key]: value })
   const setCog = (axis: 'x' | 'y' | 'z', value: number) => onReq({ ...req, cog: { ...req.cog, [axis]: value } })
@@ -85,6 +88,7 @@ export function InputPanel({ req, settings, onReq, onSettings }: Props) {
 
   return (
     <aside className="inputs">
+      <ModeSwitch mode={mode} onMode={onMode} />
       <div className="panel inputs-main">
         <section>
           <h2>{t('사용 조건')}</h2>

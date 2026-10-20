@@ -16,13 +16,7 @@ interface Props {
   exporting: boolean
   lang: Lang
   onLang: (lang: Lang) => void
-  mode: AppMode
-  onMode: (mode: AppMode) => void
 }
-
-/** single = one axis (with its parallel arrangement), gantry = XYZ combination */
-export type AppMode = 'single' | 'gantry'
-const modeLabel: Record<AppMode, string> = { single: '단축 선정', gantry: '조합축 선정' }
 
 const stepIds = ['step-axis', 'step-motor', 'step-gearbox', 'step-kit'] as const
 
@@ -89,7 +83,7 @@ function Sign({
   )
 }
 
-export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang, mode, onMode }: Props) {
+export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
   const t = useT()
   const active = useActiveStep()
   const axisTight = axis && tightest(axis.checks)
@@ -147,20 +141,6 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang,
           />
         </ol>
         <div className="rail-actions">
-          <div className="segmented small rail-mode" role="radiogroup" aria-label={t('선정 화면')}>
-            {(Object.keys(modeLabel) as AppMode[]).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="radio"
-                aria-checked={mode === m}
-                className={mode === m ? 'active' : ''}
-                onClick={() => mode !== m && onMode(m)}
-              >
-                {t(modeLabel[m])}
-              </button>
-            ))}
-          </div>
           <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
             {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
           </button>

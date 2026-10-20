@@ -10,7 +10,8 @@ import { Footer } from './Footer'
 import { GantryInputPanel } from './GantryInputPanel'
 import type { ProfileView } from './ProfileChart'
 import { Report } from './Report'
-import { RouteRail, type AppMode } from './RouteRail'
+import type { AppMode } from './ModeSwitch'
+import { RouteRail } from './RouteRail'
 import { useReportExport } from './useReportExport'
 
 export interface GantryState {
@@ -55,11 +56,9 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
           exporting={exporting}
           lang={lang}
           onLang={setLang}
-          mode={mode}
-          onMode={setMode}
         />
         <main className="layout">
-          <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} />
+          <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
           <div className="results">
             <GantrySummary results={results} active={active} onTab={setTab} />
             <CarriedLoad result={current} gantry={deferredGantry} />

@@ -12,7 +12,8 @@ import { GantryWorkspace, type GantryState } from './ui/GantryWorkspace'
 import { InputPanel } from './ui/InputPanel'
 import type { ProfileView } from './ui/ProfileChart'
 import { Report } from './ui/Report'
-import { RouteRail, type AppMode } from './ui/RouteRail'
+import type { AppMode } from './ui/ModeSwitch'
+import { RouteRail } from './ui/RouteRail'
 import { useReportExport } from './ui/useReportExport'
 import { isStaleBuild, STALE_BUILD_NOTICE } from './ui/staleBuild'
 
@@ -92,9 +93,9 @@ export default function App() {
 function Fallback({ req, settings, setReq, setSettings, lang, setLang, mode, setMode, error, retry }: Inputs & { error: Error; retry: () => void }) {
   return (
     <div className="app">
-      <RouteRail axis={null} drive={null} kit={null} onExport={() => {}} exporting={false} lang={lang} onLang={setLang} mode={mode} onMode={setMode} />
+      <RouteRail axis={null} drive={null} kit={null} onExport={() => {}} exporting={false} lang={lang} onLang={setLang} />
       <main className="layout">
-        <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} />
+        <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} mode={mode} onMode={setMode} />
         <div className="results">
           <ErrorPanel error={error} retry={retry} />
         </div>
@@ -107,9 +108,9 @@ function Fallback({ req, settings, setReq, setSettings, lang, setLang, mode, set
 function GantryFallback({ gantry, setGantry, gantrySettings, setGantrySettings, lang, setLang, mode, setMode, error, retry }: GantryState & { error: Error; retry: () => void }) {
   return (
     <div className="app">
-      <RouteRail axis={null} drive={null} kit={null} onExport={() => {}} exporting={false} lang={lang} onLang={setLang} mode={mode} onMode={setMode} />
+      <RouteRail axis={null} drive={null} kit={null} onExport={() => {}} exporting={false} lang={lang} onLang={setLang} />
       <main className="layout">
-        <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} />
+        <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
         <div className="results">
           <ErrorPanel error={error} retry={retry} />
         </div>
@@ -169,11 +170,9 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang, mode, se
           exporting={exporting}
           lang={lang}
           onLang={setLang}
-          mode={mode}
-          onMode={setMode}
         />
         <main className="layout">
-          <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} />
+          <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} mode={mode} onMode={setMode} />
           <div className="results">
             <AxisSteps
               sel={sel}
