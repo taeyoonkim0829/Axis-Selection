@@ -7,7 +7,6 @@ import { fmt, mountingLabel } from './format'
 import { DetailSettings, ParallelSection } from './InputPanel'
 import { accelTimeFor } from '../calc/motionProfile'
 
-const configLabel: Record<GantryConfig, string> = { xyz: 'XYZ 3축', yz: 'YZ 2축', xy: 'XY 2축' }
 const configHint: Record<GantryConfig, string> = {
   xyz: 'X축(바닥) 위에 Y축, Y축 슬라이드에 수직 Z축',
   yz: 'Y축 슬라이드에 수직 Z축 (라인 겐트리)',
@@ -68,7 +67,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
       <div className="panel inputs-main">
         <section>
           <h2>{t('조합축 구성')}</h2>
-          <RadioGroup options={['xyz', 'yz', 'xy'] as const} value={gantry.config} onChange={(v) => set('config', v)} label={(v) => t(configLabel[v])} />
+          <RadioGroup options={['xyz', 'yz', 'xy'] as const} value={gantry.config} onChange={(v) => set('config', v)} label={(v) => v.toUpperCase()} />
           <p className="field-hint application-hint">{t(configHint[gantry.config])}</p>
         </section>
 
@@ -90,7 +89,10 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
             const m = gantry.motion[a]
             return (
               <div key={a} className="gantry-motion">
-                <h3>{t('{axis}축', { axis: a.toUpperCase() })}</h3>
+                <h3>
+                  <span className="step-no">{a.toUpperCase()}</span>
+                  {t('{axis}축', { axis: a.toUpperCase() })}
+                </h3>
                 <div className="grid-2">
                   <NumberField label={t('스트로크')} unit="mm" value={m.stroke} min={1} onChange={(v) => setMotion(a, 'stroke', v)} />
                   <NumberField label={t('속도')} unit="m/s" value={m.velocity} min={0.001} onChange={(v) => setMotion(a, 'velocity', v)} />

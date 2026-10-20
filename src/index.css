@@ -1612,13 +1612,29 @@ th.num {
 
 .gantry-motion + .gantry-motion,
 .gantry-motion + .grid-2 {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
+.gantry-motion + .gantry-motion {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* axis heading: the blue axis-letter box of the tabs + the axis name */
 .gantry-motion h3 {
-  font-size: 13px;
-  color: var(--sign);
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.gantry-motion h3 .step-no {
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
 }
 
 .gantry-note {
