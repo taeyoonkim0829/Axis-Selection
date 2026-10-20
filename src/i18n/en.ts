@@ -516,8 +516,8 @@ export const en: Record<string, string> = {
   'X축 구성 중심에서 Y축 본체 중심까지': 'From the centre of the X arrangement to the Y axis body centre',
   '하위 축의 이동부는 하중이 가장 불리한 끝 위치(Z 하강 끝, Y 모터 쪽 끝)에 있다고 봅니다.':
     'The moving parts of the carried axes are taken at their worst end position (Z fully down, Y at the motor end).',
-  '공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.':
-    'Axes are selected from the tool end down. Click an axis to open its selection steps.',
+  '선정 순서 {order}: 공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.':
+    'Selection order {order}: from the tool end down. Click an axis to open its selection steps.',
   '{n}번째 선정': 'Step {n}',
   '하중 {mass} kg': 'Load {mass} kg',
   '하위 축 선정 필요': 'Select the axis above first',

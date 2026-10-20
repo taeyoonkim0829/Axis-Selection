@@ -80,6 +80,9 @@ export function gantryChain(config: GantryConfig): GantryAxis[] {
   return config === 'xyz' ? ['z', 'y', 'x'] : config === 'yz' ? ['z', 'y'] : ['y', 'x']
 }
 
+/** The axes in display order (X, Y, Z); the selection order stays `gantryChain` */
+export const gantryAxes = (config: GantryConfig): GantryAxis[] => [...gantryChain(config)].sort()
+
 export const axisMounting = (g: GantryInputs, a: GantryAxis): Mounting =>
   a === 'z' ? 'vertical' : a === 'y' ? g.yMounting : g.xMounting
 

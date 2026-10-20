@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { defaultComboOptions, type ComboOptions } from '../cad/combo'
-import { gantryChain, type GantryAxis, type GantryInputs, type GantrySettings } from '../calc/gantry'
+import { gantryAxes, gantryChain, type GantryAxis, type GantryInputs, type GantrySettings } from '../calc/gantry'
 import { useT, type Lang } from '../i18n'
 import { computeGantry, noPicks, type GantryAxisResult, type Picks } from '../selection'
 import { AxisSteps } from './AxisSteps'
@@ -60,7 +60,7 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
         <main className="layout">
           <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
           <div className="results">
-            <GantrySummary results={results} active={active} onTab={setTab} />
+            <GantrySummary results={results} order={gantryAxes(gantry.config)} active={active} onTab={setTab} />
             <CarriedLoad result={current} gantry={deferredGantry} />
             {current.req && sel ? (
               <AxisSteps
@@ -109,16 +109,34 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
 }
 
 /** All axes of the gantry, in selection order; a row opens that axis's steps. */
-function GantrySummary({ results, active, onTab }: { results: GantryAxisResult[]; active: GantryAxis; onTab: (a: GantryAxis) => void }) {
+/** The axes in display order (`order`: X, Y, Z), each with its place in the selection order (tool end first). */
+function GantrySummary({
+  results,
+  order,
+  active,
+  onTab,
+}: {
+  results: GantryAxisResult[]
+  order: GantryAxis[]
+  active: GantryAxis
+  onTab: (a: GantryAxis) => void
+}) {
   const t = useT()
   return (
     <section className="panel gantry-summary">
       <header className="step-head">
         <h2>{t('조합축 구성')}</h2>
-        <span className="muted">{t('공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.')}</span>
+        <span className="muted">
+          {t('선정 순서 {order}: 공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.', {
+            order: results.map((r) => axisName(r.axis)).join(' → '),
+          })}
+        </span>
       </header>
       <div className="gantry-tabs" role="tablist" aria-label={t('조합축 축')}>
-        {results.map((r, i) => {
+        {order.map((a) => {
+          const i = results.findIndex((r) => r.axis === a)
+          const r = results[i]
+          if (!r) return null
           const s = r.sel
           return (
             <button

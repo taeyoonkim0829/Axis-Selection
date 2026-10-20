@@ -1,4 +1,4 @@
-import { gantryChain, type AxisMotion, type GantryAxis, type GantryConfig, type GantryInputs, type GantrySettings, type Vec, type ZMode } from '../calc/gantry'
+import { gantryAxes, gantryChain, type AxisMotion, type GantryAxis, type GantryConfig, type GantryInputs, type GantrySettings, type Vec, type ZMode } from '../calc/gantry'
 import type { Settings } from '../calc/types'
 import { useT } from '../i18n'
 import { NumberField, RadioGroup } from './common'
@@ -45,6 +45,8 @@ interface Props {
 export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode }: Props) {
   const t = useT()
   const chain = gantryChain(gantry.config)
+  // inputs in X, Y, Z order; the selection runs from the tool end (`chain`)
+  const axes = gantryAxes(gantry.config)
   const set = <K extends keyof GantryInputs>(key: K, value: GantryInputs[K]) => onGantry({ ...gantry, [key]: value })
   const setMotion = (a: GantryAxis, key: keyof AxisMotion, value: number) =>
     set('motion', { ...gantry.motion, [a]: { ...gantry.motion[a], [key]: value } })
@@ -84,7 +86,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
 
         <section>
           <h2>{t('축별 운전 조건')}</h2>
-          {chain.map((a) => {
+          {axes.map((a) => {
             const m = gantry.motion[a]
             return (
               <div key={a} className="gantry-motion">
@@ -119,11 +121,10 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
 
       <section className="panel application">
         <h2>{t('축 설치')}</h2>
-        {chain.includes('z') && (
+        {chain.includes('x') && (
           <div className="field">
-            <span className="field-label">{t('Z축 이동 방식')}</span>
-            <RadioGroup options={['slide', 'profile'] as const} value={gantry.zMode} onChange={(v) => set('zMode', v)} label={(v) => t(zModeLabel[v])} />
-            <span className="field-hint">{t(zModeHint[gantry.zMode])}</span>
+            <span className="field-label">{t('X축 설치 방향')}</span>
+            <RadioGroup options={['floor', 'wall'] as const} value={gantry.xMounting} onChange={(v) => set('xMounting', v)} label={(v) => t(mountingLabel[v])} />
           </div>
         )}
         <div className="field">
@@ -131,10 +132,11 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
           <RadioGroup options={['floor', 'wall'] as const} value={gantry.yMounting} onChange={(v) => set('yMounting', v)} label={(v) => t(mountingLabel[v])} />
           <span className="field-hint">{t(gantry.yMounting === 'floor' ? '슬라이드 면이 위쪽' : '슬라이드 면이 X 방향 (측면 설치)')}</span>
         </div>
-        {chain.includes('x') && (
+        {chain.includes('z') && (
           <div className="field">
-            <span className="field-label">{t('X축 설치 방향')}</span>
-            <RadioGroup options={['floor', 'wall'] as const} value={gantry.xMounting} onChange={(v) => set('xMounting', v)} label={(v) => t(mountingLabel[v])} />
+            <span className="field-label">{t('Z축 이동 방식')}</span>
+            <RadioGroup options={['slide', 'profile'] as const} value={gantry.zMode} onChange={(v) => set('zMode', v)} label={(v) => t(zModeLabel[v])} />
+            <span className="field-hint">{t(zModeHint[gantry.zMode])}</span>
           </div>
         )}
       </section>
@@ -149,7 +151,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
           {t('상위 축 하중에 들어가는 값입니다. 모터 질량은 모터 데이터에 질량이 없을 때 사용합니다 (Festo · Siemens).')}
         </p>
         <div className="grid-2">
-          {chain.map((a) => (
+          {axes.map((a) => (
             <NumberField
               key={a}
               label={t('{axis}축 모터 질량', { axis: a.toUpperCase() })}
