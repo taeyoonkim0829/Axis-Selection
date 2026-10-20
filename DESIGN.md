@@ -171,7 +171,7 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 - **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; sign-blue borders between cells.
 - **Heading unit** (`.heading-unit`, 소재 무게 중심 (mm)): a muted 12px regular unit after the heading when a row of fields is too narrow for a unit inside each.
 - **Screen switch**: 단축 선정 / 조합축 선정 as a full-width segmented control at the top of the input column, above the first input box (사용 조건 / 조합축 구성): sign-blue outline, the active screen filled sign blue, labels 600.
-- **Gantry axis inputs** (`.gantry-motion`, 축별 운전 조건): per axis a 24px axis-letter box + the axis name (15px, 700), axes split by a 1px line.
+- **Gantry axis inputs** (`.gantry-motion`, 축별 운전 조건): per axis a 24px axis-letter box alone (the axis name only as its aria-label), axes split by a 1px line.
 - **Gantry axis tabs** (`.gantry-tabs`): one card per axis in X, Y, Z order, a blue axis-letter box (the step number box), 몇 번째 선정 (the selection runs Z → Y → X, named in the header), the verdict, then the axis part number in the data face (17px) and muted motor · kit and carried mass lines. The open axis has the selected-row look (soft yellow + 2px yellow inset ring). Under it the 하중 조건 panel (`.gantry-load-list`): label / value in the data face / muted explanation, in an auto-fit grid.
 - **Chart spans**: dwell shaded `--surface-2`, press (press move + hold) shaded `--accent-soft`, each labelled above the plot.
 

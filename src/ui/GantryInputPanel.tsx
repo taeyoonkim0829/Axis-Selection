@@ -89,9 +89,8 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
             const m = gantry.motion[a]
             return (
               <div key={a} className="gantry-motion">
-                <h3>
+                <h3 aria-label={t('{axis}축', { axis: a.toUpperCase() })}>
                   <span className="step-no">{a.toUpperCase()}</span>
-                  {t('{axis}축', { axis: a.toUpperCase() })}
                 </h3>
                 <div className="grid-2">
                   <NumberField label={t('스트로크')} unit="mm" value={m.stroke} min={1} onChange={(v) => setMotion(a, 'stroke', v)} />
