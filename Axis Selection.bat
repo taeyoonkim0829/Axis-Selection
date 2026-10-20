@@ -1,5 +1,5 @@
 @echo off
-rem Starts the Axis Selection dev server and opens it in the default browser.
+rem Starts the AxisPilot dev server and opens it in the default browser.
 cd /d "%~dp0"
 set "PATH=C:\Program Files\nodejs;%PATH%"
 
@@ -10,5 +10,5 @@ if %errorlevel%==0 (
 )
 
 if not exist node_modules call npm install
-title Axis Selection - close this window to stop the server
+title AxisPilot - close this window to stop the server
 call npm run dev -- --port 5173 --strictPort --open

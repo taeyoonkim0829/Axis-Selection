@@ -109,7 +109,8 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang,
     <header className="rail">
       <div className="rail-inner">
         <div className="rail-brand">
-          <span className="rail-title">Axis Selection</span>
+          {/* the rail is sign blue in both themes, so the logo's dark-background version is used in both */}
+          <img className="rail-logo" src={`${import.meta.env.BASE_URL}axispilot-logo-dark.svg`} alt="AxisPilot" width={131} height={40} />
           <span className="rail-sub">{context ?? t('직교 축 · 모터 · 연결키트 선정')}</span>
         </div>
         <ol className="signs" aria-label={t('선정 경로')}>

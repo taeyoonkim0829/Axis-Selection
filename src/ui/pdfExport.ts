@@ -34,7 +34,7 @@ export async function reportToPdf(root: HTMLElement, title: string): Promise<Blo
   return pdf.output('blob')
 }
 
-/** Suggested file name / PDF title: 축선정_<axis model>_<yyyy-mm-dd> (AxisSelection_… in English). */
+/** Suggested file name / PDF title: 축선정_<axis model>_<yyyy-mm-dd> (AxisPilot_… in English). */
 export function reportTitle(axisModel: string, lang: Lang): string {
   // Local date (toISOString would give the UTC date, a day early in Korea before 9:00)
   const now = new Date()

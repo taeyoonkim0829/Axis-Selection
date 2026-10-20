@@ -1,5 +1,5 @@
 /*
- * Axis Selection — route-sign system.
+ * AxisPilot — route-sign system.
  * Sign blue owns the top rail; signal yellow marks only the selected route
  * (active sign, selected rows). Green / amber / red carry verdicts and nothing else.
  */
@@ -132,13 +132,13 @@ h3 {
   border-right: 1px solid rgb(255 255 255 / 0.22);
 }
 
-.rail-title {
-  font-family: var(--din);
-  font-size: 25px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  line-height: 1.05;
+.rail-logo {
+  display: block;
+  align-self: flex-start;
+  width: auto;
+  /* the SVG has 20/80 of its height empty above and below the mark */
+  height: 40px;
+  margin: -6px 0 -6px -2px;
 }
 
 .rail-sub {

@@ -1,5 +1,6 @@
 {
-  "name": "axis-selection",
+  "name": "axispilot",
+  "description": "AxisPilot: Festo linear axis, motor, gearbox and mounting kit sizing in the browser",
   "private": true,
   "version": "0.1.0",
   "type": "module",

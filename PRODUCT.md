@@ -35,7 +35,7 @@ Vendor tools (Festo Electric Motion Sizing, Rexroth LinSelect, SigmaSelect, Moto
 
 ## Brand Commitments
 
-- Name: "Axis Selection". Footer credit: © Kim Taeyoon.
+- Name: "AxisPilot" (formerly "Axis Selection"). Logo: `public/axispilot-logo.svg` (light backgrounds), `axispilot-logo-dark.svg` (dark backgrounds, used on the sign-blue rail), icon `axispilot-icon.svg`. Footer credit: © Kim Taeyoon.
 - Domain terms in Korean as already used (직교 축, 모터, 감속기, 연결키트, 적합/주의/부적합).
 
 ## Evidence on Hand

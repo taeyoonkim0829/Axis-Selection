@@ -82,8 +82,8 @@ export function assemble(
     'ISO-10303-21;',
     'HEADER;',
     // the parts' licence and origin (e.g. CADENAS, CC BY-ND 4.0) travel with the assembly
-    `FILE_DESCRIPTION((${['Axis Selection assembly', ...notices].map(quote).join(',')}),'2;1');`,
-    `FILE_NAME(${quote(name)},${quote(timeStamp.slice(0, 19))},('Axis Selection'),(''),'Axis Selection','Axis Selection','');`,
+    `FILE_DESCRIPTION((${['AxisPilot assembly', ...notices].map(quote).join(',')}),'2;1');`,
+    `FILE_NAME(${quote(name)},${quote(timeStamp.slice(0, 19))},('AxisPilot'),(''),'AxisPilot','AxisPilot','');`,
     "FILE_SCHEMA(('CONFIG_CONTROL_DESIGN'));",
     'ENDSEC;',
     '',

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Axis Selection is a browser-only web app (React 19 + TypeScript + Vite, no backend; product data bundled as JSON). UI text is Korean with an English toggle (see `src/i18n/`). Mounting kits are matched by interface code and checked against their data sheet values (transferable torque, max. speed, inertia, no-load torque); the motor step's verdict includes the recommended kit's.
+AxisPilot (formerly Axis Selection) is a browser-only web app (React 19 + TypeScript + Vite, no backend; product data bundled as JSON). UI text is Korean with an English toggle (see `src/i18n/`). Mounting kits are matched by interface code and checked against their data sheet values (transferable torque, max. speed, inertia, no-load torque); the motor step's verdict includes the recommended kit's.
 
 ## Domain
 
