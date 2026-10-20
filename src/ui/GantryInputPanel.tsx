@@ -61,7 +61,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings }: Pro
     <aside className="inputs">
       <div className="panel inputs-main">
         <section>
-          <h2>{t('겐트리 구성')}</h2>
+          <h2>{t('조합축 구성')}</h2>
           <RadioGroup options={['xyz', 'yz', 'xy'] as const} value={gantry.config} onChange={(v) => set('config', v)} label={(v) => t(configLabel[v])} />
           <p className="field-hint application-hint">{t(configHint[gantry.config])}</p>
         </section>

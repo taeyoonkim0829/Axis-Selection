@@ -115,10 +115,10 @@ function GantrySummary({ results, active, onTab }: { results: GantryAxisResult[]
   return (
     <section className="panel gantry-summary">
       <header className="step-head">
-        <h2>{t('겐트리 구성')}</h2>
+        <h2>{t('조합축 구성')}</h2>
         <span className="muted">{t('공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.')}</span>
       </header>
-      <div className="gantry-tabs" role="tablist" aria-label={t('겐트리 축')}>
+      <div className="gantry-tabs" role="tablist" aria-label={t('조합축 축')}>
         {results.map((r, i) => {
           const s = r.sel
           return (
@@ -227,7 +227,7 @@ function CarriedLoad({ result, gantry }: { result: GantryAxisResult; gantry: Gan
 function gantryReportRows(r: GantryAxisResult, g: GantryInputs): [string, string][] {
   const req = r.req!
   return [
-    ['겐트리 구성', g.config.toUpperCase()],
+    ['조합축 구성', g.config.toUpperCase()],
     ['하중', `${fmt(req.payload, 2)} kg`],
     ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
     ['교차 가속도 (측면 / 수직)', `${fmt(req.cross?.lateral ?? 0)} / ${fmt(req.cross?.normal ?? 0)} m/s²`],

@@ -152,7 +152,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
 
         {gantry && (
           <>
-            <h3>{t('겐트리 {axis}', { axis: gantry.axis })}</h3>
+            <h3>{t('조합축 {axis}', { axis: gantry.axis })}</h3>
             <SpecTable rows={gantry.rows} />
           </>
         )}
