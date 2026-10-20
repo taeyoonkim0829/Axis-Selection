@@ -184,7 +184,8 @@ export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stag
     cog = toSlide(add(carried.cog, offset), f)
   } else {
     payload = g.payload
-    cog = toSlide(toV3(g.cog), f)
+    // the 소재 무게 중심 input counts X the other way (+ = world −X, away from the Z slide face)
+    cog = toSlide([-g.cog.x, g.cog.y, g.cog.z], f)
   }
   // Accelerations across the travel: axes below move all of it; axes above react with their moving part only.
   const parts: [V3, number][] = [

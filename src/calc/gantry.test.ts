@@ -52,6 +52,14 @@ describe('gantryRequirements', () => {
     expect(req.cog).toEqual({ x: -50, y: 0, z: 0 })
   })
 
+  it('counts the payload COG X the other way round (+ = away from the Z slide face)', () => {
+    const cog = { x: 30, y: 20, z: -50 }
+    // Z faces −X: +X input lies in front of the slide
+    expect(gantryRequirements({ ...defaultGantry, cog }, 'z', null, []).cog).toEqual({ x: -50, y: 20, z: 30 })
+    // XY: the tool axis Y on the floor has lateral −X
+    expect(gantryRequirements({ ...defaultGantry, config: 'xy', cog }, 'y', null, []).cog).toEqual({ x: 20, y: 30, z: -50 })
+  })
+
   it('hands a selected axis with everything on it to the axis carrying it', () => {
     const z = gantryRequirements(defaultGantry, 'z', null, [])
     const axis = axes.find((a) => a.family === 'EGC' && a.drive === 'belt')!
