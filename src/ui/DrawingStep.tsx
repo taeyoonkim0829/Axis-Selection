@@ -15,6 +15,7 @@ import {
   type TwinAxis,
 } from '../cad/combo'
 import type { Drawing } from '../cad/drawings'
+import { stepText } from '../cad/stepText'
 import type { PartMesh } from '../cad/occt'
 import type { Kit } from '../data/types'
 import { useT } from '../i18n'
@@ -43,7 +44,7 @@ async function fetchText(d: Drawing, attempts = 2): Promise<string> {
   try {
     const res = await fetch(d.url)
     if (!res.ok) throw new Error(`${d.path}: ${res.status}`)
-    return await res.text()
+    return await stepText(await res.arrayBuffer())
   } catch (e) {
     // A network error (server reloading, file locked by a sync client) is retried once after a short pause
     if (attempts > 1 && e instanceof TypeError) {

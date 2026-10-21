@@ -1,9 +1,26 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { gzipSync } from 'node:zlib'
+import { defineConfig, type Plugin } from 'vite'
+
+/**
+ * The CAD models (STEP text, ~6× smaller gzipped) are written gzipped under their own names, which keeps the
+ * GitHub Pages site under its 1 GB limit. Pages sends them without Content-Encoding, so the app unpacks them itself
+ * (`src/cad/stepText.ts`); the dev server serves them raw.
+ */
+function gzipDrawings(): Plugin {
+  return {
+    name: 'gzip-drawings',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      for (const file of Object.values(bundle))
+        if (file.type === 'asset' && /\.(stp|step)$/i.test(file.fileName)) file.source = gzipSync(file.source, { level: 9 })
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), gzipDrawings()],
   // Relative asset URLs: the build works at the GitHub Pages path (/AxisPilot/) as well as at a root.
   base: './',
   // Product data (Data/*.json) is bundled on purpose; it dominates the chunk size.
