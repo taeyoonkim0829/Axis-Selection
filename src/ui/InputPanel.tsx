@@ -318,7 +318,7 @@ export function ParallelSection({ parallel, onParallel, title = '축 구성' }: 
               unit="kg·cm²"
               value={parallel.shaftInertia}
               onChange={(v) => setParallel('shaftInertia', v)}
-              hint={t('연결축 + 커플링')}
+              hint={t('KSK가 없는 축에만 사용 (KSK는 자동 계산)')}
             />
           )}
         </div>

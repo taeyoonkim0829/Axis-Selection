@@ -73,6 +73,8 @@ export interface Axis {
   moduleStrokes?: { variable: [number, number] | null; fixed: number[] } | null
   /** mechanical interface code for mounting kits; null when unknown */
   interfaceCode: string | null
+  /** mm, belt axes: distance between the drive cover faces at both shaft ends (from the CAD model); a connecting shaft spans the axis spacing minus this */
+  driveWidth?: number | null
   /** Additional (passive, standard) slide on the same guide, ordered in the modular product system */
   additionalSlide?: AdditionalSlide | null
   /** Toothed belt materials to choose from, the one in `typeCode` first */
@@ -320,4 +322,36 @@ export interface Kit {
   length: number | null
   /** data sheet row the values come from when it is the kit's current generation (…-G2) */
   dataSource?: string | null
+}
+
+/**
+ * Connecting shaft (Festo KSK): drive shafts, couplings and a tube joining the drive shafts of two parallel toothed
+ * belt axes, ordered by nominal length LN (the gap between the drive covers). From the KSK operating instructions
+ * (8239742, 2025-12) and data sheets.
+ */
+export interface ConnectingShaft {
+  id: string
+  maker: 'Festo'
+  family: 'KSK'
+  model: string
+  /** order type code with … where the nominal length goes */
+  typeCode: string
+  partNumber: string
+  size: string
+  /** mm, coupling bore */
+  bore: number
+  /** mm, nominal length LN [min, max] */
+  lengthRange: [number, number]
+  /** Nm */
+  ratedTorque: number
+  /** mm, ± */
+  maxAxialOffset: number
+  /** kg·cm² at LN = 0 / per m of LN */
+  inertiaJ0: number
+  inertiaJLPerMeter: number
+  /** kg at LN = 0 / per m of LN */
+  baseMass: number
+  massPerMeter: number
+  /** axes it fits (belt drive), each with its max. speed curve [LN mm, rpm] */
+  axes: { family: AxisFamily; variant: Axis['variant']; size: number; speedCurve: [number, number][] }[]
 }

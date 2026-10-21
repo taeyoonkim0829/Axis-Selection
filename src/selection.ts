@@ -6,7 +6,7 @@ import { attachKit, findKits, type KitEvaluation, type KitMatch } from './calc/k
 import { evaluateDrive, gearboxOptionsFor, selectMotors, type DriveEvaluation } from './calc/motorSelection'
 import { gantryChain, gantryRequirements, stageOf, type GantryAxis, type GantryInputs, type Stage } from './calc/gantry'
 import type { Requirements, Settings } from './calc/types'
-import { axes, brakingResistors, cables, controllers, kits, motors } from './data'
+import { axes, brakingResistors, cables, controllers, kits, motors, shafts } from './data'
 
 /** The user's picks; null = the recommendation */
 export interface Picks {
@@ -37,7 +37,7 @@ function attachParts(axisEval: AxisEvaluation, drive: DriveEvaluation, settings:
 }
 
 export function computeSelection(req: Requirements, settings: Settings, picks: Picks): Selection {
-  const axisResults = selectAxes(axes, req, settings)
+  const axisResults = selectAxes(axes, req, settings, shafts)
   // Keep the user's pick while it is still listed; otherwise fall back to the best candidate.
   const selectedAxis =
     axisResults.find((r) => r.axis.id === picks.axisId) ?? axisResults.find((r) => r.status !== 'fail') ?? null

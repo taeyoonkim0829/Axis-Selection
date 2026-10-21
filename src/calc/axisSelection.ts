@@ -1,7 +1,9 @@
 // Axis sizing: motion profile, required force/torque at the axis drive shaft,
 // guide load comparison value, deflection and life. Motor-independent.
-import type { AdditionalSlide, Axis, BeltMaterial } from '../data/types'
+import type { AdditionalSlide, Axis, BeltMaterial, ConnectingShaft } from '../data/types'
+import { curveAt } from './curve'
 import { dwellPhase, moveProfile, samplePhases, type MoveProfile, type Phase } from './motionProfile'
+import { connectingShaftFor, noShaftCheck, shaftChecks, type ShaftFit } from './shaftSelection'
 import { check, verticalForward, worstStatus, type Check, type ParallelMode, type Requirements, type Settings, type Status } from './types'
 
 export const G = 9.81
@@ -85,6 +87,8 @@ export interface AxisEvaluation {
   options: AxisOptions | null
   /** Nm, no-load torque at the axis drive shaft (with the chosen belt) */
   noLoadTorque: number
+  /** twinShaft: the Festo KSK connecting shaft fitted between the axes; null without one */
+  shaft: ShaftFit | null
 }
 
 /** Order options of an axis from the settings */
@@ -240,17 +244,7 @@ function feedForceCheck(axis: Axis, force: number, stroke: number): Check {
   }
 }
 
-export function curveAt(curve: [number, number][], x: number): number {
-  if (x <= curve[0][0]) return curve[0][1]
-  for (let i = 1; i < curve.length; i++) {
-    const [x1, y1] = curve[i]
-    if (x <= x1) {
-      const [x0, y0] = curve[i - 1]
-      return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0)
-    }
-  }
-  return curve[curve.length - 1][1]
-}
+export { curveAt }
 
 export interface GuideLoads {
   Fy: number
@@ -275,7 +269,7 @@ export interface ParallelLayout {
   share: number
   /** kg, moving mass of the LM guides in total */
   guideMass: number
-  /** kg·cm², connecting shaft at the axis drive shaft (one motor driving two axes) */
+  /** kg·cm², connecting shaft at the axis drive shaft (one motor driving two axes), as entered; a fitted KSK replaces it */
   shaftInertia: number
 }
 
@@ -462,7 +456,7 @@ function pressCycle(req: Requirements): AxisEvaluation['press'] {
   }
 }
 
-export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings): AxisEvaluation | null {
+export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings, shafts: ConnectingShaft[] = []): AxisEvaluation | null {
   const feed = axisFeed(axis)
   if (!feed || !(req.stroke > 0 && req.velocity > 0 && req.acceleration > 0)) return null
   // An electric cylinder has no profile to move.
@@ -536,9 +530,12 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       return { omega: v * toRad, alpha: a * toRad, torque, force: m * a + external }
     }
   const axisDriveAt = drive(mass, inertia, noLoad, share)
-  // One motor driving both axes through a connecting shaft: the motor sees both axes, the payload and the shaft.
+  // One motor driving both axes through a connecting shaft: the motor sees both axes, the payload and the shaft
+  // (the KSK that fits the axis, else the entered inertia).
   const shaft = layout.mode === 'twinShaft'
-  const trainInertia = shaft ? 2 * axisInertia + axis.inertiaJLPerKg * req.payload + layout.shaftInertia : inertia
+  const ksk = shaft ? connectingShaftFor(axis, req.parallel?.spacing ?? 0, shafts) : null
+  const shaftInertia = ksk?.inertia ?? layout.shaftInertia
+  const trainInertia = shaft ? 2 * axisInertia + axis.inertiaJLPerKg * req.payload + shaftInertia : inertia
   const driveAt = shaft ? drive(req.payload + 2 * slide, trainInertia, 2 * noLoad, 1) : axisDriveAt
   const sampled = samplePhases(phases, (i) => moves[i])
   const samples: AxisSample[] = sampled.map((s) => ({ ...s, ...driveAt(s.v, s.a, s.dir, s.load) }))
@@ -582,6 +579,14 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
         ? { ...c, status: 'warn', note: '모터 쪽 축의 구동축이 두 축의 토크를 전달합니다. 허용 여부를 Festo에 확인하세요' }
         : { ...c, note: '모터 쪽 축의 구동축이 두 축의 토크를 전달합니다' },
     )
+    if (ksk) {
+      // The shaft carries the second axis's drive torque (the more loaded share) and accelerates itself.
+      const carried = Math.max(
+        ...moving.map((s) => (s.torque * s.omega >= 0 ? Math.abs(s.torque) / efficiency : Math.abs(s.torque) * efficiency) + ksk.inertia * 1e-4 * Math.abs(s.alpha)),
+      )
+      const rpm = (Math.max(...moving.map((s) => Math.abs(s.omega))) * 60) / (2 * Math.PI)
+      checks.push(...shaftChecks(ksk, carried, rpm))
+    } else checks.push(noShaftCheck)
   }
 
   // Axes released for horizontal mounting only (ELGT-TB): vertical fails; side (wall) mounting is not covered.
@@ -696,6 +701,14 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       : []),
     { label: '축 관성 모멘트 (구동축 기준)', value: trainInertia, unit: 'kg·cm²', ...(shaft ? { note: '2축 + 연결축' } : {}) },
   ]
+  if (ksk)
+    info.push({
+      label: '연결축 관성 모멘트',
+      value: ksk.inertia,
+      unit: 'kg·cm²',
+      note: '{model}, 주문번호 {partNumber} (J0 + JL·LN)',
+      noteArgs: { model: ksk.model, partNumber: ksk.shaft.partNumber },
+    })
   if (shaft) info.push({ label: '모터 구동 이동 질량 (2축 합계)', value: req.payload + 2 * slide, unit: 'kg' })
   // LM guides: the largest load on one guide, for choosing the guide blocks
   const guideMembers = members.filter((_, i) => !layout.isAxis[i])
@@ -774,15 +787,16 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     layout,
     options,
     noLoadTorque: noLoad,
+    shaft: ksk,
   }
 }
 
 const statusOrder: Record<Status, number> = { ok: 0, warn: 1, fail: 2 }
 
-export function selectAxes(all: Axis[], req: Requirements, settings: Settings): AxisEvaluation[] {
+export function selectAxes(all: Axis[], req: Requirements, settings: Settings, shafts: ConnectingShaft[] = []): AxisEvaluation[] {
   return all
     .filter((a) => settings.families.includes(a.family) && settings.drives.includes(a.drive) && offersSlides(a, settings))
-    .map((a) => evaluateAxis(a, req, settings))
+    .map((a) => evaluateAxis(a, req, settings, shafts))
     .filter((e): e is AxisEvaluation => e !== null)
     .sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || a.axisMass - b.axisMass)
 }

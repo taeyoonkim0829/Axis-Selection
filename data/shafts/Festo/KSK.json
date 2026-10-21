@@ -1,0 +1,157 @@
+{
+  "items": [
+    {
+      "id": "KSK-50",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-50",
+      "typeCode": "KSK-50-…",
+      "partNumber": "563710",
+      "size": "50",
+      "bore": 8,
+      "lengthRange": [200, 2000],
+      "ratedTorque": 4,
+      "maxAxialOffset": 2,
+      "inertiaJ0": 0.34,
+      "inertiaJLPerMeter": 0.34,
+      "baseMass": 0.28,
+      "massPerMeter": 0.32,
+      "axes": [
+        {
+          "family": "EGC", "variant": "", "size": 50,
+          "speedCurve": [[0, 3103], [700, 3103], [750, 2846], [850, 2399], [900, 2191], [1100, 1600], [1250, 1300], [1500, 955], [1750, 728], [1950, 603], [2000, 572]]
+        }
+      ]
+    },
+    {
+      "id": "KSK-70",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-70",
+      "typeCode": "KSK-70-…",
+      "partNumber": "562520",
+      "size": "70",
+      "bore": 8,
+      "lengthRange": [200, 2000],
+      "ratedTorque": 4,
+      "maxAxialOffset": 2,
+      "inertiaJ0": 0.35,
+      "inertiaJLPerMeter": 0.34,
+      "baseMass": 0.29,
+      "massPerMeter": 0.32,
+      "axes": [
+        {
+          "family": "EGC", "variant": "", "size": 70,
+          "speedCurve": [[0, 3827], [600, 3825], [700, 3133], [750, 2842], [850, 2401], [900, 2195], [1100, 1600], [1250, 1300], [1500, 958], [1750, 728], [1950, 603], [2000, 576]]
+        },
+        {
+          "family": "ELGD", "variant": "WD", "size": 100,
+          "speedCurve": [[0, 3560], [600, 3558], [700, 3104], [800, 2577], [850, 2368], [900, 2185], [1000, 1867], [1100, 1602], [1200, 1385], [1300, 1212], [1450, 1007], [1700, 764], [1950, 606], [2000, 585]]
+        }
+      ]
+    },
+    {
+      "id": "KSK-A-70",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-A-70",
+      "typeCode": "KSK-A-70-…",
+      "partNumber": "2261462",
+      "size": "A-70",
+      "bore": 15,
+      "lengthRange": [200, 2000],
+      "ratedTorque": 8,
+      "maxAxialOffset": 2,
+      "inertiaJ0": 1.61,
+      "inertiaJLPerMeter": 0.8,
+      "baseMass": 0.54,
+      "massPerMeter": 0.48,
+      "axes": []
+    },
+    {
+      "id": "KSK-80",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-80",
+      "typeCode": "KSK-80-…",
+      "partNumber": "562521",
+      "size": "80",
+      "bore": 15,
+      "lengthRange": [200, 2000],
+      "ratedTorque": 8,
+      "maxAxialOffset": 2,
+      "inertiaJ0": 1.59,
+      "inertiaJLPerMeter": 0.8,
+      "baseMass": 0.53,
+      "massPerMeter": 0.48,
+      "axes": [
+        {
+          "family": "EGC", "variant": "", "size": 80,
+          "speedCurve": [[0, 3333], [700, 3333], [750, 3311], [800, 3034], [850, 2794], [950, 2360], [1000, 2197], [1050, 2053], [1200, 1673], [1250, 1558], [1500, 1154], [1750, 885], [1950, 736], [2000, 699]]
+        },
+        {
+          "family": "ELGD", "variant": "", "size": 60,
+          "speedCurve": [[0, 3030], [750, 3026], [800, 3008], [900, 2577], [1000, 2203], [1050, 2045], [1150, 1778], [1250, 1556], [1350, 1373], [1550, 1094], [1750, 886], [1950, 746], [2000, 725]]
+        },
+        {
+          "family": "ELGD", "variant": "", "size": 80,
+          "speedCurve": [[0, 2491], [900, 2485], [950, 2349], [1000, 2203], [1050, 2045], [1150, 1778], [1250, 1556], [1350, 1373], [1550, 1094], [1750, 886], [1950, 746], [2000, 725]]
+        },
+        {
+          "family": "ELGD", "variant": "WD", "size": 120,
+          "speedCurve": [[0, 2196], [900, 2192], [1000, 2174], [1050, 2045], [1150, 1778], [1250, 1556], [1350, 1373], [1550, 1094], [1750, 886], [1950, 746], [2000, 725]]
+        }
+      ]
+    },
+    {
+      "id": "KSK-120",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-120",
+      "typeCode": "KSK-120-…",
+      "partNumber": "562522",
+      "size": "120",
+      "bore": 25,
+      "lengthRange": [250, 2000],
+      "ratedTorque": 50,
+      "maxAxialOffset": 2,
+      "inertiaJ0": 13.9,
+      "inertiaJLPerMeter": 3.33,
+      "baseMass": 2.28,
+      "massPerMeter": 0.8,
+      "axes": [
+        {
+          "family": "EGC", "variant": "", "size": 120,
+          "speedCurve": [[0, 2400], [1050, 2400], [1100, 2362], [1250, 1988], [1500, 1532], [1750, 1211], [1950, 1025], [2000, 979]]
+        },
+        {
+          "family": "ELGD", "variant": "", "size": 120,
+          "speedCurve": [[0, 1710], [1400, 1713], [1500, 1670], [1750, 1298], [2000, 1043]]
+        }
+      ]
+    },
+    {
+      "id": "KSK-185",
+      "maker": "Festo",
+      "family": "KSK",
+      "model": "KSK-185",
+      "typeCode": "KSK-185-…",
+      "partNumber": "562523",
+      "size": "185",
+      "bore": 35,
+      "lengthRange": [350, 2000],
+      "ratedTorque": 120,
+      "maxAxialOffset": 5,
+      "inertiaJ0": 72.61,
+      "inertiaJLPerMeter": 19.46,
+      "baseMass": 5.29,
+      "massPerMeter": 1.89,
+      "axes": [
+        {
+          "family": "EGC", "variant": "", "size": 185,
+          "speedCurve": [[0, 1296], [2000, 1292]]
+        }
+      ]
+    }
+  ]
+}

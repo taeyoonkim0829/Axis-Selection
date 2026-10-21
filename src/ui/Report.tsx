@@ -147,6 +147,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
     ...(layout.guides
       ? ([[t('LM 가이드'), '—', t('별도 선정 (참고값: 3장)'), null, layout.guides, null]] as SelectionRow[])
       : []),
+    ...(axis.shaft ? ([[t('연결축'), 'Festo', axis.shaft.model, axis.shaft.shaft.partNumber, 1, null]] as SelectionRow[]) : []),
   ]
   const noMotor = <p className="empty">{t('모터를 선택하지 않았습니다.')}</p>
 
@@ -199,7 +200,14 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                         ['가이드 1개 이동 질량', q(req.parallel!.guideMass, 'kg')],
                       ] as Row[])
                     : ([['축 1개 부하 분담', `${Math.round(layout.share * 100)}%`]] as Row[])),
-                  ...(layout.mode === 'twinShaft' ? ([['연결축 관성', q(layout.shaftInertia, 'kg·cm²', 4)]] as Row[]) : []),
+                  ...(layout.mode === 'twinShaft'
+                    ? ((axis.shaft
+                        ? [
+                            ['연결축', `${axis.shaft.model} (LN ${axis.shaft.length} mm)`],
+                            ['연결축 관성', q(axis.shaft.inertia, 'kg·cm²', 4)],
+                          ]
+                        : [['연결축 관성', q(layout.shaftInertia, 'kg·cm²', 4)]]) as Row[])
+                    : []),
                 ] as Row[])
               : []),
           ]}

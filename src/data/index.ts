@@ -1,8 +1,8 @@
-import type { Axis, BrakingResistor, Cable, Controller, Gearbox, Kit, Motor } from './types'
+import type { Axis, BrakingResistor, Cable, ConnectingShaft, Controller, Gearbox, Kit, Motor } from './types'
 
 // Product data is maintained directly in these JSON files (see data/README.md):
 // one file per maker and product family, data/<kind>/<maker>/<family>.json
-// kind = axes | motors | gearboxes | kits | drives | brakingResistors | cables.
+// kind = axes | motors | gearboxes | kits | drives | brakingResistors | cables | shafts.
 // Files excluded with `!` stay in data/ but are not offered in the app (discontinued: Mitsubishi HF-KP/HF-SP,
 // Apex PA).
 type DataFile = { items: unknown[] }
@@ -19,6 +19,7 @@ const kitFiles = import.meta.glob<DataFile>('../../data/kits/*/*.json', { eager:
 const controllerFiles = import.meta.glob<DataFile>('../../data/drives/*/*.json', { eager: true, import: 'default' })
 const resistorFiles = import.meta.glob<DataFile>('../../data/brakingResistors/*/*.json', { eager: true, import: 'default' })
 const cableFiles = import.meta.glob<DataFile>('../../data/cables/*/*.json', { eager: true, import: 'default' })
+const shaftFiles = import.meta.glob<DataFile>('../../data/shafts/*/*.json', { eager: true, import: 'default' })
 
 const items = <T,>(files: Record<string, DataFile>) => Object.values(files).flatMap((f) => f.items as T[])
 
@@ -29,6 +30,7 @@ export const kits = items<Kit>(kitFiles)
 export const controllers = items<Controller>(controllerFiles)
 export const brakingResistors = items<BrakingResistor>(resistorFiles)
 export const cables = items<Cable>(cableFiles)
+export const shafts = items<ConnectingShaft>(shaftFiles)
 
 /** Families of each maker present in the data, sorted by name. */
 export const motorFamilies = Object.fromEntries(

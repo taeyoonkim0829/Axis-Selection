@@ -3,7 +3,7 @@
 The app reads every JSON file in this folder at build time, except discontinued families excluded in `src/data/index.ts` (Mitsubishi `HF-KP`/`HF-SP`, Apex `PA`); those files are kept for reference. These files are the source of truth: edit them directly.
 
 ```
-data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits | drives | brakingResistors | cables
+data/<kind>/<maker>/<family>.json      kind = axes | motors | gearboxes | kits | drives | brakingResistors | cables | shafts
 ```
 
 Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up automatically (restart `npm run dev`). Every item needs a unique `id`, and `family` should match its file name. Missing values are `null`. The TypeScript shapes are in `src/data/types.ts`, and `npm test` loads the real data.
@@ -43,6 +43,7 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `pulleyDensity` | kg/cm³ |
 | `standardStrokes` | mm |
 | `interfaceCode` | mounting kit code, e.g. `T42-60` |
+| `driveWidth` | mm, belt axes: distance between the drive cover faces at both shaft ends, from the CAD frame JSONs (twice the drive frame's offset from the profile centre). A connecting shaft's nominal length LN = axis spacing − `driveWidth` |
 | `mountingPosition` | `horizontal` = released for horizontal mounting only (ELGT-TB catalogue, "Mounting position: Horizontal"); absent = any |
 
 ESBF (`ESBF.json`, electric cylinder with piston rod and plain-bearing guide): ball screw versions ESBF-BS-32…100, first extracted from the ED_Data sheet of the E-Drive workbook Ver15.04, then checked against and corrected to the Festo documentation 203032 (2025/11, data sheet p.7–9): `slideMass` = moving mass mb0 (the Excel had the lead screw basic weight for sizes 32–50), `slideMassPer10mm` = mb10, `inertiaJ0` of ESBF-BS-100-…-40P = 6.710 (Excel 6.17), `baseMass` of ESBF-BS-40 = 1.237 (Excel 1237), `FxMax` = max. cylinder force. `interfaceCode` comes from the Motor Kit_Selection workbook (`D32`, `D40`, `D50`, `D60` for size 63, `D80`, `D100`). `speedLimitStroke` is the Excel value, a little below the knee of the documentation's speed curve (the speed falls with 1/stroke² above it). `pressureForceCurve` (p.12–13) and `rodLateralForceCurve` (p.11, piston rod, log-log) are read from the vector paths of the PDF curves, calibrated on the grid lines and thinned to points within 0.5 % (pressure) / 2 % (lateral) of the curve; the flat part is snapped to the max. cylinder force. `screwDynamicLoadRating` is an equivalent value fitted to the service life curves (p.16 for sizes 32/40, p.17 for 50…100, fB = 1): the curves follow L = (C/F)³ · pitch, and C comes out the same within 0.3 % along each curve (32/40 come out near round values: about 6500, 4400, 12000, 12000, 9000 N). Guide maxima and `Iy`/`Iz` are `null`, so the guide check has no limits and deflection is skipped; the payload needs an external guide. The lead screw versions ESBF-LS are left out: their efficiency is far below the 0.9 the app uses for spindles.
@@ -144,6 +145,23 @@ A kit fits when `axisCode` equals the axis's `interfaceCode` and `motorCode` equ
 | `noLoadTorque` | Nm, parallel kits: no-load driving torque |
 | `dataSource` | the data sheet row used when the kit's own name is not listed but its current generation is (`EAMM-A-L38-60G` → `EAMM-A-L38-60G-G2`, same interface codes); `null` otherwise |
 | `efficiency` / `length` | not filled in |
+
+## Connecting shafts (`shafts/Festo/KSK.json`)
+
+Festo KSK: two drive shafts, two couplings and a tube joining the drive shafts of two parallel toothed belt axes driven by one motor (2축 · 기구 동기). From the KSK operating instructions (8239742, 2025-12: rated torque, compatibility table, speed curves) and the data sheets 563710, 562520, 2261462, 562521, 562522, 562523 (2026/10: length range, inertia, weight).
+
+| Field | Unit / meaning |
+|---|---|
+| `typeCode` / `partNumber` | order type with … for the nominal length LN in mm (`KSK-80-1000`) / the size's part number |
+| `bore` | mm, coupling bore |
+| `lengthRange` | mm, nominal length LN [min, max] (the gap between the drive covers) |
+| `ratedTorque` | Nm (instructions, table after step 13) |
+| `maxAxialOffset` | ±mm |
+| `inertiaJ0` / `inertiaJLPerMeter` | kg·cm² at LN = 0 / per m of LN (kgmm² ÷ 100) |
+| `baseMass` / `massPerMeter` | kg at LN = 0 / per m of LN |
+| `axes` | the belt axes it fits (`family`, `variant`, `size`, from the tightening torque table: EGC-…-TB-KF 50/70/80/120/185 → KSK-50/-70/-80/-120/-185, ELGD-TB-KF 60/80 → KSK-80, 120 → KSK-120, ELGD-TB-KF-WD 100 → KSK-70, 120 → KSK-80), each with `speedCurve` `[LN mm, rpm]`: "max. permissible speed n as a function of LN" (figures 8 and 11), read from the PDF's vector paths on a 50 mm grid and thinned to points within 8 rpm. ELGD-80 and ELGD-WD-120 follow their own flat line, then the KSK-80 curve of ELGD-60. KSK-A-70 fits only ELGA (not in the app) |
+
+The slide offset curves (figures 15–18) are not used.
 
 ## Drawings (`<kind>/<maker>/Drawings/…/<partNumber>_<model>.stp`)
 

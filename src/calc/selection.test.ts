@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { axes, gearboxes, kits, motors } from '../data'
+import { axes, gearboxes, kits, motors, shafts } from '../data'
 import type { Axis, Gearbox, Motor } from '../data/types'
 import { axisOrder, curveAt, evaluateAxis, guideLoads, memberLoads, parallelLayout, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, gearboxStatus, selectMotors } from './motorSelection'
@@ -56,6 +56,28 @@ describe('parallel arrangement', () => {
     const axisInertia = spindle.inertiaJ0 + (spindle.inertiaJHPerMeter * (ev.order.stroke ?? 500)) / 1000
     expect(ev.inertia).toBeCloseTo(2 * axisInertia + spindle.inertiaJLPerKg * 10 + 2)
     expect(ev.checks.some((c) => c.label === '구동 토크 (연결축 포함)')).toBe(true)
+  })
+
+  it('fits a KSK connecting shaft between two belt axes', () => {
+    const belt = axes.find((a) => a.id === 'EGC-80-...-TB-KF-GK')!
+    const req = { ...twin('twinShaft', 0), velocity: 1 }
+    const ev = evaluateAxis(belt, req, defaultSettings, shafts)!
+    // LN = spacing 400 − drive width 82
+    expect(ev.shaft?.model).toBe('KSK-80-318')
+    expect(ev.shaft?.inertia).toBeCloseTo(1.59 + 0.8 * 0.318)
+    const axisInertia = belt.inertiaJ0 + (belt.inertiaJHPerMeter * (ev.order.stroke ?? 500)) / 1000
+    expect(ev.inertia).toBeCloseTo(2 * axisInertia + belt.inertiaJLPerKg * 10 + ev.shaft!.inertia)
+    const rpm = ev.checks.find((c) => c.label === '연결축 최대 회전수')!
+    expect(rpm.value).toBeCloseTo((1000 / belt.feedConstant!) * 60)
+    expect(rpm.limit).toBeCloseTo(3333)
+    expect(ev.checks.find((c) => c.label === '연결축 전달 토크')!.limit).toBe(8)
+    // too close: below the 200 mm minimum length
+    const close = evaluateAxis(belt, { ...req, parallel: { ...req.parallel!, spacing: 250 } }, defaultSettings, shafts)!
+    expect(close.checks.find((c) => c.label === '연결축 공칭 길이 LN')!.status).toBe('fail')
+    // no KSK for a spindle axis: the entered inertia, with a warning
+    const other = evaluateAxis(spindle, req, defaultSettings, shafts)!
+    expect(other.shaft).toBeNull()
+    expect(other.checks.find((c) => c.label === '연결축 (KSK)')!.status).toBe('warn')
   })
 
   it('puts the axis in the middle or at the edge of two LM guides', () => {
