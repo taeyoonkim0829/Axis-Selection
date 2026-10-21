@@ -99,7 +99,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === sides.drive.otherEnd && p.otherSide === sides.drive.otherSide)
   const positionLabel = (i: number) => {
     const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
-    return `${t(w.end)}, ${t(w.side)}`
+    return `${t(w.end)} · ${t(w.side)}`
   }
   // Twin arrangement: the second axis beside the first (with its own drive train under motor sync); LM guides are not drawn
   const twin: TwinAxis | undefined =

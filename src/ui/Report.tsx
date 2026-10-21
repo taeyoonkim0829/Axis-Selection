@@ -100,7 +100,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   // belt axes: where the drive head and motor sit, as chosen in step 5
   const beltMeta = axis?.axis.drive === 'belt' ? (axisDrawingsFor(axis.axis, axis.order.stroke ?? req.stroke)[0]?.meta ?? null) : null
   const words = beltMeta ? drivePositionWords(beltMeta, req.mounting, assembly.drive) : null
-  const motorPosition = words ? `${t(words.end)}, ${t(words.side)}` : null
+  const motorPosition = words ? `${t(words.end)} · ${t(words.side)}` : null
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const layout = axis.layout
