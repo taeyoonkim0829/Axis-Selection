@@ -105,8 +105,8 @@ function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
 /**
  * Where the motor sits, for the position choice (Korean words): the end of the axis the drive head is at, as in the
  * front view (X right, Z up, seen from −Y), and the shaft end it uses. Along the travel the ends are 앞 (−X, left in
- * the front view) and 뒤 (+X); across it the shaft ends are 좌측 on the side the slide stands out to (`slide.front`,
- * EGC-TB-KF) and 우측 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view (좌측 =
+ * the front view) and 뒤 (+X); across it the shaft ends are 우측 on the side the slide stands out to (`slide.front`,
+ * EGC-TB-KF) and 좌측 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view (우측 =
  * towards the viewer, −Y). `order` sorts the choices: end, then 좌측 before 우측.
  */
 export function drivePositionWords(
@@ -122,7 +122,7 @@ export function drivePositionWords(
   const front = meta.slide.front
   // X: 앞/뒤, Y: 좌측/우측, Z: 위/아래
   const ends: [string, string][] = [['앞', '뒤'], ['좌측', '우측'], ['위쪽', '아래쪽']]
-  const sides: [string, string][] = [['앞', '뒤'], ['좌측', '우측'], ['위', '아래']]
+  const sides: [string, string][] = [['앞', '뒤'], ['우측', '좌측'], ['위', '아래']]
   // first word of each pair for the negative direction, except up (Z +) and its end, which come first
   const pick = (v: Vec3, names: [string, string][]) => {
     const k = main(v)
@@ -131,7 +131,7 @@ export function drivePositionWords(
   }
   const e = pick(end, ends)
   const s = front
-    ? { word: dot(drive.axis, front) > 0 ? '좌측' : '우측', rank: dot(drive.axis, front) > 0 ? 0 : 1 }
+    ? { word: dot(drive.axis, front) > 0 ? '우측' : '좌측', rank: dot(drive.axis, front) > 0 ? 1 : 0 }
     : pick(side, sides)
   return { end: e.word, side: s.word, order: e.rank * 2 + s.rank }
 }
