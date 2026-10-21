@@ -1,0 +1,6 @@
+{
+  "stroke": 900,
+  "drive": { "origin": [0, 50, 34.5], "axis": [0, 0, 1], "up": [0, 1, 0] },
+  "slide": { "origin": [0, 100, -106.5], "normal": [0, 1, 0], "travel": [0, 0, -1] },
+  "stretch": { "part": "8121226 ELGT-BS-160-900--(high_h)", "axis": 2, "dir": -1, "range": [-1102, -199] }
+}
