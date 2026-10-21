@@ -111,7 +111,7 @@ export function drivePositionWords(meta: AxisMeta, mounting: Mounting, position:
   const main = (v: Vec3) => [0, 1, 2].reduce((a, b) => (Math.abs(v[b]) > Math.abs(v[a]) ? b : a))
   const word = (v: Vec3, names: [string, string][]) => names[main(v)][v[main(v)] < 0 ? 0 : 1]
   return {
-    end: word(end, [['좌측 끝', '우측 끝'], ['앞쪽 끝', '뒤쪽 끝'], ['아래쪽 끝', '위쪽 끝']]),
+    end: word(end, [['좌측', '우측'], ['앞쪽', '뒤쪽'], ['아래쪽', '위쪽']]),
     side: word(side, [['좌', '우'], ['앞', '뒤'], ['아래', '위']]),
   }
 }

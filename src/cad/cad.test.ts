@@ -282,8 +282,8 @@ describe('combination', () => {
     const meta = found.axis!.meta!
     const words = DRIVE_POSITIONS.map((p) => drivePositionWords(meta, 'floor', p))
     expect(new Set(words.map((w) => `${w.end} ${w.side}`)).size).toBe(4)
-    expect(words[0].end).toBe('좌측 끝')
-    expect(words[2].end).toBe('우측 끝')
+    expect(words[0].end).toBe('좌측')
+    expect(words[2].end).toBe('우측')
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {
