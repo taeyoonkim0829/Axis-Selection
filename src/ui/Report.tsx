@@ -104,6 +104,12 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
     beltMeta && axis?.layout.mode === 'twinShaft' ? shaftDrivePosition(beltMeta, req.mounting, assembly.drive) : assembly.drive
   const words = beltMeta ? drivePositionWords(beltMeta, req.mounting, drivePosition) : null
   const motorPosition = words ? `${t(words.end)} · ${t(words.side)}` : null
+  // motor sync: the second axis's motor position, as in step 5
+  const twinWords =
+    beltMeta && axis?.layout.mode === 'twinMotor'
+      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? drivePosition)
+      : null
+  const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const layout = axis.layout
@@ -441,7 +447,14 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                     ['관성 모멘트', kit.inertia != null ? q(kit.inertia, 'kg·cm²') : '—'],
                     ['최대 회전수', kit.maxSpeed != null ? q(kit.maxSpeed, 'rpm') : '—'],
                     ...(kit.noLoadTorque != null ? ([['무부하 토크', q(kit.noLoadTorque, 'Nm')]] as Row[]) : []),
-                    ...(motorPosition ? ([['모터 위치 (정면도 기준)', motorPosition]] as Row[]) : []),
+                    ...(motorPosition && twinMotorPosition
+                      ? ([
+                          ['모터 위치 (첫 번째 축, 정면도 기준)', motorPosition],
+                          ['모터 위치 (두 번째 축, 정면도 기준)', twinMotorPosition],
+                        ] as Row[])
+                      : motorPosition
+                        ? ([['모터 위치 (정면도 기준)', motorPosition]] as Row[])
+                        : []),
                     ...(kit.type === 'parallel'
                       ? ([['키트 조립 방향 (모터 위치)', t(sideLabel[assembly.kitSide])]] as Row[])
                       : []),

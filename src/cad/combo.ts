@@ -74,6 +74,8 @@ export interface ComboOptions {
   motorConnector: Side | null
   /** Belt axes: where the drive sits (ignored for other axes) */
   drive: DrivePosition
+  /** Belt axes, motor sync: where the second axis's drive sits; null = like the first */
+  twinDrive?: DrivePosition | null
 }
 
 /**
@@ -102,9 +104,9 @@ function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
 
 /**
  * Where the motor sits, for the position choice (Korean words): the end of the axis the drive head is at, as in the
- * front view (X right, Z up, seen from −Y), and the shaft end it uses: 앞 on the side the slide stands out to
- * (`slide.front`, EGC-TB-KF), 뒤 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view.
- * `order` sorts the choices: end, then 앞 before 뒤.
+ * front view (X right, Z up, seen from −Y), and the shaft end it uses: 뒤 on the side the slide stands out to
+ * (`slide.front`, EGC-TB-KF), 앞 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view
+ * the same way round (앞 away from the viewer, +Y on the floor). `order` sorts the choices: end, then 앞 before 뒤.
  */
 export function drivePositionWords(
   meta: AxisMeta,
@@ -118,7 +120,7 @@ export function drivePositionWords(
   const main = (v: Vec3) => [0, 1, 2].reduce((a, b) => (Math.abs(v[b]) > Math.abs(v[a]) ? b : a))
   const front = meta.slide.front
   const ends: [string, string][] = [['좌측', '우측'], ['앞쪽', '뒤쪽'], ['위쪽', '아래쪽']]
-  const sides: [string, string][] = [['좌', '우'], ['앞', '뒤'], ['위', '아래']]
+  const sides: [string, string][] = [['좌', '우'], ['뒤', '앞'], ['위', '아래']]
   // first word of each pair for the negative direction, except up (Z +) and its end, which come first
   const pick = (v: Vec3, names: [string, string][]) => {
     const k = main(v)
@@ -126,7 +128,10 @@ export function drivePositionWords(
     return { word: names[k][first ? 0 : 1], rank: first ? 0 : 1 }
   }
   const e = pick(end, ends)
-  const s = front ? { word: dot(drive.axis, front) > 0 ? '앞' : '뒤', rank: dot(drive.axis, front) > 0 ? 0 : 1 } : pick(side, sides)
+  const sv = pick(side, sides)
+  const s = front
+    ? { word: dot(drive.axis, front) > 0 ? '뒤' : '앞', rank: dot(drive.axis, front) > 0 ? 1 : 0 }
+    : { word: sv.word, rank: sv.word === '앞' ? 0 : sv.word === '뒤' ? 1 : sv.rank }
   return { end: e.word, side: s.word, order: e.rank * 2 + s.rank }
 }
 
@@ -310,68 +315,87 @@ export async function buildCombo(
     shaftTwin ? load(shaftTwin.drawing) : Promise.resolve(null),
   ])
 
-  let axisFile = parseStep(axisText)
+  let stretched = parseStep(axisText)
   const stretch = sel.stroke - axisMeta.stroke
-  let { drive, slide } = axisMeta
+  let base = { drive: axisMeta.drive, slide: axisMeta.slide }
   if (stretch !== 0) {
     if (!axisMeta.stretch) throw new Error(`no stretch data for ${found.axis.model}`)
-    axisFile = stretchPart(axisFile, axisMeta.stretch, stretch).file
+    stretched = stretchPart(stretched, axisMeta.stretch, stretch).file
     // a slide or drive at the moving end moves with it
-    drive = { ...drive, origin: stretchedOrigin(drive.origin, axisMeta.stretch, stretch) }
-    slide = { ...slide, origin: stretchedOrigin(slide.origin, axisMeta.stretch, stretch) }
+    base = {
+      drive: { ...base.drive, origin: stretchedOrigin(base.drive.origin, axisMeta.stretch, stretch) },
+      slide: { ...base.slide, origin: stretchedOrigin(base.slide.origin, axisMeta.stretch, stretch) },
+    }
   }
+  const { slide } = base
   // with a connecting shaft the motor takes the shaft end away from the second axis
   const chosen = turnable(sel.axis) ? options.drive : DRIVE_POSITIONS[0]
   const position = twin && !twin.drive && turnable(sel.axis) ? shaftDrivePosition(axisMeta, req.mounting, chosen) : chosen
-  if (position.otherSide) {
-    drive = otherShaftEnd(drive, slide)
-    moveCaps(axisFile, drive, slide)
-  }
-
-  // axis → world: slide centre at the origin, travel and slide normal by the mounting
   const world = mountingFrame(req.mounting)
-  const axisToWorld = axisToWorldOf(axisMeta, req.mounting, position, slide.origin)
-  let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
-  // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
-  const out = rotate(axisToWorld, drive.axis)
-  const up = rotate(axisToWorld, drive.up)
-  const right = cross(up, out)
-  const sideVector = (side: Side) =>
-    side === 'up' ? up : side === 'down' ? scale(up, -1) : side === 'right' ? right : scale(right, -1)
   const parallel = sel.kit.type === 'parallel'
-  if (parallel) {
-    const offset = sub(apply(kitToWorld, kitMeta.motorFace.origin), apply(kitToWorld, kitMeta.axisFace.origin))
-    const radial = sub(offset, scale(out, dot(offset, out)))
-    if (Math.hypot(...radial) > 1)
-      kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, drive.origin), out, radial, sideVector(options.kitSide))
-  }
-  const parts: (AssemblyPart & { role: PartRole })[] = [
-    { role: 'axis', name: sel.axisModel, file: axisFile, transform: axisToWorld },
-    { role: 'kit', name: sel.kit.product, file: parseStep(kitText), transform: kitToWorld },
-  ]
-  let motorParent = { transform: kitToWorld, frame: kitMeta.motorFace }
-  if (found.gearbox && gearboxText) {
-    const gearboxMeta = found.gearbox.meta!
-    const gearboxToWorld = mate(kitToWorld, kitMeta.motorFace, gearboxMeta.output)
-    parts.push({ role: 'gearbox', name: sel.gearbox!.model, file: parseStep(gearboxText), transform: gearboxToWorld })
-    motorParent = { transform: gearboxToWorld, frame: gearboxMeta.input }
-  }
-  let motorToWorld = mate(motorParent.transform, motorParent.frame, motorMeta.flange)
-  const shaft = rotate(motorToWorld, motorMeta.flange.axis)
-  const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
-  // the side across the shaft; behind an angle gearbox the shaft itself can point to that side: the motor keeps its turn
-  const side = sideVector(connectorSide(options, parallel))
-  const target = sub(side, scale(shaft, dot(side, shaft)))
-  if (Math.hypot(...target) > 1e-6)
-    motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
-  parts.push({ role: 'motor', name: found.motor.model, file: parseStep(motorText), transform: motorToWorld })
+  const kitFile = parseStep(kitText)
+  const gearboxFile = gearboxText ? parseStep(gearboxText) : null
+  const motorFile = parseStep(motorText)
 
+  /** Axis with its drive train for one drive position, the slide centre at the origin */
+  const train = (at: DrivePosition) => {
+    let drive = base.drive
+    let file = stretched
+    if (at.otherSide) {
+      drive = otherShaftEnd(drive, slide)
+      // moveCaps edits the entities: a copy, the other axis may keep the caps
+      file = { header: stretched.header, entities: new Map(stretched.entities) }
+      moveCaps(file, drive, slide)
+    }
+    // axis → world: slide centre at the origin, travel and slide normal by the mounting
+    const axisToWorld = axisToWorldOf(axisMeta, req.mounting, at, slide.origin)
+    let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
+    // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
+    const out = rotate(axisToWorld, drive.axis)
+    const up = rotate(axisToWorld, drive.up)
+    const right = cross(up, out)
+    const sideVector = (side: Side) =>
+      side === 'up' ? up : side === 'down' ? scale(up, -1) : side === 'right' ? right : scale(right, -1)
+    if (parallel) {
+      const offset = sub(apply(kitToWorld, kitMeta.motorFace.origin), apply(kitToWorld, kitMeta.axisFace.origin))
+      const radial = sub(offset, scale(out, dot(offset, out)))
+      if (Math.hypot(...radial) > 1)
+        kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, drive.origin), out, radial, sideVector(options.kitSide))
+    }
+    const parts: (AssemblyPart & { role: PartRole })[] = [
+      { role: 'axis', name: sel.axisModel, file, transform: axisToWorld },
+      { role: 'kit', name: sel.kit.product, file: kitFile, transform: kitToWorld },
+    ]
+    let motorParent = { transform: kitToWorld, frame: kitMeta.motorFace }
+    if (found.gearbox && gearboxFile) {
+      const gearboxMeta = found.gearbox.meta!
+      const gearboxToWorld = mate(kitToWorld, kitMeta.motorFace, gearboxMeta.output)
+      parts.push({ role: 'gearbox', name: sel.gearbox!.model, file: gearboxFile, transform: gearboxToWorld })
+      motorParent = { transform: gearboxToWorld, frame: gearboxMeta.input }
+    }
+    let motorToWorld = mate(motorParent.transform, motorParent.frame, motorMeta.flange)
+    const shaft = rotate(motorToWorld, motorMeta.flange.axis)
+    const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
+    // the side across the shaft; behind an angle gearbox the shaft itself can point to that side: the motor keeps its turn
+    const side = sideVector(connectorSide(options, parallel))
+    const target = sub(side, scale(shaft, dot(side, shaft)))
+    if (Math.hypot(...target) > 1e-6)
+      motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
+    parts.push({ role: 'motor', name: found.motor!.model, file: motorFile, transform: motorToWorld })
+    return { parts, drive, axisToWorld, file }
+  }
+
+  const first = train(position)
+  const { drive, axisToWorld } = first
+  const parts = first.parts
   const lateral = cross(world.normal, world.travel)
   let name = parts.map((p) => p.name).join(' + ')
-  // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train when it has a motor
+  // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train (and drive
+  // position, `options.twinDrive`) when it has a motor
   if (twin) {
     const shift = scale(lateral, twin.spacing)
-    const copies = parts
+    const second = twin.drive && turnable(sel.axis) && options.twinDrive ? train(options.twinDrive).parts : parts
+    const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))
     parts.push(...copies)
@@ -381,7 +405,7 @@ export async function buildCombo(
     if (shaftTwin && shaftText) {
       const meta = shaftTwin.drawing.meta!
       const end = otherShaftEnd(drive, slide)
-      parts[0] = { ...parts[0], file: withoutCaps(axisFile, end, slide) }
+      parts[0] = { ...parts[0], file: withoutCaps(first.file, end, slide) }
       let shaftFile = parseStep(shaftText)
       if (shaftTwin.length !== meta.length) shaftFile = stretchPart(shaftFile, meta.stretch, shaftTwin.length - meta.length).file
       parts.push({ role: 'shaft', name: shaftTwin.model, file: shaftFile, transform: mate(axisToWorld, end, meta.end) })

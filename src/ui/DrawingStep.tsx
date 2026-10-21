@@ -109,6 +109,19 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
           drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
       )
     : []
+  // motor sync: the second axis's drive position (default: like the first)
+  const twinTurnable = turnable && axis?.layout.mode === 'twinMotor'
+  const twinPosition = twinTurnable ? (sides.twinDrive ?? drivePosition) : null
+  const twinIndex = twinPosition
+    ? DRIVE_POSITIONS.findIndex((p) => p.otherEnd === twinPosition.otherEnd && p.otherSide === twinPosition.otherSide)
+    : -1
+  const twinPositions = twinTurnable
+    ? [0, 1, 2, 3].sort(
+        (a, b) =>
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
+      )
+    : []
   const positionLabel = (i: number) => {
     const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
     return `${t(w.end)} · ${t(w.side)}`
@@ -139,6 +152,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         parallel ? sides.kitSide : '',
         connector,
         turnable ? positionIndex : '',
+        twinTurnable ? twinIndex : '',
         twin ? `${twin.spacing}/${twin.drive}/${twin.shaft?.model ?? ''}` : '',
       ].join('|')
     : ''
@@ -152,7 +166,11 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const shownRoles = useMemo(() => shown?.combo.parts.map((p) => p.role) ?? [], [shown])
 
   const entryFor = () => {
-    if (cache.current?.key !== key) cache.current = { key, combo: buildCombo(selection!, found!, req, loadText, sides, twin) }
+    if (cache.current?.key !== key)
+      cache.current = {
+        key,
+        combo: buildCombo(selection!, found!, req, loadText, { ...sides, twinDrive: twinPosition }, twin),
+      }
     return cache.current
   }
   const meshesFor = async () => {
@@ -339,11 +357,22 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
           <div className="drawing-sides">
             {turnable && (
               <>
-                <span>{t('모터 위치 (정면도 기준)')}</span>
+                <span>{t(twinTurnable ? '모터 위치 (첫 번째 축, 정면도 기준)' : '모터 위치 (정면도 기준)')}</span>
                 <RadioGroup
                   options={positions}
                   value={positionIndex}
                   onChange={(i) => onSides({ ...sides, drive: DRIVE_POSITIONS[i] })}
+                  label={positionLabel}
+                />
+              </>
+            )}
+            {twinTurnable && (
+              <>
+                <span>{t('모터 위치 (두 번째 축, 정면도 기준)')}</span>
+                <RadioGroup
+                  options={twinPositions}
+                  value={twinIndex}
+                  onChange={(i) => onSides({ ...sides, twinDrive: DRIVE_POSITIONS[i] })}
                   label={positionLabel}
                 />
               </>

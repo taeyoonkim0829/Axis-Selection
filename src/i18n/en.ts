@@ -413,6 +413,8 @@ export const en: Record<string, string> = {
   '키트 조립 방향 (모터 위치)': 'Kit orientation (motor position)',
   '모터 조립 방향 (커넥터)': 'Motor orientation (connector)',
   '모터 위치 (정면도 기준)': 'Motor position (front view)',
+  '모터 위치 (첫 번째 축, 정면도 기준)': 'Motor position (first axis, front view)',
+  '모터 위치 (두 번째 축, 정면도 기준)': 'Motor position (second axis, front view)',
   '앞쪽': 'Front',
   '뒤쪽': 'Rear',
   '아래쪽': 'Bottom',
