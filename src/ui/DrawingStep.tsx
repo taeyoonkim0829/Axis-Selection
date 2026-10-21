@@ -7,6 +7,8 @@ import {
   buildCombo,
   comboDrawings,
   connectorSide,
+  DRIVE_POSITIONS,
+  drivePositionWords,
   SIDES,
   type Combo,
   type ComboOptions,
@@ -14,7 +16,7 @@ import {
   type PartRole,
   type TwinAxis,
 } from '../cad/combo'
-import type { Drawing } from '../cad/drawings'
+import type { AxisMeta, Drawing } from '../cad/drawings'
 import { stepText } from '../cad/stepText'
 import type { PartMesh } from '../cad/occt'
 import type { Kit } from '../data/types'
@@ -91,6 +93,14 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const found = selection ? comboDrawings(selection) : null
   const parallel = kit?.type === 'parallel'
   const connector = connectorSide(sides, parallel)
+  // belt axes: the motor on either drive shaft end, the axis either way round
+  const axisMeta = (found?.axis?.meta as AxisMeta | null | undefined) ?? null
+  const turnable = axis?.axis.drive === 'belt' && axisMeta != null
+  const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === sides.drive.otherEnd && p.otherSide === sides.drive.otherSide)
+  const positionLabel = (i: number) => {
+    const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
+    return `${t(w.end)} · ${t(w.side)}`
+  }
   // Twin arrangement: the second axis beside the first (with its own drive train under motor sync); LM guides are not drawn
   const twin: TwinAxis | undefined =
     axis && axis.layout.axes > 1 && input.parallel
@@ -109,6 +119,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         req.cog.z,
         parallel ? sides.kitSide : '',
         connector,
+        turnable ? positionIndex : '',
         twin ? `${twin.spacing}/${twin.drive}` : '',
       ].join('|')
     : ''
@@ -162,6 +173,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
       const title = [
         combo.name,
         `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm` +
+          (turnable && positionIndex > 0 ? `, drive ${sides.drive.otherEnd ? 'at the other end' : ''}${sides.drive.otherEnd && sides.drive.otherSide ? ', ' : ''}${sides.drive.otherSide ? 'on the other shaft end' : ''}` : '') +
           (parallel ? `, parallel kit: motor ${sides.kitSide}` : '') +
           `, motor connector ${connector} (seen from the motor end)`,
         'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
@@ -288,6 +300,17 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             </p>
           )}
           <div className="drawing-sides">
+            {turnable && (
+              <>
+                <span>{t('모터 위치 (정면도 기준)')}</span>
+                <RadioGroup
+                  options={[0, 1, 2, 3]}
+                  value={positionIndex}
+                  onChange={(i) => onSides({ ...sides, drive: DRIVE_POSITIONS[i] })}
+                  label={positionLabel}
+                />
+              </>
+            )}
             {parallel && (
               <>
                 <span>{t('키트 조립 방향 (모터 위치)')}</span>

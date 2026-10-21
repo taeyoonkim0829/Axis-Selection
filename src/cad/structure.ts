@@ -56,6 +56,19 @@ export function placementOf(file: StepFile, rep: number): { origin: Vec3; axes: 
   return null
 }
 
+/** Every placement (AXIS2_PLACEMENT_3D id) a part's shape representation is mapped to, one per instance */
+export function placementIdsOf(file: StepFile, rep: number): number[] {
+  const ids: number[] = []
+  for (const body of file.entities.values()) {
+    const rel = /REPRESENTATION_RELATIONSHIP\s*\([^()]*?,\s*#(\d+)\s*,\s*#\d+\s*\)/.exec(body)
+    const idt = /REPRESENTATION_RELATIONSHIP_WITH_TRANSFORMATION\s*\(\s*#(\d+)\s*\)/.exec(body)
+    if (!rel || !idt || Number(rel[1]) !== rep) continue
+    const placement = refs(file.entities.get(Number(idt[1])) ?? '')[1]
+    if (placement != null) ids.push(placement)
+  }
+  return ids
+}
+
 /** Solids (MANIFOLD_SOLID_BREP, BREP_WITH_VOIDS) of a shape representation, directly or via a relationship */
 export function solidsOf(file: StepFile, rep: number): number[] {
   const reps = [rep]

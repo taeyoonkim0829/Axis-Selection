@@ -13,8 +13,9 @@ import {
   type MotorMeta,
 } from './drawings'
 import { add, apply, cross, dot, identity, mate, rotate, scale, sub, turnAbout, type Frame, type Transform } from './geometry'
-import { parseStep, writeStep, type Vec3 } from './step'
+import { directionBody, mapRefs, parseStep, pointBody, pointOf, refs, writeStep, type StepFile, type Vec3 } from './step'
 import { stretchedOrigin, stretchPart } from './stretch'
+import { definitionByName, placementIdsOf, shapeOf } from './structure'
 
 export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor'
 
@@ -70,8 +71,97 @@ export const SIDES: readonly Side[] = ['up', 'down', 'left', 'right']
 export interface ComboOptions {
   kitSide: Side
   motorConnector: Side | null
+  /** Belt axes: where the drive sits (ignored for other axes) */
+  drive: DrivePosition
 }
-export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: null }
+
+/**
+ * A belt axis takes the motor on either end of its drive shaft and can be turned end for end: `otherEnd` turns the
+ * axis about its slide normal (the drive head at the other end of the travel), `otherSide` uses the other shaft end.
+ */
+export interface DrivePosition {
+  otherEnd: boolean
+  otherSide: boolean
+}
+export const DRIVE_POSITIONS: readonly DrivePosition[] = [
+  { otherEnd: false, otherSide: false },
+  { otherEnd: false, otherSide: true },
+  { otherEnd: true, otherSide: false },
+  { otherEnd: true, otherSide: true },
+]
+export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: null, drive: DRIVE_POSITIONS[0] }
+
+const turnable = (axis: Axis) => axis.drive === 'belt'
+
+/** Drive shaft frame on the other side of a belt drive head: mirrored across the profile's middle plane */
+function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
+  const off = dot(sub(drive.origin, slide.origin), drive.axis)
+  return { ...drive, origin: sub(drive.origin, scale(drive.axis, 2 * off)), axis: scale(drive.axis, -1) }
+}
+
+/**
+ * Where the motor sits in world terms, for the position choice (Korean words): the end of the axis the drive head is
+ * at and the direction its shaft end (and the motor) points to, as in the front view (X right, Z up, seen from −Y).
+ */
+export function drivePositionWords(meta: AxisMeta, mounting: Mounting, position: DrivePosition): { end: string; side: string } {
+  const toWorld = axisToWorldOf(meta, mounting, position)
+  const end = rotate(toWorld, scale(meta.slide.travel, -1))
+  const drive = position.otherSide ? otherShaftEnd(meta.drive, meta.slide) : meta.drive
+  const side = rotate(toWorld, drive.axis)
+  const main = (v: Vec3) => [0, 1, 2].reduce((a, b) => (Math.abs(v[b]) > Math.abs(v[a]) ? b : a))
+  const word = (v: Vec3, names: [string, string][]) => names[main(v)][v[main(v)] < 0 ? 0 : 1]
+  return {
+    end: word(end, [['좌측 끝', '우측 끝'], ['앞쪽 끝', '뒤쪽 끝'], ['아래쪽 끝', '위쪽 끝']]),
+    side: word(side, [['좌', '우'], ['앞', '뒤'], ['아래', '위']]),
+  }
+}
+
+/** Axis file → world: slide centre at the origin, travel and slide normal by the mounting; turned end for end on request */
+function axisToWorldOf(meta: AxisMeta, mounting: Mounting, position: DrivePosition, slideOrigin = meta.slide.origin): Transform {
+  const world = mountingFrame(mounting)
+  const slideFrame: Frame = { origin: slideOrigin, axis: meta.slide.travel, up: meta.slide.normal }
+  const travel = position.otherEnd ? scale(world.travel, -1) : world.travel
+  return mate(identity, { origin: [0, 0, 0], axis: travel, up: world.normal }, slideFrame)
+}
+
+/**
+ * Moves the shaft cover caps (CUP) off the drive's new shaft end to the end it left: each cap at the drive head on
+ * the new side turns half a turn about the head's vertical line through the shaft. Heads capped on both sides
+ * (EGC-HD-TB) keep their caps.
+ */
+function moveCaps(file: StepFile, drive: Frame, slide: AxisMeta['slide']) {
+  const pd = definitionByName(file, '(CUP)')
+  const rep = pd != null ? shapeOf(file, pd) : null
+  if (rep == null) return
+  const e = file.entities
+  const along = slide.travel
+  const centre = sub(drive.origin, scale(drive.axis, dot(sub(drive.origin, slide.origin), drive.axis)))
+  const caps = placementIdsOf(file, rep).map((id) => {
+    const body = e.get(id)!
+    const [location, z, x] = refs(body)
+    return { id, body, location: pointOf(e.get(location) ?? '')!, z, x }
+  })
+  const atHead = caps.filter((c) => c.location && Math.abs(dot(sub(c.location, drive.origin), along)) < 100)
+  const onSide = (c: (typeof caps)[number], s: number) => dot(sub(c.location, centre), drive.axis) * s > 0
+  if (atHead.some((c) => onSide(c, -1))) return
+  const n = slide.normal
+  const half = (v: Vec3) => sub(scale(n, 2 * dot(v, n)), v)
+  const direction = (id: number | undefined) => (id == null ? null : pointOf((e.get(id) ?? '').replace(/^DIRECTION/, 'CARTESIAN_POINT')))
+  let next = Math.max(...e.keys()) + 1
+  for (const c of atHead.filter((cap) => onSide(cap, 1))) {
+    // new point and directions: the old ones may be shared
+    const renamed = new Map<number, number>()
+    renamed.set(refs(c.body)[0], next)
+    e.set(next++, pointBody(add(centre, half(sub(c.location, centre)))))
+    for (const old of [c.z, c.x]) {
+      const d = direction(old)
+      if (old == null || !d) continue
+      renamed.set(old, next)
+      e.set(next++, directionBody(half(d)))
+    }
+    e.set(c.id, mapRefs(c.body, (id) => renamed.get(id) ?? id))
+  }
+}
 
 export const connectorSide = (options: ComboOptions, parallel: boolean): Side =>
   options.motorConnector ?? (parallel ? options.kitSide : 'up')
@@ -157,11 +247,15 @@ export async function buildCombo(
     drive = { ...drive, origin: stretchedOrigin(drive.origin, axisMeta.stretch, stretch) }
     slide = { ...slide, origin: stretchedOrigin(slide.origin, axisMeta.stretch, stretch) }
   }
+  const position = turnable(sel.axis) ? options.drive : DRIVE_POSITIONS[0]
+  if (position.otherSide) {
+    drive = otherShaftEnd(drive, slide)
+    moveCaps(axisFile, drive, slide)
+  }
 
   // axis → world: slide centre at the origin, travel and slide normal by the mounting
   const world = mountingFrame(req.mounting)
-  const slideFrame: Frame = { origin: slide.origin, axis: slide.travel, up: slide.normal }
-  const axisToWorld = mate(identity, { origin: [0, 0, 0], axis: world.travel, up: world.normal }, slideFrame)
+  const axisToWorld = axisToWorldOf(axisMeta, req.mounting, position, slide.origin)
   let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
   // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
   const out = rotate(axisToWorld, drive.axis)

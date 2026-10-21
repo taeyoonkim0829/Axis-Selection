@@ -16,6 +16,8 @@ interface Props {
 }
 
 const families: AxisFamily[] = ['ELGT', 'ELGD', 'EGC', 'ESBF']
+/** ESBF (electric cylinder) has no belt version */
+const beltFamilies: AxisFamily[] = ['ELGT', 'ELGD', 'EGC']
 const drives: DriveKind[] = ['spindle', 'belt']
 
 const ratioOf = (e: AxisEvaluation, label: string) => e.checks.find((c) => c.label === label)?.ratio ?? null
@@ -72,6 +74,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
   const [showFailed, setShowFailed] = useState(false)
   const [detailOpen, setDetailOpen] = useState(true)
   const passing = results.filter((r) => r.status !== 'fail')
+  const shownFamilies = settings.drives.includes('spindle') ? families : beltFamilies
   const {
     sorted: rows,
     sort,
@@ -109,17 +112,30 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           options={drives}
           selected={settings.drives}
           label={(d) => t(driveLabel[d])}
-          onChange={(v) => onSettings({ ...settings, drives: v })}
-        />
-        <ToggleGroup
-          options={families}
-          selected={settings.families}
-          // both additional slides exist on EGC only
           onChange={(v) =>
-            onSettings({ ...settings, families: v, ...(!v.includes('EGC') && settings.additionalSlide === 'both' ? { additionalSlide: 'none' } : {}) })
+            onSettings({
+              ...settings,
+              drives: v,
+              // belt only, with ESBF the only family on: the belt families come on
+              ...(!v.includes('spindle') && settings.families.every((f) => f === 'ESBF')
+                ? { families: [...beltFamilies, ...settings.families] }
+                : {}),
+            })
           }
         />
-        {settings.families.includes('ESBF') && (
+        <ToggleGroup
+          options={shownFamilies}
+          selected={settings.families.filter((f) => shownFamilies.includes(f))}
+          // a hidden ESBF keeps its setting; both additional slides exist on EGC only
+          onChange={(v) =>
+            onSettings({
+              ...settings,
+              families: [...v, ...settings.families.filter((f) => !shownFamilies.includes(f))],
+              ...(!v.includes('EGC') && settings.additionalSlide === 'both' ? { additionalSlide: 'none' } : {}),
+            })
+          }
+        />
+        {shownFamilies.includes('ESBF') && settings.families.includes('ESBF') && (
           <ToggleButton
             label={t('ESBF 외부 가이드 사용')}
             checked={settings.externalGuide}

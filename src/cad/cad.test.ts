@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { axes, kits, motors } from '../data'
-import { buildCombo, comboDrawings, type ComboSelection } from './combo'
+import { buildCombo, comboDrawings, defaultComboOptions, drivePositionWords, DRIVE_POSITIONS, type ComboSelection } from './combo'
 import { motorDrawingFor, parseDrawingPath, type Drawing } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
 import { closure, parseStep, pointOf, refs, typeOf, writeStep, type StepFile } from './step'
@@ -241,7 +241,7 @@ describe('combination', () => {
   it('turns the parallel kit and the motor to the chosen sides', async () => {
     const sel = selection(800, 'EMMT-AS-60-S-HS', 'EAMM-U-87-T46-60P-114')
     const found = comboDrawings(sel, testDrawings)
-    const options = { kitSide: 'right', motorConnector: 'right' } as const
+    const options = { ...defaultComboOptions, kitSide: 'right', motorConnector: 'right' } as const
     const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, options)
     const box = await meshBox(combo.step)
     // seen from the motor end (−X, looking +X, slide up), right is −Y: motor centre 114 mm off, connector 71 mm further
@@ -251,10 +251,45 @@ describe('combination', () => {
     expect(box.lo[2]).toBeCloseTo(-90, 0)
   })
 
+  it('puts the motor of a belt axis on either shaft end and either end of the axis', async () => {
+    const axis = axes.find((a) => a.id === 'EGC-70-...-TB-KF-GK')!
+    const sel: ComboSelection = {
+      axis,
+      axisModel: 'EGC-70-300-TB-KF-0H-GK',
+      stroke: 300,
+      motor: motors.find((m) => m.model === 'EMMT-AS-60-S-HS')!,
+      gearbox: null,
+      kit: kits.find((k) => k.product === 'EAMM-A-L38-60P-G2' && k.axisCode === 'L38')!,
+    }
+    const paths = ['data/axes/Festo/Drawings/EGC/3012492_EGC-70-300-TB-KF-0H-GK.stp', 'data/kits/Festo/Drawings/EAMM-A/8197454_EAMM-A-L38-60P-G2.stp', files[2]]
+    const own = paths.map((path) => ({ ...parseDrawingPath(path)!, url: path, meta: metas[`../../${path.replace(/\.stp$/, '.json')}`] ?? null }))
+    const found = comboDrawings(sel, own)
+    expect(found.missing).toEqual([])
+    const boxes = []
+    for (const drive of DRIVE_POSITIONS) {
+      const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, drive })
+      boxes.push(await meshBox(combo.step))
+    }
+    const [plain, side, end, both] = boxes
+    // the motor stands out sideways: the other shaft end mirrors it across the axis, the other end turns the axis
+    // about the slide normal through the slide centre
+    expect(side.lo[1]).toBeCloseTo(-plain.hi[1], 0)
+    expect(end.lo[0]).toBeCloseTo(-plain.hi[0], 0)
+    expect(end.lo[1]).toBeCloseTo(-plain.hi[1], 0)
+    expect(both.lo[1]).toBeCloseTo(plain.lo[1], 0)
+    // the shaft cover cap moves to the end the motor left
+    expect(new Set(boxes.map((b) => b.meshes)).size).toBe(1)
+    const meta = found.axis!.meta!
+    const words = DRIVE_POSITIONS.map((p) => drivePositionWords(meta, 'floor', p))
+    expect(new Set(words.map((w) => `${w.end} ${w.side}`)).size).toBe(4)
+    expect(words[0].end).toBe('좌측 끝')
+    expect(words[2].end).toBe('우측 끝')
+  }, 60000)
+
   it('turns the motor of an axial kit to the chosen connector side', async () => {
     const sel = selection(800)
     const found = comboDrawings(sel, testDrawings)
-    const options = { kitSide: 'down', motorConnector: 'right' } as const
+    const options = { ...defaultComboOptions, kitSide: 'down', motorConnector: 'right' } as const
     const combo = await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, options)
     const box = await meshBox(combo.step)
     // seen from the motor end, right is −Y: the connector reaches 71 mm off the shaft, past the profile (50 mm)
