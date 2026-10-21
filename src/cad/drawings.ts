@@ -15,7 +15,7 @@ export interface AxisMeta {
   /** drive shaft: at the axis end face, `axis` pointing out towards the motor */
   drive: Frame
   /** slide mounting surface centre at the start position; `travel` = away from the motor */
-  slide: { origin: Vec3; normal: Vec3; travel: Vec3 }
+  slide: { origin: Vec3; normal: Vec3; travel: Vec3; front?: Vec3 }
   /** how to change the length for other strokes */
   stretch?: StretchSpec
 }

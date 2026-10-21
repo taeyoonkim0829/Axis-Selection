@@ -97,6 +97,13 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const axisMeta = (found?.axis?.meta as AxisMeta | null | undefined) ?? null
   const turnable = axis?.axis.drive === 'belt' && axisMeta != null
   const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === sides.drive.otherEnd && p.otherSide === sides.drive.otherSide)
+  const positions = turnable
+    ? [0, 1, 2, 3].sort(
+        (a, b) =>
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
+      )
+    : []
   const positionLabel = (i: number) => {
     const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
     return `${t(w.end)} · ${t(w.side)}`
@@ -304,7 +311,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
               <>
                 <span>{t('모터 위치 (정면도 기준)')}</span>
                 <RadioGroup
-                  options={[0, 1, 2, 3]}
+                  options={positions}
                   value={positionIndex}
                   onChange={(i) => onSides({ ...sides, drive: DRIVE_POSITIONS[i] })}
                   label={positionLabel}

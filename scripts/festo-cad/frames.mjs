@@ -251,7 +251,15 @@ function frames(file, model) {
   const json = {
     stroke,
     drive,
-    slide: { origin: slide.origin, normal: slide.normal, travel: slide.travel },
+    slide: {
+      origin: slide.origin,
+      normal: slide.normal,
+      travel: slide.travel,
+      // belt axes: the side across the profile the slide stands out to (its front), when it is not centred
+      ...(family === 'TB' && Math.abs(centre(slide.part.lo, slide.part.hi, 0) - x0) > 1
+        ? { front: [Math.sign(centre(slide.part.lo, slide.part.hi, 0) - x0), 0, 0] }
+        : {}),
+    },
     stretch: { part: profile.name, ...(also.length ? { also } : {}), axis: 2, dir, range, ...(move.length ? { move } : {}) },
   }
   return { json, info: `${family} motor ${motor > 0 ? '+z' : '-z'}${family === 'TB' ? ` side ${side > 0 ? '+x' : '-x'}` : ''}, range ${range}, moving ${move.length}` }

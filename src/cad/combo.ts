@@ -100,20 +100,33 @@ function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
 }
 
 /**
- * Where the motor sits in world terms, for the position choice (Korean words): the end of the axis the drive head is
- * at and the direction its shaft end (and the motor) points to, as in the front view (X right, Z up, seen from −Y).
+ * Where the motor sits, for the position choice (Korean words): the end of the axis the drive head is at, as in the
+ * front view (X right, Z up, seen from −Y), and the shaft end it uses: 앞 on the side the slide stands out to
+ * (`slide.front`, EGC-TB-KF), 뒤 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view.
+ * `order` sorts the choices: end, then 앞 before 뒤.
  */
-export function drivePositionWords(meta: AxisMeta, mounting: Mounting, position: DrivePosition): { end: string; side: string } {
+export function drivePositionWords(
+  meta: AxisMeta,
+  mounting: Mounting,
+  position: DrivePosition,
+): { end: string; side: string; order: number } {
   const toWorld = axisToWorldOf(meta, mounting, position)
   const end = rotate(toWorld, scale(meta.slide.travel, -1))
   const drive = position.otherSide ? otherShaftEnd(meta.drive, meta.slide) : meta.drive
   const side = rotate(toWorld, drive.axis)
   const main = (v: Vec3) => [0, 1, 2].reduce((a, b) => (Math.abs(v[b]) > Math.abs(v[a]) ? b : a))
-  const word = (v: Vec3, names: [string, string][]) => names[main(v)][v[main(v)] < 0 ? 0 : 1]
-  return {
-    end: word(end, [['좌측', '우측'], ['앞쪽', '뒤쪽'], ['아래쪽', '위쪽']]),
-    side: word(side, [['좌', '우'], ['앞', '뒤'], ['아래', '위']]),
+  const front = meta.slide.front
+  const ends: [string, string][] = [['좌측', '우측'], ['앞쪽', '뒤쪽'], ['위쪽', '아래쪽']]
+  const sides: [string, string][] = [['좌', '우'], ['앞', '뒤'], ['위', '아래']]
+  // first word of each pair for the negative direction, except up (Z +) and its end, which come first
+  const pick = (v: Vec3, names: [string, string][]) => {
+    const k = main(v)
+    const first = k === 2 ? v[k] > 0 : v[k] < 0
+    return { word: names[k][first ? 0 : 1], rank: first ? 0 : 1 }
   }
+  const e = pick(end, ends)
+  const s = front ? { word: dot(drive.axis, front) > 0 ? '앞' : '뒤', rank: dot(drive.axis, front) > 0 ? 0 : 1 } : pick(side, sides)
+  return { end: e.word, side: s.word, order: e.rank * 2 + s.rank }
 }
 
 /** Axis file → world: slide centre at the origin, travel and slide normal by the mounting; turned end for end on request */

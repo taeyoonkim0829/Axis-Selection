@@ -282,8 +282,9 @@ describe('combination', () => {
     const meta = found.axis!.meta!
     const words = DRIVE_POSITIONS.map((p) => drivePositionWords(meta, 'floor', p))
     expect(new Set(words.map((w) => `${w.end} ${w.side}`)).size).toBe(4)
-    expect(words[0].end).toBe('좌측')
-    expect(words[2].end).toBe('우측')
+    // the EGC slide stands out to −x, the file's drive shaft end is at +x: 앞 is the slide side
+    expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['좌측 뒤', '좌측 앞', '우측 뒤', '우측 앞'])
+    expect(words.map((w) => w.order)).toEqual([1, 0, 3, 2])
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {
