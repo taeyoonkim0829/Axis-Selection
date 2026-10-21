@@ -31,6 +31,13 @@ export function parseStep(text: string): StepFile {
 }
 
 /** Calls `fn` for each `#id` reference outside strings and puts its result in place. */
+/** Next free entity id. A loop: a large file holds more ids than Math.max(...keys) may take as arguments. */
+export function nextIdOf(entities: Map<number, string>): number {
+  let max = 0
+  for (const id of entities.keys()) if (id > max) max = id
+  return max + 1
+}
+
 export function mapRefs(body: string, fn: (id: number) => number): string {
   let out = ''
   let inString = false
@@ -65,7 +72,8 @@ export function closure(file: StepFile, root: number): Set<number> {
     if (seen.has(id)) continue
     seen.add(id)
     const body = file.entities.get(id)
-    if (body) stack.push(...refs(body))
+    // a loop, not push(...refs): a shell of a long profile references more faces than a call takes as arguments
+    if (body) for (const r of refs(body)) stack.push(r)
   }
   return seen
 }

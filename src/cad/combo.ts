@@ -14,7 +14,7 @@ import {
   type ShaftMeta,
 } from './drawings'
 import { add, apply, cross, dot, identity, mate, rotate, scale, sub, turnAbout, type Frame, type Transform } from './geometry'
-import { directionBody, mapRefs, parseStep, pointBody, pointOf, refs, typeOf, writeStep, type StepFile, type Vec3 } from './step'
+import { directionBody, mapRefs, nextIdOf, parseStep, pointBody, pointOf, refs, typeOf, writeStep, type StepFile, type Vec3 } from './step'
 import { stretchedOrigin, stretchPart } from './stretch'
 import { definitionByName, placementIdsOf, shapeOf } from './structure'
 
@@ -222,7 +222,7 @@ function moveCaps(file: StepFile, drive: Frame, slide: AxisMeta['slide']) {
   const n = slide.normal
   const half = (v: Vec3) => sub(scale(n, 2 * dot(v, n)), v)
   const direction = (id: number | undefined) => (id == null ? null : pointOf((e.get(id) ?? '').replace(/^DIRECTION/, 'CARTESIAN_POINT')))
-  let next = Math.max(...e.keys()) + 1
+  let next = nextIdOf(e)
   for (const c of atHead.filter((cap) => onSide(cap, 1))) {
     // new point and directions: the old ones may be shared
     const renamed = new Map<number, number>()

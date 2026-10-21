@@ -1747,3 +1747,8 @@ th.num {
 .gantry-load .small-print {
   margin: 12px 0 0;
 }
+
+/* 조합 도면 tab: X / Y / Z / combined, above the drawing it shows */
+.gantry-drawing-tabs {
+  align-self: flex-start;
+}

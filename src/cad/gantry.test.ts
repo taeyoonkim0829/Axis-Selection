@@ -3,7 +3,7 @@ import { defaultGantry, type GantryAxis, type GantryInputs } from '../calc/gantr
 import { gantryJoint } from '../calc/gantryKits'
 import { adapters, axes, kits, motors } from '../data'
 import type { Axis } from '../data/types'
-import { comboDrawings, defaultComboOptions, type ComboSelection } from './combo'
+import { buildCombo, comboDrawings, defaultComboOptions, type ComboSelection } from './combo'
 import { parseDrawingPath, type AdapterMeta, type Drawing } from './drawings'
 import { buildGantry, type GantryAxisDrawing } from './gantry'
 
@@ -88,6 +88,17 @@ describe('gantry kits', () => {
 })
 
 describe('gantry drawing', () => {
+  it('builds a long twin X axis (more entity ids than a call takes as arguments)', async () => {
+    // ELGT lengthened by whole hole pitches: 3000 mm takes the file past 100 000 entities
+    const x = axes.find((a) => a.family === 'ELGT' && a.drive === 'spindle' && a.size === 160)!
+    const d = axisDrawing('x', x, 3000, defaultGantry)
+    const combo = await buildCombo(d.sel, d.found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, {
+      spacing: 600,
+      drive: true,
+    })
+    expect(combo.parts.filter((p) => p.role === 'axis')).toHaveLength(2)
+  }, 120000)
+
   it('stands Y on the X slide with an angle kit and hangs Z on the Y slide with an adapter plate (ELGT)', async () => {
     const g: GantryInputs = { ...defaultGantry, yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'single' } }
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!

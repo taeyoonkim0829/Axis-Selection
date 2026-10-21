@@ -1,4 +1,4 @@
-import { args, closure, mapRefs, pointBody, pointOf, refList, refs, referrers, typeOf, type StepFile, type Vec3 } from './step'
+import { args, closure, mapRefs, nextIdOf, pointBody, pointOf, refList, refs, referrers, typeOf, type StepFile, type Vec3 } from './step'
 import { definitionByName, placementOf, shapeOf, solidsOf } from './structure'
 
 /**
@@ -101,7 +101,7 @@ export function stretchPart(source: StepFile, spec: StretchSpec, delta: number):
   for (const part of spec.also ?? []) stretchOne(file, part, spec, delta)
 
   // Parts at the moving end: shift their placement (a new point, the old one may be shared)
-  let nextId = Math.max(...e.keys()) + 1
+  let nextId = nextIdOf(e)
   for (const placement of spec.move ?? []) {
     const body = e.get(placement)
     if (!body || typeOf(body) !== 'AXIS2_PLACEMENT_3D') throw new Error(`STEP: #${placement} is not a placement`)
@@ -432,7 +432,7 @@ function cutAt(body: Body, cut: number, delta: number, pitch?: number): number {
 
   // Move the points beyond the cut; points used outside the stretched solids are copied first
   const by = referrers(file)
-  let nextId = Math.max(...e.keys()) + 1
+  let nextId = nextIdOf(e)
   for (const id of inSolids) {
     const p = pointOf(e.get(id) ?? '')
     if (!p) continue
@@ -470,7 +470,7 @@ function copyWindow(body: Body, w: [number, number], shifts: number[]) {
   for (const root of [...[...wholeFaces.values()].flat(), ...[...holes.values()].flat()])
     for (const id of closure(body.file, root)) ids.add(id)
 
-  let nextId = Math.max(...e.keys()) + 1
+  let nextId = nextIdOf(e)
   const append = (owner: number, added: number[]) => {
     const text = e.get(owner)!
     const list = [...refList(args(text)[1]), ...added]

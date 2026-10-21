@@ -7,6 +7,7 @@ import { AxisSteps } from './AxisSteps'
 import { StatusBadge } from './common'
 import { fmt, mountingLabel } from './format'
 import { Footer } from './Footer'
+import { DrawingStep } from './DrawingStep'
 import { GantryDrawing } from './GantryDrawing'
 import { GantryInputPanel } from './GantryInputPanel'
 import type { ProfileView } from './ProfileChart'
@@ -32,6 +33,9 @@ const axisName = (a: GantryAxis) => a.toUpperCase()
 export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySettings, lang, setLang, mode, setMode }: GantryState) {
   const t = useT()
   const [tab, setTab] = useState<GantryAxis>('z')
+  // the 조합 도면 tab: each axis's step 5 drawing or the whole gantry
+  const [drawings, setDrawings] = useState(false)
+  const [drawingView, setDrawingView] = useState<GantryAxis | 'all'>('all')
   const [picks, setPicks] = useState<Record<GantryAxis, Picks>>(perAxis(noPicks))
   const [views, setViews] = useState<Record<GantryAxis, ProfileView>>(perAxis<ProfileView>('cycle'))
   const [assemblies, setAssemblies] = useState<Record<GantryAxis, ComboOptions>>(perAxis(defaultComboOptions))
@@ -61,7 +65,30 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
         <main className="layout">
           <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
           <div className="results">
-            <GantrySummary results={results} order={gantryAxes(gantry.config)} active={active} onTab={setTab} />
+            <GantrySummary
+              results={results}
+              order={gantryAxes(gantry.config)}
+              active={drawings ? null : active}
+              onTab={(a) => {
+                setTab(a)
+                setDrawings(false)
+              }}
+              config={gantry.config}
+              drawings={drawings}
+              onDrawings={() => setDrawings(true)}
+            />
+            {drawings ? (
+              <GantryDrawings
+                gantry={deferredGantry}
+                results={results}
+                order={gantryAxes(gantry.config)}
+                view={drawingView}
+                onView={setDrawingView}
+                assemblies={assemblies}
+                onAssembly={(a, o) => setAssemblies({ ...assemblies, [a]: o })}
+              />
+            ) : (
+              <>
             <CarriedLoad result={current} gantry={deferredGantry} />
             {current.req && sel ? (
               <AxisSteps
@@ -86,7 +113,8 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
                 </p>
               </section>
             )}
-            <GantryDrawing gantry={deferredGantry} results={results} assemblies={assemblies} />
+              </>
+            )}
           </div>
         </main>
         <Footer />
@@ -117,13 +145,21 @@ function GantrySummary({
   order,
   active,
   onTab,
+  config,
+  drawings,
+  onDrawings,
 }: {
   results: GantryAxisResult[]
   order: GantryAxis[]
-  active: GantryAxis
+  /** null while the 조합 도면 tab is open */
+  active: GantryAxis | null
   onTab: (a: GantryAxis) => void
+  config: GantryInputs['config']
+  drawings: boolean
+  onDrawings: () => void
 }) {
   const t = useT()
+  const joints = results.flatMap((r) => (r.joint ? [r.joint] : []))
   return (
     <section className="panel gantry-summary">
       <header className="step-head">
@@ -165,8 +201,75 @@ function GantrySummary({
             </button>
           )
         })}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={drawings}
+          className={`gantry-tab${drawings ? ' active' : ''}`}
+          onClick={onDrawings}
+        >
+          <span className="gantry-tab-head">
+            <span className="step-no">{config.toUpperCase()}</span>
+            <span className="gantry-tab-order">{t('조합 도면')}</span>
+            {joints.length > 0 && <StatusBadge status={joints.some((j) => j.status === 'fail') ? 'fail' : joints.some((j) => j.status === 'warn') ? 'warn' : 'ok'} />}
+          </span>
+          <span className="gantry-tab-model">{t('축별 도면 · 조합축 도면')}</span>
+          <span className="gantry-tab-detail">
+            {joints.length ? joints.map((j) => j.kit?.model ?? t('키트 없음')).join(' · ') : t('조합 키트 미정')}
+          </span>
+        </button>
       </div>
     </section>
+  )
+}
+
+/** The 조합 도면 tab: one axis's step 5 drawing (its assembly choices included) or the whole gantry. */
+function GantryDrawings({
+  gantry,
+  results,
+  order,
+  view,
+  onView,
+  assemblies,
+  onAssembly,
+}: {
+  gantry: GantryInputs
+  results: GantryAxisResult[]
+  order: GantryAxis[]
+  view: GantryAxis | 'all'
+  onView: (v: GantryAxis | 'all') => void
+  assemblies: Record<GantryAxis, ComboOptions>
+  onAssembly: (a: GantryAxis, o: ComboOptions) => void
+}) {
+  const t = useT()
+  const shown = view !== 'all' && order.includes(view) ? view : 'all'
+  const r = shown === 'all' ? null : results.find((x) => x.axis === shown)
+  return (
+    <>
+      <div className="segmented gantry-drawing-tabs" role="tablist" aria-label={t('조합 도면')}>
+        {[...order, 'all' as const].map((v) => (
+          <button key={v} type="button" role="tab" aria-selected={v === shown} className={v === shown ? 'active' : ''} onClick={() => onView(v)}>
+            {v === 'all' ? t('{config} 조합', { config: gantry.config.toUpperCase() }) : t('{axis}축', { axis: axisName(v) })}
+          </button>
+        ))}
+      </div>
+      {shown === 'all' ? (
+        <GantryDrawing gantry={gantry} results={results} assemblies={assemblies} />
+      ) : r?.req && r.sel ? (
+        <DrawingStep
+          axis={r.sel.selectedAxis}
+          drive={r.sel.selectedDrive}
+          kit={r.sel.selectedKitEval?.kit ?? null}
+          req={r.req}
+          sides={assemblies[shown]}
+          onSides={(o) => onAssembly(shown, o)}
+        />
+      ) : (
+        <section className="panel step">
+          <p className="empty">{t('먼저 {axis}축을 선정하세요. 이 축이 실어 나르는 질량은 그 선정 결과로 정해집니다.', { axis: axisName(gantryChain(gantry.config)[gantryChain(gantry.config).indexOf(shown) - 1] ?? shown) })}</p>
+        </section>
+      )}
+    </>
   )
 }
 

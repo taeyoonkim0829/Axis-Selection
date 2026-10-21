@@ -416,6 +416,10 @@ export const en: Record<string, string> = {
   '모터 위치 (첫 번째 축, 정면도 기준)': 'Motor position (first axis, front view)',
   '조합 키트': 'Gantry kit',
   '조합축 도면': 'Gantry drawing',
+  '축별 도면 · 조합축 도면': 'Axis drawings · gantry drawing',
+  '키트 없음': 'No kit',
+  '조합 키트 미정': 'Gantry kits not yet known',
+  '{config} 조합': '{config} gantry',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
   '모든 축의 축, 모터, 연결키트를 선택하면 조합축 도면을 만듭니다.':
