@@ -7,6 +7,7 @@ import { AxisSteps } from './AxisSteps'
 import { StatusBadge } from './common'
 import { fmt, mountingLabel } from './format'
 import { Footer } from './Footer'
+import { GantryDrawing } from './GantryDrawing'
 import { GantryInputPanel } from './GantryInputPanel'
 import type { ProfileView } from './ProfileChart'
 import { Report } from './Report'
@@ -85,6 +86,7 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
                 </p>
               </section>
             )}
+            <GantryDrawing gantry={deferredGantry} results={results} assemblies={assemblies} />
           </div>
         </main>
         <Footer />
@@ -249,5 +251,9 @@ function gantryReportRows(r: GantryAxisResult, g: GantryInputs): [string, string
     ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
     ['교차 가속도 (측면 / 수직)', `${fmt(req.cross?.lateral ?? 0)} / ${fmt(req.cross?.normal ?? 0)} m/s²`],
     ...(req.movingProfile ? ([['함께 움직이는 구동부', `${fmt(req.movingProfile.driveMass, 2)} kg`]] as [string, string][]) : []),
+    // the kit carrying the axis above on this axis's slide
+    ...(r.joint
+      ? ([['조합 키트', r.joint.kit ? `${r.joint.kit.model} (${r.joint.kit.partNumber}) × ${r.joint.quantity}` : '—']] as [string, string][])
+      : []),
   ]
 }

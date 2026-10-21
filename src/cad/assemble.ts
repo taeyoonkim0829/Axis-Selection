@@ -26,9 +26,16 @@ export function assemble(
   let next = 1
   const roots: { pd: number; rep: number }[] = []
   for (const part of parts) {
-    const offset = next - Math.min(...part.file.entities.keys())
+    // a loop, not Math.min(...keys): a gantry's parts hold more ids than a call may take arguments
+    let lo = Infinity
+    let hi = -Infinity
+    for (const id of part.file.entities.keys()) {
+      if (id < lo) lo = id
+      if (id > hi) hi = id
+    }
+    const offset = next - lo
     for (const [id, body] of part.file.entities) entities.set(id + offset, mapRefs(body, (r) => r + offset))
-    next = Math.max(...entities.keys()) + 1
+    next = hi + offset + 1
     const pd = rootDefinition(part.file)
     const rep = shapeOf(part.file, pd)
     if (rep == null) throw new Error(`STEP: ${part.name} has no shape`)

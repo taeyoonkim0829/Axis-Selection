@@ -15,7 +15,7 @@
 // the side the body reaches out to) take the outermost flange face with no wider face right behind it.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { root } from './parts.mjs'
 
 const args = process.argv.slice(2)
@@ -261,6 +261,8 @@ function frames(file, model) {
         : {}),
     },
     stretch: { part: profile.name, ...(also.length ? { also } : {}), axis: 2, dir, range, ...(move.length ? { move } : {}) },
+    // the profile's mounting face (underside), middle of its length: where a gantry kit holds a carried axis
+    profile: { origin: [fixed(x0), fixed(profile.lo[1]), fixed(centre(profile.lo, profile.hi, 2))], normal: [0, -1, 0] },
   }
   return { json, info: `${family} motor ${motor > 0 ? '+z' : '-z'}${family === 'TB' ? ` side ${side > 0 ? '+x' : '-x'}` : ''}, range ${range}, moving ${move.length}` }
 }
@@ -449,8 +451,24 @@ const files = only.length
   ? only
   : [axesDir, join(root, 'data/kits/Festo/Drawings'), join(root, 'data/gearboxes/Festo/Drawings')].flatMap(walk)
 let written = 0
+// --profile: add the `profile` frame to existing axis JSONs, keeping everything else
+const profileOnly = args.includes('--profile')
 for (const file of files) {
   const out = file.replace(/\.stp$/i, '.json')
+  if (profileOnly) {
+    if (!existsSync(out) || !resolve(file).startsWith(axesDir)) continue
+    const old = JSON.parse(readFileSync(out, 'utf8'))
+    if (old.profile && !force) continue
+    try {
+      const { json } = frames(file, /^\d+_(.+)\.stp$/i.exec(file.split(/[\\/]/).pop())[1])
+      if (!dryRun) writeFileSync(out, format({ ...old, profile: json.profile }))
+      else console.log(out, JSON.stringify(json.profile))
+      written++
+    } catch (err) {
+      console.log(`${file}: FAILED ${err.message}`)
+    }
+    continue
+  }
   if (existsSync(out) && !force && !dryRun) continue
   const model = /^\d+_(.+)\.stp$/i.exec(file.split(/[\\/]/).pop())[1]
   const make = /^EAMM-/.test(model) ? kitFrames : /^EMGA-/.test(model) ? gearboxFrames : frames

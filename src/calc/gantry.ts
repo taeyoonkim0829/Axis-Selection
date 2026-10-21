@@ -168,9 +168,10 @@ export function stageOf(a: GantryAxis, g: GantryInputs, evaluation: AxisEvaluati
 /**
  * Requirements of one axis of the gantry. `carried` is the stage directly above it (null for the tool axis);
  * `stages` are all stages above it, for the reaction of their accelerations. Axes below it carry it, so their
- * accelerations act on its whole moving system.
+ * accelerations act on its whole moving system. `kitMass` (kg, the gantry kits on this axis's slides) moves with it,
+ * at the carried axis's mounting point.
  */
-export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stage | null, stages: Stage[]): Requirements {
+export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stage | null, stages: Stage[], kitMass = 0): Requirements {
   const mounting = axisMounting(g, a)
   const f = slideFrame(a, mounting)
   const m = g.motion[a]
@@ -180,8 +181,8 @@ export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stag
   let cog: Vec
   if (carried) {
     const offset = toV3(carried.axis === 'z' ? g.offsets.yz : g.offsets.xy)
-    payload = carried.mass
-    cog = toSlide(add(carried.cog, offset), f)
+    payload = carried.mass + kitMass
+    cog = toSlide(add(scale(add(carried.cog, offset), carried.mass / payload), scale(offset, kitMass / payload)), f)
   } else {
     payload = g.payload
     // the 소재 무게 중심 input counts X and Z the other way (+X = world −X, away from the Z slide face; +Z = down)

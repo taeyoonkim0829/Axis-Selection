@@ -1,0 +1,702 @@
+{
+  "items": [
+    {
+      "id": "EHAM-AK-L9-90-L9-90-ML",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-90-L9-90-ML",
+      "partNumber": "8128210",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 3.623,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-90-L9-90-MR",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-90-L9-90-MR",
+      "partNumber": "8128215",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 3.623,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-120-L9-90-ML",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-120-L9-90-ML",
+      "partNumber": "8128209",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 4.12,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-120-L9-90-MR",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-120-L9-90-MR",
+      "partNumber": "8128214",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 4.12,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-120-L9-120-ML",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-120-L9-120-ML",
+      "partNumber": "8128208",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 5.313,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-120-L9-120-MR",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-120-L9-120-MR",
+      "partNumber": "8128213",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 5.313,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-160-L9-120-ML",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-160-L9-120-ML",
+      "partNumber": "8128207",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 6.005,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-160-L9-120-MR",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-160-L9-120-MR",
+      "partNumber": "8128212",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        600
+      ],
+      "mass": 6.005,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-160-L9-160-ML",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-160-L9-160-ML",
+      "partNumber": "8128206",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        700
+      ],
+      "mass": 7.794,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-AK-L9-160-L9-160-MR",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-L9-160-L9-160-MR",
+      "partNumber": "8128211",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": null,
+      "carriedStroke": [
+        0,
+        700
+      ],
+      "mass": 7.794,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
+    },
+    {
+      "id": "EHAM-MA-L9-120-L9-90",
+      "maker": "Festo",
+      "family": "EHAM-MA",
+      "model": "EHAM-MA-L9-120-L9-90",
+      "partNumber": "8128227",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        101,
+        500
+      ],
+      "mass": 1.437,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type B)"
+    },
+    {
+      "id": "EHAM-MA-L9-160-L9-120",
+      "maker": "Festo",
+      "family": "EHAM-MA",
+      "model": "EHAM-MA-L9-160-L9-120",
+      "partNumber": "8128226",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        201,
+        500
+      ],
+      "mass": 2.748,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type B)"
+    },
+    {
+      "id": "EHAM-MA-L9-120-L9-90-S",
+      "maker": "Festo",
+      "family": "EHAM-MA",
+      "model": "EHAM-MA-L9-120-L9-90-S",
+      "partNumber": "8128232",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        0,
+        100
+      ],
+      "mass": 1.159,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type C)"
+    },
+    {
+      "id": "EHAM-MA-L9-160-L9-120-S",
+      "maker": "Festo",
+      "family": "EHAM-MA",
+      "model": "EHAM-MA-L9-160-L9-120-S",
+      "partNumber": "8128231",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        0,
+        200
+      ],
+      "mass": 2.136,
+      "accessories": [],
+      "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type C)"
+    },
+    {
+      "id": "EHAM-AK-E24-80-E24-60-ML-L",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-E24-80-E24-60-ML-L",
+      "partNumber": "8240704",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "left",
+      "layout": "cantilever",
+      "carriedStroke": null,
+      "mass": 2.24,
+      "accessories": [
+        {
+          "model": "EAHF-E24-60-P-B4",
+          "partNumber": "8226570",
+          "note": "앵글 키트에 축을 고정하는 프로파일 마운팅"
+        }
+      ],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09"
+    },
+    {
+      "id": "EHAM-AK-E24-80-E24-60-MR-L",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-E24-80-E24-60-MR-L",
+      "partNumber": "8240705",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle"
+        }
+      ],
+      "hand": "right",
+      "layout": "cantilever",
+      "carriedStroke": null,
+      "mass": 2.24,
+      "accessories": [
+        {
+          "model": "EAHF-E24-60-P-B4",
+          "partNumber": "8226570",
+          "note": "앵글 키트에 축을 고정하는 프로파일 마운팅"
+        }
+      ],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09"
+    },
+    {
+      "id": "EHAM-AK-E24-80-E24-80-ML-S",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-E24-80-E24-80-ML-S",
+      "partNumber": "8240706",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "belt"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 120,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 120,
+          "drive": "belt"
+        }
+      ],
+      "hand": "left",
+      "layout": "gantry",
+      "carriedStroke": null,
+      "mass": 2.58,
+      "accessories": [
+        {
+          "model": "EAHF-E24-60-P-B4",
+          "partNumber": "8226570",
+          "note": "앵글 키트에 축을 고정하는 프로파일 마운팅"
+        }
+      ],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09"
+    },
+    {
+      "id": "EHAM-AK-E24-80-E24-80-MR-S",
+      "maker": "Festo",
+      "family": "EHAM-AK",
+      "model": "EHAM-AK-E24-80-E24-80-MR-S",
+      "partNumber": "8240707",
+      "joint": "angle",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "belt"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 120,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 120,
+          "drive": "belt"
+        }
+      ],
+      "hand": "right",
+      "layout": "gantry",
+      "carriedStroke": null,
+      "mass": 2.58,
+      "accessories": [
+        {
+          "model": "EAHF-E24-60-P-B4",
+          "partNumber": "8226570",
+          "note": "앵글 키트에 축을 고정하는 프로파일 마운팅"
+        }
+      ],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09"
+    }
+  ]
+}

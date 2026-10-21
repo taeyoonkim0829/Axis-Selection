@@ -2,5 +2,6 @@
   "stroke": 650,
   "drive": { "origin": [0, 57.5, 31.5], "axis": [0, 0, 1], "up": [0, 1, 0] },
   "slide": { "origin": [0, 90, -92], "normal": [0, 1, 0], "travel": [0, 0, -1] },
-  "stretch": { "part": "8121224 ELGT-BS-90-650--(high_h)", "axis": 2, "dir": -1, "range": [-827, -172] }
+  "stretch": { "part": "8121224 ELGT-BS-90-650--(high_h)", "axis": 2, "dir": -1, "range": [-827, -172] },
+  "profile": { "origin": [0, 0, -404.25], "normal": [0, -1, 0] }
 }

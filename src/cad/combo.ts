@@ -18,7 +18,7 @@ import { directionBody, mapRefs, parseStep, pointBody, pointOf, refs, typeOf, wr
 import { stretchedOrigin, stretchPart } from './stretch'
 import { definitionByName, placementIdsOf, shapeOf } from './structure'
 
-export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor' | 'shaft'
+export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor' | 'shaft' | 'adapter'
 
 export interface ComboSelection {
   axis: Axis
@@ -303,6 +303,41 @@ export async function buildCombo(
   options: ComboOptions = defaultComboOptions,
   twin?: TwinAxis,
 ): Promise<Combo> {
+  const c = await comboParts(sel, found, req, load, options, twin)
+  const step = writeStep(assemble(c.name, c.parts, { notices: c.notices }))
+  return {
+    name: c.name,
+    step,
+    parts: c.parts.map(({ role, name, transform }) => ({ role, name, transform })),
+    cog: c.cog,
+    slideCentre: [0, 0, 0],
+    axisStroke: c.axisStroke,
+    stretch: c.stretch,
+  }
+}
+
+/** The placed parts of a combination before they are written out (`buildCombo`; the gantry places several). */
+export interface ComboParts {
+  name: string
+  parts: (AssemblyPart & { role: PartRole })[]
+  notices: string[]
+  cog: Vec3
+  axisStroke: number
+  stretch: number
+  /** world frames of the first axis: its slide surface (origin = slide centre at the start position, axis = slide
+   *  normal, up = travel) and its profile's mounting face (middle of its length, axis out of the face, up = travel) */
+  slide: Frame
+  profile: Frame
+}
+
+export async function comboParts(
+  sel: ComboSelection,
+  found: ComboDrawings,
+  req: Pick<Requirements, 'mounting' | 'cog'>,
+  load: (d: Drawing) => Promise<string>,
+  options: ComboOptions = defaultComboOptions,
+  twin?: TwinAxis,
+): Promise<ComboParts> {
   if (found.missing.length > 0 || !found.axis || !found.kit || !found.motor) throw new Error('drawings missing')
   const axisMeta = found.axis.meta!
   const kitMeta = found.kit.meta!
@@ -415,14 +450,19 @@ export async function buildCombo(
   }
   const cog = add(add(scale(world.travel, req.cog.x), scale(lateral, req.cog.y)), scale(world.normal, req.cog.z))
   const notices = [...new Set([axisText, kitText, motorText, gearboxText, shaftText].flatMap((t) => (t && sourceNotice(t)) || []))]
-  const step = writeStep(assemble(name, parts, { notices }))
+  // the profile's mounting face, its middle moved by half the length change (older JSONs: below the slide)
+  const own = axisMeta.profile ?? { origin: [slide.origin[0], 0, slide.origin[2]] as Vec3, normal: scale(slide.normal, -1) }
+  const k = axisMeta.stretch?.axis
+  const middle: Vec3 =
+    k != null && axisMeta.profile ? (own.origin.map((v, i) => (i === k ? v + (axisMeta.stretch!.dir * stretch) / 2 : v)) as Vec3) : own.origin
   return {
     name,
-    step,
-    parts: parts.map(({ role, name, transform }) => ({ role, name, transform })),
+    parts,
+    notices,
     cog,
-    slideCentre: [0, 0, 0],
     axisStroke: axisMeta.stroke,
     stretch,
+    slide: { origin: [0, 0, 0], axis: rotate(axisToWorld, slide.normal), up: rotate(axisToWorld, slide.travel) },
+    profile: { origin: apply(axisToWorld, middle), axis: rotate(axisToWorld, own.normal), up: rotate(axisToWorld, slide.travel) },
   }
 }

@@ -1,0 +1,266 @@
+{
+  "items": [
+    {
+      "id": "EAHF-E24-60-P-D5",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D5",
+      "partNumber": "8197131",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.087,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    },
+    {
+      "id": "EAHF-E24-60-P-D4",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D4",
+      "partNumber": "8197129",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.119,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    },
+    {
+      "id": "EAHF-E24-60-P-D6/60",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D6",
+      "partNumber": "8197130",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 60,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.133,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    },
+    {
+      "id": "EAHF-E24-60-P-D6/80",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D6",
+      "partNumber": "8197130",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.133,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    },
+    {
+      "id": "EAHF-E24-60-P-D7/80",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D7",
+      "partNumber": "8229954",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 120,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 80,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.165,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    },
+    {
+      "id": "EAHF-E24-60-P-D7/WD-100",
+      "maker": "Festo",
+      "family": "EAHF",
+      "model": "EAHF-E24-60-P-D7",
+      "partNumber": "8229954",
+      "joint": "plate",
+      "base": [
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle",
+          "longSlide": true
+        },
+        {
+          "family": "ELGD",
+          "variant": null,
+          "size": 120,
+          "drive": "belt",
+          "longSlide": true
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "spindle"
+        },
+        {
+          "family": "ELGD",
+          "variant": "WD",
+          "size": 100,
+          "drive": "belt"
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": null,
+      "mass": 0.165,
+      "accessories": [],
+      "dataSource": "ELGD-BS / ELGD-TB catalog 2026/09 (EAHF-E24-60-P-D…)"
+    }
+  ]
+}

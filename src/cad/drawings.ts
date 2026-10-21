@@ -1,4 +1,4 @@
-import type { Axis, ConnectingShaft, Gearbox, Kit, Motor } from '../data/types'
+import type { Axis, AxisAdapter, ConnectingShaft, Gearbox, Kit, Motor } from '../data/types'
 import type { Frame } from './geometry'
 import type { StretchSpec } from './stretch'
 import type { Vec3 } from './step'
@@ -7,7 +7,7 @@ import type { Vec3 } from './step'
 // (Festo) or the maker's own file name (Mitsubishi `hg-kr13_.stp`), each with a JSON of the same name holding its
 // mating frames (see data/README.md).
 
-export type DrawingKind = 'axes' | 'motors' | 'gearboxes' | 'kits' | 'shafts'
+export type DrawingKind = 'axes' | 'motors' | 'gearboxes' | 'kits' | 'shafts' | 'adapters'
 
 export interface AxisMeta {
   /** mm, stroke of the model in the file */
@@ -18,6 +18,15 @@ export interface AxisMeta {
   slide: { origin: Vec3; normal: Vec3; travel: Vec3; front?: Vec3 }
   /** how to change the length for other strokes */
   stretch?: StretchSpec
+  /** the profile's mounting face (underside), middle of the length: where a gantry kit holds the axis */
+  profile?: { origin: Vec3; normal: Vec3 }
+}
+/** Gantry kit (data/adapters): the face on the base axis's slide and the one the carried axis's profile sits on */
+export interface AdapterMeta {
+  /** `axis` from the base slide into the kit, `up` across the carried travel */
+  base: Frame
+  /** `axis` from the kit towards the carried axis (its slide side), `up` along the carried travel */
+  carried: Frame
 }
 export interface KitMeta {
   axisFace: Frame
@@ -71,7 +80,7 @@ const metaFiles = import.meta.glob<unknown>('../../data/*/*/Drawings/**/*.json',
 export function parseDrawingPath(
   path: string,
 ): Pick<Drawing, 'kind' | 'maker' | 'partNumber' | 'model' | 'names' | 'path'> | null {
-  const m = /data\/(axes|motors|gearboxes|kits|shafts)\/([^/]+)\/Drawings\/(?:.*\/)?([^/]+)\.(?:stp|step)$/i.exec(path)
+  const m = /data\/(axes|motors|gearboxes|kits|shafts|adapters)\/([^/]+)\/Drawings\/(?:.*\/)?([^/]+)\.(?:stp|step)$/i.exec(path)
   if (!m) return null
   const [, kind, maker, base] = m
   const named = /^(\d{5,})_(.+)$/.exec(base)
@@ -153,3 +162,6 @@ export const gearboxDrawingFor = (gearbox: Gearbox, all = drawings) =>
       d.kind === 'gearboxes' &&
       (d.names.includes(gearbox.model) || (gearbox.partNumber != null && d.partNumber === gearbox.partNumber)),
   ) as Drawing<GearboxMeta> | undefined) ?? null
+
+export const adapterDrawingFor = (adapter: AxisAdapter, all = drawings) =>
+  (all.find((d) => d.kind === 'adapters' && d.meta && d.partNumber === adapter.partNumber) as Drawing<AdapterMeta> | undefined) ?? null

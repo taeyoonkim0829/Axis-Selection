@@ -38,5 +38,9 @@ node scripts/festo-cad/import.mjs <folder>           # copy them (--move to move
   open in their default configuration. Configure them in the part view's 수직 (vertical) table — options are
   buttons there (GK/GV, 5P/10P, L, PU2), the stroke a number field — then export; the file is named after the
   configured type (`556809 EGC-120-500-BS-10P-KF-0H-ML-GV_(0)`), which `import.mjs` reads.
+- Gantry kits (`data/adapters/Festo/Drawings`): exported with `export-gui.ps1 -List <csv>` from a hand-made list
+  (part numbers from the ELGT-BS / ELGD catalogs, `-Kind adapters`), copied as `<partNumber>_<model>.stp`; their frame
+  JSONs come from `node scripts/festo-cad/adapter-frames.mjs` (rules in its header). `frames.mjs --profile` adds
+  the profile's mounting face (`profile`) to existing axis JSONs, where a gantry kit holds a carried axis.
 - ELGT-TB-…-CS (customer solution) is not in the catalog.
 - Export as STEP AP214 or AP242 with the default (CADENAS) file name; only `.stp`/`.step` is read.

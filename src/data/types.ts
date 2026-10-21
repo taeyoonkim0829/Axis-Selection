@@ -355,3 +355,40 @@ export interface ConnectingShaft {
   /** axes it fits (belt drive), each with its max. speed curve [LN mm, rpm] */
   axes: { family: AxisFamily; variant: Axis['variant']; size: number; speedCurve: [number, number][] }[]
 }
+
+/** An axis of a gantry kit fit: family, variant and size, and the drive when the kit is for one only */
+export interface AdapterAxis {
+  family: AxisFamily
+  variant: Axis['variant']
+  size: number
+  drive: Axis['drive']
+  /** the axis needs the long slide (ELGD …-L) */
+  longSlide?: boolean
+}
+
+/**
+ * Festo kit joining two axes of a gantry (EHAM angle and adapter kits, EAHF profile mountings): the carried axis's
+ * profile on the base axis's slide. `angle`: the carried slide faces across the base slide's normal (X floor, Y on
+ * the wall side); `plate`: both slides face the same way (crossed axes, Z on a wall-mounted Y).
+ */
+export interface AxisAdapter {
+  id: string
+  maker: 'Festo'
+  family: 'EHAM-AK' | 'EHAM-MA' | 'EAHF'
+  model: string
+  partNumber: string
+  joint: 'angle' | 'plate'
+  base: AdapterAxis[]
+  carried: AdapterAxis[]
+  /** angle kits come in two mirror-image versions (…-ML / …-MR) */
+  hand: 'left' | 'right' | null
+  /** ELGD angle kits: …-L for a cantilever, …-S for a three-dimensional gantry */
+  layout: 'cantilever' | 'gantry' | null
+  /** mm, working stroke range of the carried axis the kit is for */
+  carriedStroke: [number, number] | null
+  /** kg */
+  mass: number
+  /** further parts to order with it */
+  accessories: { model: string; partNumber: string; note?: string }[]
+  dataSource: string
+}

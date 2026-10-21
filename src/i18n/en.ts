@@ -414,6 +414,29 @@ export const en: Record<string, string> = {
   '모터 조립 방향 (커넥터)': 'Motor orientation (connector)',
   '모터 위치 (정면도 기준)': 'Motor position (front view)',
   '모터 위치 (첫 번째 축, 정면도 기준)': 'Motor position (first axis, front view)',
+  '조합 키트': 'Gantry kit',
+  '조합축 도면': 'Gantry drawing',
+  '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
+    '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
+  '모든 축의 축, 모터, 연결키트를 선택하면 조합축 도면을 만듭니다.':
+    'Select the axis, motor and mounting kit of every axis to build the gantry drawing.',
+  '결합': 'Joint',
+  '품번': 'Part no.',
+  '{carried}축 → {base}축 슬라이드': '{carried} axis on the {base} slide',
+  '함께 주문: {model} ({partNumber})': 'Order with it: {model} ({partNumber})',
+  '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 키트 면에 붙이고 이동 방향 위치는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.':
+    'Gantry kits follow the combination tables of the ELGT-BS and ELGD data sheets (no kit data for EGC). The axes are drawn at their start position; a carried axis sits on the kit face, along its travel at the entered mounting offset. A joint without a kit places the axis alone at the entered mounting point. The profile mountings holding an axis on a kit (EAHF-…-B4) are not drawn.',
+  '키트 없이 배치한 결합: {pairs}': 'Joints placed without a kit: {pairs}',
+  '도면이 없는 부품이 있어 조합할 수 없습니다: {parts}': 'Parts without a drawing, the gantry cannot be assembled: {parts}',
+  '프로파일 이동형 Z축용 조합 키트 데이터가 없습니다. 장착 부품을 별도로 준비하세요.':
+    'No gantry kit data for a moving Z profile. Provide the mounting parts separately.',
+  '{pair}: 이 설치 방향 조합에 맞는 Festo 조합 키트가 없습니다. 장착 브래킷을 별도로 설계하세요.':
+    '{pair}: no Festo gantry kit for these mounting orientations. Design a mounting bracket.',
+  '{pair}: {base} → {carried} 조합의 Festo 조합 키트가 데이터에 없습니다. 장착 부품을 별도로 준비하세요.':
+    '{pair}: no Festo gantry kit for {base} → {carried} in the data. Provide the mounting parts separately.',
+  '{kit}: {axis}축은 롱 슬라이드(-L) 축이어야 합니다.': '{kit}: the {axis} axis must have the long slide (-L).',
+  '{kit}: {axis}축 스트로크 {stroke} mm가 키트 범위 {min} … {max} mm를 벗어납니다.':
+    '{kit}: the {axis} axis stroke {stroke} mm is outside the kit’s range {min} … {max} mm.',
   '모터 위치 (두 번째 축, 정면도 기준)': 'Motor position (second axis, front view)',
   '앞쪽': 'Front',
   '뒤쪽': 'Rear',
