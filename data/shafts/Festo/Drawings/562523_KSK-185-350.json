@@ -1,0 +1,5 @@
+{
+  "length": 350,
+  "end": { "origin": [0, 0, -175], "axis": [0, 0, 1], "up": [0, 1, 0] },
+  "stretch": { "part": "KSK-185-350_P", "axis": 2, "dir": 1, "range": [-55, 55], "move": [4500] }
+}

@@ -480,6 +480,9 @@ export const en: Record<string, string> = {
   '연결축 최대 회전수': 'Connecting shaft max. speed',
   '공칭 길이 {length} mm의 회전수 선도 기준': 'Speed curve at nominal length {length} mm',
   '연결축 관성 모멘트': 'Connecting shaft moment of inertia',
+  '공칭 길이 {from} mm 모델을 {to} mm로 길이 보정': 'Model of nominal length {from} mm adjusted to {to} mm',
+  '두 번째 축을 축 간격만큼 옆에 배치하고 연결축(KSK)으로 잇습니다. 모터는 두 번째 축 반대쪽 샤프트 끝에 둡니다.':
+    'The second axis is placed beside the first at the axis spacing and joined by the connecting shaft (KSK). The motor sits on the shaft end away from the second axis.',
   '{model}, 주문번호 {partNumber} (J0 + JL·LN)': '{model}, part number {partNumber} (J0 + JL·LN)',
   'Y: 축 구성 중심 기준, +Y = 두 번째 축/가이드 쪽': 'Y: from the centre of the arrangement, +Y = towards the second axis / guide',
   '모터 2개 (축마다 1개), 부하가 큰 축 기준': 'Two motors (one per axis), sized for the more loaded axis',

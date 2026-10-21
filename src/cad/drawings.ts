@@ -1,4 +1,4 @@
-import type { Axis, Gearbox, Kit, Motor } from '../data/types'
+import type { Axis, ConnectingShaft, Gearbox, Kit, Motor } from '../data/types'
 import type { Frame } from './geometry'
 import type { StretchSpec } from './stretch'
 import type { Vec3 } from './step'
@@ -7,7 +7,7 @@ import type { Vec3 } from './step'
 // (Festo) or the maker's own file name (Mitsubishi `hg-kr13_.stp`), each with a JSON of the same name holding its
 // mating frames (see data/README.md).
 
-export type DrawingKind = 'axes' | 'motors' | 'gearboxes' | 'kits'
+export type DrawingKind = 'axes' | 'motors' | 'gearboxes' | 'kits' | 'shafts'
 
 export interface AxisMeta {
   /** mm, stroke of the model in the file */
@@ -27,6 +27,14 @@ export interface GearboxMeta {
   /** output flange (axis / kit side) and input flange (motor side) */
   output: Frame
   input: Frame
+}
+export interface ShaftMeta {
+  /** mm, nominal length LN of the model in the file */
+  length: number
+  /** the end face on the motor-side axis (LN/2 from the middle), `axis` along the shaft towards the other end */
+  end: Frame
+  /** how to change the length for other nominal lengths (the tube between the couplings) */
+  stretch: StretchSpec
 }
 export interface MotorMeta {
   flange: Frame
@@ -63,7 +71,7 @@ const metaFiles = import.meta.glob<unknown>('../../data/*/*/Drawings/**/*.json',
 export function parseDrawingPath(
   path: string,
 ): Pick<Drawing, 'kind' | 'maker' | 'partNumber' | 'model' | 'names' | 'path'> | null {
-  const m = /data\/(axes|motors|gearboxes|kits)\/([^/]+)\/Drawings\/(?:.*\/)?([^/]+)\.(?:stp|step)$/i.exec(path)
+  const m = /data\/(axes|motors|gearboxes|kits|shafts)\/([^/]+)\/Drawings\/(?:.*\/)?([^/]+)\.(?:stp|step)$/i.exec(path)
   if (!m) return null
   const [, kind, maker, base] = m
   const named = /^(\d{5,})_(.+)$/.exec(base)
@@ -135,6 +143,9 @@ export const kitDrawingFor = (kit: Kit, all = drawings) =>
   (all.find(
     (d) => d.kind === 'kits' && (d.names.includes(kit.product) || (kit.partNumber != null && d.partNumber === kit.partNumber)),
   ) as Drawing<KitMeta> | undefined) ?? null
+
+export const shaftDrawingFor = (shaft: ConnectingShaft, all = drawings) =>
+  (all.find((d) => d.kind === 'shafts' && d.meta && d.partNumber === shaft.partNumber) as Drawing<ShaftMeta> | undefined) ?? null
 
 export const gearboxDrawingFor = (gearbox: Gearbox, all = drawings) =>
   (all.find(

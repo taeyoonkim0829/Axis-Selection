@@ -33,6 +33,10 @@ public static class U {
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr h);
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, IntPtr p);
+  [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
+  [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint a, uint b, bool f);
 }
 '@
 [U]::SetProcessDPIAware() | Out-Null
@@ -40,8 +44,15 @@ public static class U {
 function Focus {
   $p = Get-Process pdatamgr -ErrorAction SilentlyContinue | Select-Object -First 1
   if (-not $p) { throw 'PARTdataManager is not running' }
-  [U]::ShowWindow($p.MainWindowHandle, 3) | Out-Null
-  [U]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
+  $h = $p.MainWindowHandle
+  # Windows only lets the foreground thread hand the focus on: borrow its input queue (works from a background shell)
+  $fg = [U]::GetWindowThreadProcessId([U]::GetForegroundWindow(), [IntPtr]::Zero)
+  $me = [U]::GetCurrentThreadId()
+  $attached = $fg -ne $me -and [U]::AttachThreadInput($me, $fg, $true)
+  [U]::ShowWindow($h, 3) | Out-Null
+  [U]::BringWindowToTop($h) | Out-Null
+  [U]::SetForegroundWindow($h) | Out-Null
+  if ($attached) { [U]::AttachThreadInput($me, $fg, $false) | Out-Null }
   Start-Sleep -Milliseconds 300
   # never click or type into another window (Windows may refuse to bring PARTdataManager forward)
   if ([U]::GetForegroundWindow() -ne $p.MainWindowHandle -or -not [U]::IsZoomed($p.MainWindowHandle)) {

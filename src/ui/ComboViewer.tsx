@@ -13,6 +13,7 @@ const ROLE_COLORS: Record<PartRole, string> = {
   kit: '#8d97a3',
   gearbox: '#5f7088',
   motor: '#343a42',
+  shaft: '#7a8794',
 }
 const COG_COLOR = '#d6392b'
 
@@ -164,7 +165,7 @@ export default function ComboViewer({ meshes, roles, cog }: { meshes: PartMesh[]
           {present.map((r) => (
             <li key={r}>
               <span className="swatch" style={{ background: ROLE_COLORS[r] }} />
-              {t({ axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터' }[r])}
+              {t({ axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터', shaft: '연결축' }[r])}
             </li>
           ))}
           <li>

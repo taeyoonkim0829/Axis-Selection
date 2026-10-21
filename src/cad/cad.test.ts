@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { axes, kits, motors } from '../data'
+import { axes, kits, motors, shafts } from '../data'
 import { buildCombo, comboDrawings, defaultComboOptions, drivePositionWords, DRIVE_POSITIONS, type ComboSelection } from './combo'
-import { motorDrawingFor, parseDrawingPath, type Drawing } from './drawings'
+import { motorDrawingFor, parseDrawingPath, shaftDrawingFor, type Drawing, type ShaftMeta } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
 import { closure, parseStep, pointOf, refs, typeOf, writeStep, type StepFile } from './step'
 import { stretchPart, type StretchSpec } from './stretch'
@@ -213,6 +213,50 @@ describe('combination', () => {
     const motorSync = await buildCombo(sel, found, cog, load, undefined, { spacing: 400, drive: true })
     expect(motorSync.parts).toHaveLength(6)
   }, 30000)
+
+  it('joins two belt axes with the KSK connecting shaft, lengthened to the spacing', async () => {
+    const paths = [
+      'data/axes/Festo/Drawings/EGC/3013354_EGC-80-500-TB-KF-0H-GK.stp',
+      'data/kits/Festo/Drawings/EAMM-A/557983_EAMM-A-L48-60G.stp',
+      files[2],
+      'data/shafts/Festo/Drawings/562521_KSK-80-200.stp',
+    ]
+    const list: Drawing[] = paths.map((path) => ({
+      ...parseDrawingPath(path)!,
+      url: path,
+      meta: metas[`../../${path.replace(/.stp$/, '.json')}`] ?? null,
+    }))
+    const sel: ComboSelection = {
+      axis: axes.find((a) => a.id === 'EGC-80-...-TB-KF-GK')!,
+      axisModel: 'EGC-80-500-TB-KF-0H-GK',
+      stroke: 500,
+      motor: motors.find((m) => m.model === 'EMMT-AS-60-S-HS')!,
+      gearbox: null,
+      kit: kits.find((k) => k.product === 'EAMM-A-L48-60G')!,
+    }
+    const found = comboDrawings(sel, list)
+    const drawing = shaftDrawingFor(shafts.find((s) => s.model === 'KSK-80')!, list)!
+    expect(drawing.path).toBe(paths[3])
+    const cog = { mounting: 'floor' as const, cog: { x: 0, y: 0, z: 0 } }
+    // spacing 400 − drive width 82 = LN 318
+    const twin = { spacing: 400, drive: false }
+    const plain = await buildCombo(sel, found, cog, load, undefined, twin)
+    const combo = await buildCombo(sel, found, cog, load, undefined, { ...twin, shaft: { model: 'KSK-80-318', length: 318, drawing } })
+    expect(combo.parts.map((p) => p.role)).toEqual(['axis', 'kit', 'motor', 'axis', 'shaft'])
+    // the cover cap on the shaft side of the first axis is gone; the shaft adds its two drive shafts and the tube part
+    expect((await meshBox(combo.step)).meshes).toBe((await meshBox(plain.step)).meshes - 1 + 3)
+    // the end faces sit on the drive covers facing each other (y = ±41 about each axis, the second 400 mm over)
+    const meta = drawing.meta as ShaftMeta
+    const shaft = combo.parts[4].transform
+    expect(apply(shaft, meta.end.origin)[1]).toBeCloseTo(41, 1)
+    expect(apply(shaft, [0, 0, meta.length / 2 + 118])[1]).toBeCloseTo(400 - 41, 1)
+    // the motor went to the shaft end away from the second axis
+    expect(apply(combo.parts[2].transform, [0, 0, 0])[1]).toBeLessThan(0)
+    // the lengthened shaft alone: 318 mm plus the drive shafts reaching 24 mm into each axis
+    const stretched = stretchPart(parseStep(text(paths[3])), meta.stretch, 118).file
+    const box = await meshBox(writeStep(stretched))
+    expect(box.hi[2] - box.lo[2]).toBeCloseTo(318 + 2 * 24, 0)
+  }, 60000)
 
   it('mounts a Mitsubishi motor by its flange (z = 0, shaft +z) without a JSON', async () => {
     const sel = selection(500, 'HG-KR43')

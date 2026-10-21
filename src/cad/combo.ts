@@ -11,13 +11,14 @@ import {
   type GearboxMeta,
   type KitMeta,
   type MotorMeta,
+  type ShaftMeta,
 } from './drawings'
 import { add, apply, cross, dot, identity, mate, rotate, scale, sub, turnAbout, type Frame, type Transform } from './geometry'
-import { directionBody, mapRefs, parseStep, pointBody, pointOf, refs, writeStep, type StepFile, type Vec3 } from './step'
+import { directionBody, mapRefs, parseStep, pointBody, pointOf, refs, typeOf, writeStep, type StepFile, type Vec3 } from './step'
 import { stretchedOrigin, stretchPart } from './stretch'
 import { definitionByName, placementIdsOf, shapeOf } from './structure'
 
-export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor'
+export type PartRole = 'axis' | 'kit' | 'gearbox' | 'motor' | 'shaft'
 
 export interface ComboSelection {
   axis: Axis
@@ -137,6 +138,61 @@ function axisToWorldOf(meta: AxisMeta, mounting: Mounting, position: DrivePositi
   return mate(identity, { origin: [0, 0, 0], axis: travel, up: world.normal }, slideFrame)
 }
 
+/** World direction from the first axis of a twin arrangement to the second (the slide's lateral +y) */
+const twinDirection = (mounting: Mounting): Vec3 => {
+  const world = mountingFrame(mounting)
+  return cross(world.normal, world.travel)
+}
+
+/** The motor's shaft end points towards the second axis of a twin arrangement */
+export function motorFacesTwin(meta: AxisMeta, mounting: Mounting, position: DrivePosition): boolean {
+  const drive = position.otherSide ? otherShaftEnd(meta.drive, meta.slide) : meta.drive
+  return dot(rotate(axisToWorldOf(meta, mounting, position), drive.axis), twinDirection(mounting)) > 0
+}
+
+/**
+ * With a connecting shaft the motor sits on the drive shaft end away from the second axis (the shaft takes the
+ * other end): a position with the motor towards it moves the motor to the other end of the same drive head.
+ */
+export function shaftDrivePosition(meta: AxisMeta, mounting: Mounting, position: DrivePosition): DrivePosition {
+  return motorFacesTwin(meta, mounting, position) ? { ...position, otherSide: !position.otherSide } : position
+}
+
+/** Shaft cover caps (CUP) at the drive head on the side `end` faces */
+function capsAt(file: StepFile, end: Frame, slide: AxisMeta['slide']) {
+  const pd = definitionByName(file, '(CUP)')
+  const rep = pd != null ? shapeOf(file, pd) : null
+  if (rep == null) return []
+  const centre = sub(end.origin, scale(end.axis, dot(sub(end.origin, slide.origin), end.axis)))
+  return placementIdsOf(file, rep).filter((id) => {
+    const location = pointOf(file.entities.get(refs(file.entities.get(id) ?? '')[0]) ?? '')
+    return (
+      location != null &&
+      Math.abs(dot(sub(location, end.origin), slide.travel)) < 100 &&
+      dot(sub(location, centre), end.axis) > 0
+    )
+  })
+}
+
+/** A copy of the axis file without the shaft cover caps on the side `end` faces (a connecting shaft goes there) */
+function withoutCaps(file: StepFile, end: Frame, slide: AxisMeta['slide']): StepFile {
+  const caps = capsAt(file, end, slide)
+  if (!caps.length) return file
+  const e = new Map(file.entities)
+  const find = (test: (body: string) => boolean) => [...e].find(([, b]) => test(b))?.[0]
+  for (const placement of caps) {
+    // the instance: transformation → relationship → context dependent shape → its shape → the assembly usage
+    const idt = find((b) => typeOf(b) === 'ITEM_DEFINED_TRANSFORMATION' && refs(b)[1] === placement)
+    if (idt == null) continue
+    const rel = find((b) => new RegExp(String.raw`REPRESENTATION_RELATIONSHIP_WITH_TRANSFORMATION\s*\(\s*#${idt}\s*\)`).test(b))
+    const cdsr = rel == null ? undefined : find((b) => typeOf(b) === 'CONTEXT_DEPENDENT_SHAPE_REPRESENTATION' && refs(b)[0] === rel)
+    const pds = cdsr == null ? undefined : refs(e.get(cdsr)!)[1]
+    const nauo = pds == null ? undefined : refs(e.get(pds) ?? '')[0]
+    for (const id of [cdsr, rel, idt, pds, nauo]) if (id != null) e.delete(id)
+  }
+  return { header: file.header, entities: e }
+}
+
 /**
  * Moves the shaft cover caps (CUP) off the drive's new shaft end to the end it left: each cap at the drive head on
  * the new side turns half a turn about the head's vertical line through the shaft. Heads capped on both sides
@@ -221,8 +277,10 @@ export interface Combo {
 /** Second, parallel axis: `spacing` mm beside the first along the slide's lateral (+y) direction */
 export interface TwinAxis {
   spacing: number
-  /** true: it has its own kit, gearbox and motor (motor sync); false: driven through a connecting shaft (not drawn) */
+  /** true: it has its own kit, gearbox and motor (motor sync); false: driven through a connecting shaft */
   drive: boolean
+  /** the connecting shaft (KSK) between the drive shafts, drawn when it has a drawing */
+  shaft?: { model: string; length: number; drawing: Drawing<ShaftMeta> }
 }
 
 /**
@@ -243,11 +301,13 @@ export async function buildCombo(
   const axisMeta = found.axis.meta!
   const kitMeta = found.kit.meta!
   const motorMeta = (found.motor.meta as MotorMeta | null) ?? defaultMotorMeta(sel.motor.maker)
-  const [axisText, kitText, motorText, gearboxText] = await Promise.all([
+  const shaftTwin = twin && !twin.drive ? (twin.shaft ?? null) : null
+  const [axisText, kitText, motorText, gearboxText, shaftText] = await Promise.all([
     load(found.axis),
     load(found.kit),
     load(found.motor),
     found.gearbox ? load(found.gearbox) : Promise.resolve(null),
+    shaftTwin ? load(shaftTwin.drawing) : Promise.resolve(null),
   ])
 
   let axisFile = parseStep(axisText)
@@ -260,7 +320,9 @@ export async function buildCombo(
     drive = { ...drive, origin: stretchedOrigin(drive.origin, axisMeta.stretch, stretch) }
     slide = { ...slide, origin: stretchedOrigin(slide.origin, axisMeta.stretch, stretch) }
   }
-  const position = turnable(sel.axis) ? options.drive : DRIVE_POSITIONS[0]
+  // with a connecting shaft the motor takes the shaft end away from the second axis
+  const chosen = turnable(sel.axis) ? options.drive : DRIVE_POSITIONS[0]
+  const position = twin && !twin.drive && turnable(sel.axis) ? shaftDrivePosition(axisMeta, req.mounting, chosen) : chosen
   if (position.otherSide) {
     drive = otherShaftEnd(drive, slide)
     moveCaps(axisFile, drive, slide)
@@ -314,9 +376,20 @@ export async function buildCombo(
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))
     parts.push(...copies)
     name += ' (2 axes)'
+    // Connecting shaft from the first axis's free shaft end (cover cap taken off) to the second axis's motor-side
+    // end, which faces it uncapped; the tube is lengthened from the file's nominal length to the ordered one.
+    if (shaftTwin && shaftText) {
+      const meta = shaftTwin.drawing.meta!
+      const end = otherShaftEnd(drive, slide)
+      parts[0] = { ...parts[0], file: withoutCaps(axisFile, end, slide) }
+      let shaftFile = parseStep(shaftText)
+      if (shaftTwin.length !== meta.length) shaftFile = stretchPart(shaftFile, meta.stretch, shaftTwin.length - meta.length).file
+      parts.push({ role: 'shaft', name: shaftTwin.model, file: shaftFile, transform: mate(axisToWorld, end, meta.end) })
+      name += ` + ${shaftTwin.model}`
+    }
   }
   const cog = add(add(scale(world.travel, req.cog.x), scale(lateral, req.cog.y)), scale(world.normal, req.cog.z))
-  const notices = [...new Set([axisText, kitText, motorText, gearboxText].flatMap((t) => (t && sourceNotice(t)) || []))]
+  const notices = [...new Set([axisText, kitText, motorText, gearboxText, shaftText].flatMap((t) => (t && sourceNotice(t)) || []))]
   const step = writeStep(assemble(name, parts, { notices }))
   return {
     name,

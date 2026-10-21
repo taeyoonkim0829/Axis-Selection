@@ -16,7 +16,7 @@ node scripts/festo-cad/import.mjs <folder> --dry-run # show where each exported 
 node scripts/festo-cad/import.mjs <folder>           # copy them (--move to move)
 ```
 
-- `export-gui.ps1`: needs PARTdataManager open and maximised, and STEP chosen once in 파일로 내보내기 ▸
+- `export-gui.ps1`: needs PARTdataManager open (it brings the window to the front and maximises it, also from a background shell), and STEP chosen once in 파일로 내보내기 ▸
   3D 시스템 중립 ▸ STEP so the toolbar button exports STEP directly. Screen positions are for a 3440×1440 screen at
   100 % scaling (`$pos` at the top; the export dialog is found by UI Automation). Files already in the output
   folder are skipped, so a stopped run resumes. `export-log.csv` records each part: `ok`, `other part` (the

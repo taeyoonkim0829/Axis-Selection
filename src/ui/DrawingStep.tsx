@@ -9,6 +9,8 @@ import {
   connectorSide,
   DRIVE_POSITIONS,
   drivePositionWords,
+  motorFacesTwin,
+  shaftDrivePosition,
   SIDES,
   type Combo,
   type ComboOptions,
@@ -16,7 +18,7 @@ import {
   type PartRole,
   type TwinAxis,
 } from '../cad/combo'
-import type { AxisMeta, Drawing } from '../cad/drawings'
+import { shaftDrawingFor, type AxisMeta, type Drawing } from '../cad/drawings'
 import { stepText } from '../cad/stepText'
 import type { PartMesh } from '../cad/occt'
 import type { Kit } from '../data/types'
@@ -37,7 +39,7 @@ interface Props {
   onSides: (sides: ComboOptions) => void
 }
 
-const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터' }
+const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터', shaft: '연결축' }
 
 /** Drawing files fetched once per page (a rebuild for another spacing or orientation reuses them); failures are dropped */
 const fileCache = new Map<string, Promise<string>>()
@@ -96,9 +98,12 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   // belt axes: the motor on either drive shaft end, the axis either way round
   const axisMeta = (found?.axis?.meta as AxisMeta | null | undefined) ?? null
   const turnable = axis?.axis.drive === 'belt' && axisMeta != null
-  const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === sides.drive.otherEnd && p.otherSide === sides.drive.otherSide)
+  // with a connecting shaft the motor sits on the shaft end away from the second axis
+  const shaftTwin = axis?.layout.mode === 'twinShaft'
+  const drivePosition = shaftTwin && turnable ? shaftDrivePosition(axisMeta!, req.mounting, sides.drive) : sides.drive
+  const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === drivePosition.otherEnd && p.otherSide === drivePosition.otherSide)
   const positions = turnable
-    ? [0, 1, 2, 3].sort(
+    ? [0, 1, 2, 3].filter((i) => !shaftTwin || !motorFacesTwin(axisMeta!, req.mounting, DRIVE_POSITIONS[i])).sort(
         (a, b) =>
           drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
           drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
@@ -109,9 +114,16 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
     return `${t(w.end)} · ${t(w.side)}`
   }
   // Twin arrangement: the second axis beside the first (with its own drive train under motor sync); LM guides are not drawn
+  const shaftDrawing = axis?.shaft ? shaftDrawingFor(axis.shaft.shaft) : null
   const twin: TwinAxis | undefined =
     axis && axis.layout.axes > 1 && input.parallel
-      ? { spacing: input.parallel.spacing, drive: axis.layout.mode === 'twinMotor' }
+      ? {
+          spacing: input.parallel.spacing,
+          drive: axis.layout.mode === 'twinMotor',
+          ...(axis.shaft && shaftDrawing && axis.shaft.length > 0
+            ? { shaft: { model: axis.shaft.model, length: axis.shaft.length, drawing: shaftDrawing } }
+            : {}),
+        }
       : undefined
   const key = selection
     ? [
@@ -127,7 +139,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         parallel ? sides.kitSide : '',
         connector,
         turnable ? positionIndex : '',
-        twin ? `${twin.spacing}/${twin.drive}` : '',
+        twin ? `${twin.spacing}/${twin.drive}/${twin.shaft?.model ?? ''}` : '',
       ].join('|')
     : ''
 
@@ -180,7 +192,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
       const title = [
         combo.name,
         `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm` +
-          (turnable && positionIndex > 0 ? `, drive ${sides.drive.otherEnd ? 'at the other end' : ''}${sides.drive.otherEnd && sides.drive.otherSide ? ', ' : ''}${sides.drive.otherSide ? 'on the other shaft end' : ''}` : '') +
+          (turnable && positionIndex > 0 ? `, drive ${drivePosition.otherEnd ? 'at the other end' : ''}${drivePosition.otherEnd && drivePosition.otherSide ? ', ' : ''}${drivePosition.otherSide ? 'on the other shaft end' : ''}` : '') +
           (parallel ? `, parallel kit: motor ${sides.kitSide}` : '') +
           `, motor connector ${connector} (seen from the motor end)`,
         'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
@@ -227,6 +239,22 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             drawing: found.motor,
             note: found.motorOtherOptions ? t('같은 모터의 다른 옵션 도면') : null,
           },
+          ...(axis!.shaft
+            ? [
+                {
+                  role: 'shaft' as const,
+                  model: axis!.shaft.model,
+                  drawing: shaftDrawing,
+                  note:
+                    shaftDrawing && shaftDrawing.meta && (shaftDrawing.meta as { length: number }).length !== axis!.shaft.length
+                      ? t('공칭 길이 {from} mm 모델을 {to} mm로 길이 보정', {
+                          from: (shaftDrawing.meta as { length: number }).length,
+                          to: axis!.shaft.length,
+                        })
+                      : null,
+                },
+              ]
+            : []),
         ]
       : []
   const ready = found != null && found.missing.length === 0
@@ -296,7 +324,9 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
                 axis.layout.mode === 'twinMotor'
                   ? '두 번째 축(모터·키트 포함)을 축 간격만큼 옆에 함께 배치합니다.'
                   : axis.layout.mode === 'twinShaft'
-                    ? '두 번째 축을 축 간격만큼 옆에 함께 배치합니다. 연결축은 도면에 포함되지 않습니다.'
+                    ? twin?.shaft
+                      ? '두 번째 축을 축 간격만큼 옆에 배치하고 연결축(KSK)으로 잇습니다. 모터는 두 번째 축 반대쪽 샤프트 끝에 둡니다.'
+                      : '두 번째 축을 축 간격만큼 옆에 함께 배치합니다. 연결축은 도면에 포함되지 않습니다.'
                     : 'LM 가이드는 도면에 포함되지 않습니다.',
               )}
             </p>
