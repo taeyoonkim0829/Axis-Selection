@@ -2,6 +2,8 @@ import type { AxisFamily, DriveKind, MotorMaker } from '../data/types'
 
 export type Mounting = 'floor' | 'wall' | 'vertical'
 
+export type AdditionalSlideSide = 'none' | 'left' | 'right' | 'both'
+
 /** User-entered transport conditions (UI units). */
 export interface Requirements {
   /** mm */
@@ -129,6 +131,10 @@ export interface Settings {
   useGearbox: boolean
   /** Constant-velocity torque above the rated torque fails instead of warning */
   conservative: boolean
+  /** Additional slide on axes that offer one (`Axis.additionalSlide`); 'both' only where both sides can be ordered */
+  additionalSlide: AdditionalSlideSide
+  /** Toothed belt material by family (`BeltMaterial.code`; null = EGC chloroprene rubber) */
+  beltMaterial: Partial<Record<AxisFamily, string | null>>
   /** m, motor cable length for the cable selection (Festo drives) */
   cableLength: number
 }
@@ -152,6 +158,8 @@ export const defaultSettings: Settings = {
   useGearbox: false,
   conservative: false,
   cableLength: 5,
+  additionalSlide: 'none',
+  beltMaterial: { ELGD: 'PU2', EGC: null },
 }
 
 export type Status = 'ok' | 'warn' | 'fail'

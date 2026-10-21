@@ -1578,6 +1578,8 @@
         2000
       ],
       "interfaceCode": "N48",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 118, "gap": 50, "mass": 0.49, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 0.5 }, { "code": "PU1", "noLoadTorque": 0.5 }],
       "typeCode": "ELGD-TB-KF-60-…-0H-PU2",
       "strokePartNumbers": {
         "200": "8192344",
@@ -1661,6 +1663,8 @@
         2000
       ],
       "interfaceCode": "L48",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 142, "gap": 50, "mass": 1.11, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 1.2 }, { "code": "PU1", "noLoadTorque": 1 }],
       "typeCode": "ELGD-TB-KF-80-…-0H-PU2",
       "strokePartNumbers": {
         "200": "8192354",
@@ -1744,6 +1748,8 @@
         2000
       ],
       "interfaceCode": "N80",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 162, "gap": 50, "mass": 1.733, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 2 }, { "code": "PU1", "noLoadTorque": null }],
       "typeCode": "ELGD-TB-KF-120-…-0H-PU2",
       "strokePartNumbers": {
         "200": "8192364",
@@ -1816,6 +1822,8 @@
       "allowableDeflection": 0.5,
       "standardStrokes": null,
       "interfaceCode": "N48",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 118, "gap": 50, "mass": 0.49, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 0.5 }, { "code": "PU1", "noLoadTorque": 0.5 }],
       "typeCode": "ELGD-TB-KF-60-…-0H-L-PU2",
       "strokePartNumbers": null,
       "moduleNumber": "8176884",
@@ -1877,6 +1885,8 @@
       "allowableDeflection": 0.5,
       "standardStrokes": null,
       "interfaceCode": "L48",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 142, "gap": 50, "mass": 1.11, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 1.2 }, { "code": "PU1", "noLoadTorque": 1 }],
       "typeCode": "ELGD-TB-KF-80-…-0H-L-PU2",
       "strokePartNumbers": null,
       "moduleNumber": "8176885",
@@ -1938,6 +1948,8 @@
       "allowableDeflection": 0.5,
       "standardStrokes": null,
       "interfaceCode": "N80",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 162, "gap": 50, "mass": 1.733, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 2 }, { "code": "PU1", "noLoadTorque": null }],
       "typeCode": "ELGD-TB-KF-120-…-0H-L-PU2",
       "strokePartNumbers": null,
       "moduleNumber": "8176886",
@@ -2437,6 +2449,8 @@
         2000
       ],
       "interfaceCode": "L38",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 192, "gap": 50, "mass": 1.36, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 0.4 }, { "code": "PU1", "noLoadTorque": 0.4 }],
       "typeCode": "ELGD-TB-KF-WD-100-…-0H-L-PU2",
       "strokePartNumbers": {
         "200": "8192374",
@@ -2520,6 +2534,8 @@
         2000
       ],
       "interfaceCode": "N48",
+      "additionalSlide": { "left": "ZL", "right": "ZR", "both": false, "length": 263, "gap": 50, "mass": 1.957, "inertia": null },
+      "beltMaterials": [{ "code": "PU2", "noLoadTorque": 1.4 }, { "code": "PU1", "noLoadTorque": 1.4 }],
       "typeCode": "ELGD-TB-KF-WD-120-…-0H-L-PU2",
       "strokePartNumbers": {
         "200": "8192384",

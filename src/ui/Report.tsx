@@ -271,13 +271,17 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                   ],
                 ] as Row[])
               : []),
+            ...(axis.options && a.additionalSlide
+              ? ([['추가 슬라이드', axis.options.slides.length ? axis.options.slides.join(' + ') : t('없음')]] as Row[])
+              : []),
+            ...(axis.options?.belt ? ([['벨트 재질', axis.options.belt.code ?? t('클로로프렌')]] as Row[]) : []),
             ['제품군', [a.family, a.variant].filter(Boolean).join('-')],
             ['구동 방식', t(driveLabel[a.drive])],
             ['최대 스트로크', q(a.maxStroke, 'mm')],
             ['최대 속도', q(a.maxSpeed, 'm/s')],
             ['최대 가속도', q(a.maxAcceleration, 'm/s²')],
             ['최대 이송력', q(a.maxFeedForce, 'N')],
-            ['무부하 구동 토크', q(a.noLoadTorque, 'Nm')],
+            ['무부하 구동 토크', q(axis.noLoadTorque, 'Nm')],
             ['최대 구동 토크', q(a.maxDrivingTorque, 'Nm')],
             ['회전당 이송량', q(axis.feed, 'mm/rev')],
             ['반복 정밀도', a.repeatability == null ? '—' : `±${fmt(a.repeatability, 3)} mm`],

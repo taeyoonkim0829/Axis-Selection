@@ -91,6 +91,46 @@ describe('parallel arrangement', () => {
   })
 })
 
+describe('axis order options', () => {
+  const elgd = axes.find((a) => a.id === 'ELGD-TB-KF-80')!
+  const egc = axes.find((a) => a.id === 'EGC-80-...-TB-KF-GK')!
+  const req = { ...baseReq, stroke: 1000, cog: { x: 150, y: 0, z: 50 } }
+
+  it('keeps the standard product without options', () => {
+    const e = evaluateAxis(elgd, req, defaultSettings)!
+    expect(e.order.model).toBe('ELGD-TB-KF-80-1000-0H-PU2')
+    expect(e.order.modular).toBe(false)
+    expect(e.noLoadTorque).toBe(1.2)
+  })
+
+  it('adds an additional slide and the belt to the type code, lengthening the ordered stroke', () => {
+    const plain = evaluateAxis(elgd, req, defaultSettings)!
+    const e = evaluateAxis(elgd, req, { ...defaultSettings, additionalSlide: 'right', beltMaterial: { ELGD: 'PU1', EGC: null } })!
+    // 142 mm slide + 50 mm gap
+    expect(e.order).toEqual({ model: 'ELGD-TB-KF-80-1192-0H-ZR-PU1', partNumber: elgd.moduleNumber, stroke: 1192, modular: true })
+    expect(e.noLoadTorque).toBe(1)
+    expect(e.movingMass - plain.movingMass).toBeCloseTo(1.11)
+    expect(e.checks.find((c) => c.label === '스트로크')!.value).toBe(1192)
+    // the payload plate on two slides 192 mm apart takes the pitch moment as a force couple
+    expect(e.guideFv).toBeLessThan(plain.guideFv)
+  })
+
+  it('orders both EGC slides; the chloroprene belt has no code, PU2 has no torque data', () => {
+    const settings = { ...defaultSettings, additionalSlide: 'both' as const, beltMaterial: { ELGD: 'PU2', EGC: 'PU2' } }
+    const e = evaluateAxis(egc, req, settings)!
+    // 2 × (120 mm slide + 20 mm gap)
+    expect(e.order.model).toBe('EGC-80-1280-TB-KF-0H-GK-KL-KR-PU2')
+    expect(e.inertia - evaluateAxis(egc, req, defaultSettings)!.inertia).toBeCloseTo(2 * 1.2673 + egc.inertiaJHPerMeter * 0.28)
+    expect(e.checks.find((c) => c.label === '구동 토크')!.noteArgs).toEqual({ belt: 'PU2' })
+    expect(evaluateAxis(egc, req, defaultSettings)!.order.model).toBe('EGC-80-1000-TB-KF-0H-GK')
+    // both slides exist on EGC only: ELGD-TB leaves the list, axes without the option stay
+    const listed = selectAxes(axes, req, settings).map((x) => x.axis.id)
+    expect(listed).toContain(egc.id)
+    expect(listed).not.toContain(elgd.id)
+    expect(listed).toContain('ELGT-BS-120-…10P')
+  })
+})
+
 describe('torque calculation', () => {
   it('matches the closed-form trapezoid result for a horizontal spindle', () => {
     const settings = { ...defaultSettings, friction: { spindle: 0, belt: 0 } }

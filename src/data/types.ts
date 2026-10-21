@@ -73,6 +73,32 @@ export interface Axis {
   moduleStrokes?: { variable: [number, number] | null; fixed: number[] } | null
   /** mechanical interface code for mounting kits; null when unknown */
   interfaceCode: string | null
+  /** Additional (passive, standard) slide on the same guide, ordered in the modular product system */
+  additionalSlide?: AdditionalSlide | null
+  /** Toothed belt materials to choose from, the one in `typeCode` first */
+  beltMaterials?: BeltMaterial[] | null
+}
+
+export interface AdditionalSlide {
+  /** type code of a slide on the left / right (ELGD ZL/ZR, EGC KL/KR) */
+  left: string
+  right: string
+  /** both sides at once (EGC KL + KR) */
+  both: boolean
+  /** mm, length of the additional slide and the gap to the main slide; the working stroke loses both per slide */
+  length: number
+  gap: number
+  /** kg */
+  mass: number
+  /** kg·cm² at the drive shaft per additional slide (EGC JW); null = JL × mass */
+  inertia: number | null
+}
+
+export interface BeltMaterial {
+  /** type code (PU1, PU2); null for a material without one (EGC chloroprene rubber) */
+  code: string | null
+  /** Nm, max. no-load torque with this belt; null = not in the data sheet (the axis value is used) */
+  noLoadTorque: number | null
 }
 
 export type MotorMaker = 'Festo' | 'Siemens' | 'Mitsubishi'

@@ -850,6 +850,17 @@ details summary:hover {
   margin: 0 0 12px;
 }
 
+/* order options of the toothed belt axes, a labelled group each */
+.step-filters.axis-options {
+  gap: 8px 20px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .table-wrap {
   overflow: auto;
   max-height: 480px;

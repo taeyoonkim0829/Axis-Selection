@@ -1,6 +1,6 @@
 // Axis sizing: motion profile, required force/torque at the axis drive shaft,
 // guide load comparison value, deflection and life. Motor-independent.
-import type { Axis } from '../data/types'
+import type { AdditionalSlide, Axis, BeltMaterial } from '../data/types'
 import { dwellPhase, moveProfile, samplePhases, type MoveProfile, type Phase } from './motionProfile'
 import { check, verticalForward, worstStatus, type Check, type ParallelMode, type Requirements, type Settings, type Status } from './types'
 
@@ -81,6 +81,69 @@ export interface AxisEvaluation {
   axisMass: number
   /** Axis arrangement (single axis, two axes, LM guides) */
   layout: ParallelLayout
+  /** Additional slides and belt material; null for an axis without such options */
+  options: AxisOptions | null
+  /** Nm, no-load torque at the axis drive shaft (with the chosen belt) */
+  noLoadTorque: number
+}
+
+/** Order options of an axis from the settings */
+export interface AxisOptions {
+  /** type codes of the additional slides, in type code order (ZL; KL, KR) */
+  slides: string[]
+  /** mm the working stroke loses to them (slide length + gap each): the ordered stroke is that much longer */
+  extension: number
+  /** m, centre distance between neighbouring slides */
+  pitch: number
+  /** the chosen belt material; null when the axis has no choice */
+  belt: BeltMaterial | null
+}
+
+/** Whether an axis can be ordered with the chosen additional slide (axes without the option keep their default) */
+export function offersSlides(axis: Axis, settings: Settings): boolean {
+  return settings.additionalSlide !== 'both' || !axis.additionalSlide || axis.additionalSlide.both
+}
+
+export function axisOptions(axis: Axis, settings: Settings): AxisOptions | null {
+  const extra = axis.additionalSlide
+  const materials = axis.beltMaterials
+  if (!extra && !materials?.length) return null
+  const side = settings.additionalSlide
+  const slides =
+    !extra || side === 'none' ? [] : side === 'both' ? (extra.both ? [extra.left, extra.right] : []) : [side === 'left' ? extra.left : extra.right]
+  const chosen = settings.beltMaterial[axis.family]
+  return {
+    slides,
+    extension: extra ? slides.length * (extra.length + extra.gap) : 0,
+    pitch: extra ? ((axis.slideLength ?? extra.length) + extra.length) / 2000 + extra.gap / 1000 : 0,
+    belt: materials?.length ? (materials.find((m) => m.code === chosen) ?? materials[0]) : null,
+  }
+}
+
+/** Type code with the options: additional slides, then the belt material (its last position) */
+function optionCode(axis: Axis, template: string, options: AxisOptions | null): string {
+  if (!options) return template
+  const standard = axis.beltMaterials?.[0]?.code
+  const base = standard && template.endsWith(`-${standard}`) ? template.slice(0, -standard.length - 1) : template
+  const belt = options.belt ? options.belt.code : standard
+  return [base, ...options.slides, ...(belt ? [belt] : [])].join('-')
+}
+
+/** Options that leave the standard product (no additional slide, the type code's belt) */
+const customised = (axis: Axis, options: AxisOptions | null) =>
+  !!options && (options.slides.length > 0 || (options.belt != null && options.belt !== axis.beltMaterials?.[0]))
+
+/**
+ * Loads on the most loaded of several slides on one guide carrying the payload as a rigid plate: slides at
+ * `positions` along the travel (m, centred on the payload's x reference). Pitch and yaw moments become opposing
+ * normal and lateral forces across the slides; the rolling moment is shared.
+ */
+export function slideGroupLoads(loads: GuideLoads, positions: number[]): GuideLoads {
+  const n = positions.length
+  if (n < 2) return loads
+  const spread = positions.reduce((s, p) => s + p * p, 0)
+  const far = Math.max(...positions.map(Math.abs))
+  return { Fy: loads.Fy / n + (loads.Mz * far) / spread, Fz: loads.Fz / n + (loads.My * far) / spread, Mx: loads.Mx / n, My: 0, Mz: 0 }
 }
 
 /** What to order for an axis and a required stroke. */
@@ -100,19 +163,20 @@ export interface AxisOrder {
  * variable range, else the next of its fixed strokes (ELGT-BS has only fixed ones). Axes without order data
  * keep their data model name.
  */
-export function axisOrder(axis: Axis, stroke: number): AxisOrder {
+export function axisOrder(axis: Axis, stroke: number, options: AxisOptions | null = null): AxisOrder {
   const template = axis.typeCode ?? axis.model
   if (!template.includes('…') || !(axis.strokePartNumbers || axis.moduleNumber)) {
     return { model: axis.model, partNumber: null, stroke: null, modular: false }
   }
-  const parts = axis.strokePartNumbers ?? {}
+  // Options are configured in the modular product system; additional slides lengthen the ordered stroke.
+  const parts = customised(axis, options) ? {} : (axis.strokePartNumbers ?? {})
   const standard = Object.keys(parts)
     .map(Number)
     .sort((a, b) => a - b)
     .find((s) => s >= stroke)
-  const ordered = standard ?? moduleStroke(axis.moduleStrokes, stroke)
+  const ordered = standard ?? moduleStroke(axis.moduleStrokes, stroke + (options?.extension ?? 0))
   return {
-    model: template.replace('…', String(ordered)),
+    model: optionCode(axis, template, options).replace('…', String(ordered)),
     partNumber: standard != null ? parts[String(standard)] : (axis.moduleNumber ?? null),
     stroke: ordered,
     modular: standard == null,
@@ -431,21 +495,30 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const efficiency = settings.efficiency[axis.drive]
   const mu = settings.friction[axis.drive]
   // Mass and inertia follow the built stroke (the ordered one for ESBF), the motion the required one.
-  const order = axisOrder(axis, req.stroke)
+  const options = axisOptions(axis, settings)
+  const order = axisOrder(axis, req.stroke, options)
   const builtStroke = order.stroke ?? req.stroke
+  // Additional slides move with the main one; the belt material changes the no-load torque.
+  const extra: AdditionalSlide | null = options?.slides.length ? axis.additionalSlide! : null
+  const slideCount = extra ? options!.slides.length : 0
+  const extraMass = slideCount * (extra?.mass ?? 0)
+  const noLoad = options?.belt?.noLoadTorque ?? axis.noLoadTorque
   // Parallel arrangement: with two axes each carries its share of the payload (the more loaded one is checked);
   // LM guides add their moving mass to the axis drive.
   const layout = parallelLayout(req)
   const share = layout.share
-  const slide = axis.slideMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
-  const mAxis = axisMass(axis, builtStroke)
+  const slide = axis.slideMass + extraMass + ((axis.slideMassPer10mm ?? 0) * builtStroke) / 10
+  const mAxis = axisMass(axis, builtStroke) + extraMass
   // Moving profile (gantry Z): the slide is clamped, the profile and the drive on it move instead.
-  const profile = req.movingProfile ? mAxis - axis.slideMass : 0
+  const profile = req.movingProfile ? mAxis - axis.slideMass - extraMass : 0
   const driveMass = req.movingProfile ? Math.max(0, req.movingProfile.driveMass) : 0
   const moved = req.movingProfile ? profile + driveMass : slide
   const axisPayload = share * req.payload + layout.guideMass
   const mass = axisPayload + moved
-  const axisInertia = axis.inertiaJ0 + (axis.inertiaJHPerMeter * builtStroke) / 1000
+  const axisInertia =
+    axis.inertiaJ0 +
+    (axis.inertiaJHPerMeter * builtStroke) / 1000 +
+    slideCount * (extra?.inertia ?? axis.inertiaJLPerKg * (extra?.mass ?? 0))
   const inertia = axisInertia + axis.inertiaJLPerKg * (axisPayload + moved - slide)
   const toRad = (2 * Math.PI) / (feed / 1000)
   const down = verticalForward(req) === 'down'
@@ -462,11 +535,11 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
       const torque = J * 1e-4 * a * toRad + (external * feed) / (2000 * Math.PI) + sgn * noLoad
       return { omega: v * toRad, alpha: a * toRad, torque, force: m * a + external }
     }
-  const axisDriveAt = drive(mass, inertia, axis.noLoadTorque, share)
+  const axisDriveAt = drive(mass, inertia, noLoad, share)
   // One motor driving both axes through a connecting shaft: the motor sees both axes, the payload and the shaft.
   const shaft = layout.mode === 'twinShaft'
   const trainInertia = shaft ? 2 * axisInertia + axis.inertiaJLPerKg * req.payload + layout.shaftInertia : inertia
-  const driveAt = shaft ? drive(req.payload + 2 * slide, trainInertia, 2 * axis.noLoadTorque, 1) : axisDriveAt
+  const driveAt = shaft ? drive(req.payload + 2 * slide, trainInertia, 2 * noLoad, 1) : axisDriveAt
   const sampled = samplePhases(phases, (i) => moves[i])
   const samples: AxisSample[] = sampled.map((s) => ({ ...s, ...driveAt(s.v, s.a, s.dir, s.load) }))
   const axisSamples: AxisSample[] = shaft ? sampled.map((s) => ({ ...s, ...axisDriveAt(s.v, s.a, s.dir, s.load) })) : samples
@@ -481,12 +554,25 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const peakForce = Math.max(...moving.map((s) => Math.abs(s.force)))
   const peakShaftTorque = shaftTorque(axisSamples)
 
+  const belt = options?.belt
   const checks: Check[] = [
-    check('스트로크', req.stroke, axis.maxStroke, 'mm'),
+    extra
+      ? {
+          ...check('스트로크', req.stroke + options!.extension, axis.maxStroke, 'mm'),
+          note: '추가 슬라이드 {codes}: 슬라이드 길이 + 간격 {extension} mm 포함',
+          noteArgs: { codes: options!.slides.join(' + '), extension: options!.extension },
+        }
+      : check('스트로크', req.stroke, axis.maxStroke, 'mm'),
     speedCheck(axis, peakVelocity, builtStroke),
     check('가속도', fwd.peakAcceleration, axis.maxAcceleration, 'm/s²'),
     feedForceCheck(axis, peakForce, builtStroke),
-    check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
+    belt && belt.noLoadTorque == null
+      ? {
+          ...check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
+          note: '{belt} 벨트의 무부하 토크 데이터 없음 — 기본 벨트 값 사용',
+          noteArgs: { belt: belt.code ?? '' },
+        }
+      : check('구동 토크', peakShaftTorque, axis.maxDrivingTorque, 'Nm'),
   ]
   // The motor-side axis passes the second axis's torque on through its drive shaft.
   if (shaft) {
@@ -540,7 +626,9 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
   const systemMass = req.payload + layout.axes * moved + layout.guideMass
   const loadReq = req.movingProfile ? { ...req, cog: movingProfileCog(req, axis, profile, driveMass) } : req
   const members = memberLoads(loadReq, systemMass, fwd.peakAcceleration, layout)
-  const axisLoads = members.filter((_, i) => layout.isAxis[i])
+  // Additional slides: the payload plate spans all slides of the axis, centred on the payload's x reference.
+  const slidePositions = Array.from({ length: slideCount + 1 }, (_, i) => (i - slideCount / 2) * (options?.pitch ?? 0))
+  const axisLoads = members.filter((_, i) => layout.isAxis[i]).map((l) => slideGroupLoads(l, slidePositions))
   const loads = axisLoads.reduce((a, b) => (guideComparisonValue(b, axis).fv > guideComparisonValue(a, axis).fv ? b : a))
   let fv = 0
   if (axis.rodLateralForceCurve) {
@@ -556,13 +644,16 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     fv = guide.fv
     checks.push({
       ...check('가이드 하중 비교값 fv', fv, 1, ''),
-      note: guide.missing.length ? '허용값 없음: {keys}' : undefined,
-      noteArgs: guide.missing.length ? { keys: guide.missing.join(', ') } : undefined,
+      ...(guide.missing.length
+        ? { note: '허용값 없음: {keys}', noteArgs: { keys: guide.missing.join(', ') } }
+        : extra
+          ? { note: '슬라이드 {n}개에 걸친 부하, 가장 큰 하중의 슬라이드 기준', noteArgs: { n: slideCount + 1 } }
+          : {}),
     })
   }
 
   if (!vertical) {
-    const totalLength = axis.baseLength ? req.stroke + axis.baseLength : null
+    const totalLength = axis.baseLength ? req.stroke + (options?.extension ?? 0) + axis.baseLength : null
     const span = settings.supportSpan > 0 ? settings.supportSpan : totalLength
     const I = req.mounting === 'floor' ? axis.Iy : axis.Iz
     if (span && I) {
@@ -592,6 +683,17 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
             : {}),
     },
     { label: '축 질량', value: mAxis, unit: 'kg' },
+    ...(extra
+      ? [
+          {
+            label: '추가 슬라이드',
+            value: slideCount,
+            unit: '',
+            note: '{codes}, 1개 {mass} kg, 슬라이드 간격 {pitch} mm',
+            noteArgs: { codes: options!.slides.join(' + '), mass: extra.mass, pitch: Math.round(options!.pitch * 1000) },
+          },
+        ]
+      : []),
     { label: '축 관성 모멘트 (구동축 기준)', value: trainInertia, unit: 'kg·cm²', ...(shaft ? { note: '2축 + 연결축' } : {}) },
   ]
   if (shaft) info.push({ label: '모터 구동 이동 질량 (2축 합계)', value: req.payload + 2 * slide, unit: 'kg' })
@@ -670,6 +772,8 @@ export function evaluateAxis(axis: Axis, req: Requirements, settings: Settings):
     guideFv: fv,
     axisMass: mAxis,
     layout,
+    options,
+    noLoadTorque: noLoad,
   }
 }
 
@@ -677,7 +781,7 @@ const statusOrder: Record<Status, number> = { ok: 0, warn: 1, fail: 2 }
 
 export function selectAxes(all: Axis[], req: Requirements, settings: Settings): AxisEvaluation[] {
   return all
-    .filter((a) => settings.families.includes(a.family) && settings.drives.includes(a.drive))
+    .filter((a) => settings.families.includes(a.family) && settings.drives.includes(a.drive) && offersSlides(a, settings))
     .map((a) => evaluateAxis(a, req, settings))
     .filter((e): e is AxisEvaluation => e !== null)
     .sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || a.axisMass - b.axisMass)

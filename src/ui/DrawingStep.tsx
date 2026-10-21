@@ -178,12 +178,18 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             model: axis!.order.model,
             drawing: found.axis,
             note:
-              found.axis && found.axis.meta && (found.axis.meta as { stroke: number }).stroke !== selection.stroke
-                ? t('스트로크 {from} mm 모델을 {to} mm로 길이 보정', {
-                    from: (found.axis.meta as { stroke: number }).stroke,
-                    to: selection.stroke,
-                  })
-                : null,
+              [
+                found.axis && found.axis.meta && (found.axis.meta as { stroke: number }).stroke !== selection.stroke
+                  ? t('스트로크 {from} mm 모델을 {to} mm로 길이 보정', {
+                      from: (found.axis.meta as { stroke: number }).stroke,
+                      to: selection.stroke,
+                    })
+                  : null,
+                // the CAD models are the standard version: one slide
+                axis!.options?.slides.length ? t('추가 슬라이드 {codes}는 도면에 없음', { codes: axis!.options.slides.join(' + ') }) : null,
+              ]
+                .filter(Boolean)
+                .join(' · ') || null,
           },
           { role: 'kit', model: selection.kit.product, drawing: found.kit, note: found.kit && !found.kit.meta ? t('정합 정보(JSON) 없음') : null },
           ...(selection.gearbox

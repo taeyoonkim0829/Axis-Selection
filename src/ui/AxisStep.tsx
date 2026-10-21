@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
-import type { Settings } from '../calc/types'
+import type { AdditionalSlideSide, Settings } from '../calc/types'
 import type { AxisFamily, DriveKind } from '../data/types'
-import { CheckTable, CollapseTitle, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { useT } from '../i18n'
 import { axisDetailChecks, driveLabel, fmt } from './format'
@@ -26,6 +26,46 @@ const forceRatio = (e: AxisEvaluation) => {
 }
 /** Guide column: fv, or the piston rod lateral force for electric cylinders */
 const guideRatio = (e: AxisEvaluation) => ratioOf(e, '가이드 하중 비교값 fv') ?? ratioOf(e, '로드 횡하중 Fq')
+
+const slideLabel: Record<AdditionalSlideSide, string> = { none: '없음', left: '좌측', right: '우측', both: '양쪽' }
+/** Belt materials offered per family (`Axis.beltMaterials`; CR = EGC chloroprene rubber, no type code) */
+const beltOptions = { ELGD: ['PU2', 'PU1'], EGC: ['CR', 'PU2'] } as const
+const beltLabel: Record<string, string> = { PU2: 'PU2', PU1: 'PU1 FDA', CR: '클로로프렌' }
+
+/**
+ * Order options of the toothed belt axes that offer them (ELGD-TB: ZL/ZR, PU1/PU2; EGC-TB-KF: KL/KR, chloroprene/PU2),
+ * shown while such axes are in the list; other axes keep their standard version.
+ */
+function AxisOptionFilters({ settings, onSettings }: Pick<Props, 'settings' | 'onSettings'>) {
+  const t = useT()
+  const shown = (['ELGD', 'EGC'] as const).filter((f) => settings.families.includes(f))
+  if (!settings.drives.includes('belt') || shown.length === 0) return null
+  const sides: AdditionalSlideSide[] = shown.includes('EGC') ? ['none', 'left', 'right', 'both'] : ['none', 'left', 'right']
+  return (
+    <div className="step-filters axis-options">
+      <div className="filter-group">
+        <span className="field-label">{t('추가 슬라이드')}</span>
+        <RadioGroup
+          options={sides}
+          value={sides.includes(settings.additionalSlide) ? settings.additionalSlide : 'none'}
+          label={(v) => t(slideLabel[v])}
+          onChange={(v) => onSettings({ ...settings, additionalSlide: v })}
+        />
+      </div>
+      {shown.map((family) => (
+        <div className="filter-group" key={family}>
+          <span className="field-label">{t('{family} 벨트', { family })}</span>
+          <RadioGroup
+            options={beltOptions[family]}
+            value={settings.beltMaterial[family] ?? 'CR'}
+            label={(v) => t(beltLabel[v])}
+            onChange={(v) => onSettings({ ...settings, beltMaterial: { ...settings.beltMaterial, [family]: v === 'CR' ? null : v } })}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function AxisStep({ results, selectedId, onSelect, settings, onSettings }: Props) {
   const t = useT()
@@ -71,7 +111,14 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           label={(d) => t(driveLabel[d])}
           onChange={(v) => onSettings({ ...settings, drives: v })}
         />
-        <ToggleGroup options={families} selected={settings.families} onChange={(v) => onSettings({ ...settings, families: v })} />
+        <ToggleGroup
+          options={families}
+          selected={settings.families}
+          // both additional slides exist on EGC only
+          onChange={(v) =>
+            onSettings({ ...settings, families: v, ...(!v.includes('EGC') && settings.additionalSlide === 'both' ? { additionalSlide: 'none' } : {}) })
+          }
+        />
         {settings.families.includes('ESBF') && (
           <ToggleButton
             label={t('ESBF 외부 가이드 사용')}
@@ -80,6 +127,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
           />
         )}
       </div>
+      <AxisOptionFilters settings={settings} onSettings={onSettings} />
 
       {rows.length === 0 ? (
         <p className="empty">{t('조건을 만족하는 축이 없습니다. 부적합 포함을 켜서 초과 항목을 확인하세요.')}</p>

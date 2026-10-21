@@ -166,7 +166,7 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 - **Ratio cell**: percentage in the data face + 44px bar (ok under 80%, warn, fail).
 - **Selected row**: soft yellow fill + 2px yellow inset ring.
 - **Inputs**: 38px, data face 17px, unit at right, no spin buttons; invalid gets a red border and red soft ring.
-- **Segmented toggles**: blue fill when active.
+- **Segmented toggles**: blue fill when active. A labelled option row under the step filters (`.axis-options`, `.filter-group`: muted 12px label + segmented control) for single choices such as the axis order options.
 - **Error panel**: replaces the results column when the calculation fails; fail-soft fill, fail border and title, the error text on a white block, an outlined fail-colour 다시 시도 button. The inputs stay usable.
 - **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; sign-blue borders between cells.
 - **Heading unit** (`.heading-unit`, 소재 무게 중심 (mm)): a muted 12px regular unit after the heading when a row of fields is too narrow for a unit inside each.
