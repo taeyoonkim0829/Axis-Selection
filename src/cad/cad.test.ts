@@ -326,9 +326,9 @@ describe('combination', () => {
     const meta = found.axis!.meta!
     const words = DRIVE_POSITIONS.map((p) => drivePositionWords(meta, 'floor', p))
     expect(new Set(words.map((w) => `${w.end} ${w.side}`)).size).toBe(4)
-    // the EGC slide stands out to −x, the file's drive shaft end is at +x: 뒤 is the slide side
-    expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['좌측 앞', '좌측 뒤', '우측 앞', '우측 뒤'])
-    expect(words.map((w) => w.order)).toEqual([0, 1, 2, 3])
+    // the EGC slide stands out to −x, the file's drive shaft end is at +x: 좌측 is the slide side
+    expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['앞 우측', '앞 좌측', '뒤 우측', '뒤 좌측'])
+    expect(words.map((w) => w.order)).toEqual([1, 0, 3, 2])
     // motor sync: the second axis (at +y) takes its own position, here the other shaft end
     const twin = { spacing: 400, drive: true }
     const same = await meshBox((await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, twin)).step)
