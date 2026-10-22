@@ -6,6 +6,7 @@ import { adapterDrawingFor } from '../cad/drawings'
 import { buildGantry, type GantryAxisDrawing, type GantryJointDrawing } from '../cad/gantry'
 import { useT } from '../i18n'
 import type { GantryAxisResult } from '../selection'
+import type { GantryJoint } from '../calc/gantryKits'
 import { comboInputs, comboKey } from './comboInputs'
 import { ComboPreviewPanel } from './ComboPreviewPanel'
 import { StatusBadge } from './common'
@@ -40,6 +41,8 @@ export function GantryDrawing({
     carried: j.carried,
     kits: j.kits.map((kit) => ({ kit, drawing: adapterDrawingFor(kit) })),
     offset: j.offset,
+    flange: j.flange,
+    driveSign: j.driveSign,
   }))
   const complete = inputs.every((i) => i.selection && i.found)
   const ready = complete && inputs.every((i) => i.found!.missing.length === 0)
@@ -49,7 +52,7 @@ export function GantryDrawing({
           const o = assemblies[i.a]
           return `${i.a}:${comboKey(i.selection!, i.req!, i.twin)}|${o.kitSide}|${o.motorConnector}|${o.drive.otherEnd}${o.drive.otherSide}`
         }),
-        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}@${JSON.stringify(j.offset)}`),
+        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}@${JSON.stringify(j.offset)}${j.flange ?? ''}${j.driveSign ?? ''}`),
         JSON.stringify(gantry.offsets),
         gantry.zMode,
         gantry.xMounting,
@@ -107,29 +110,14 @@ export function GantryDrawing({
                     <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.n}</div>) : '—'}</td>
                     <td className="muted">
                       {j.status !== 'ok' ? t(j.note, j.noteArgs) : ''}
-                      {j.kit?.hand && (
-                        <span>
+                      {j.kit?.hand && ' '}
+                      {j.kit?.hand && t('브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).', { axis: j.carried.toUpperCase() })}
+                      {placementNotes(j).map((n) => (
+                        <span key={n.text}>
                           {' '}
-                          {t('브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).', { axis: j.carried.toUpperCase() })}
-                          {j.aligned && ' '}
-                          {j.aligned &&
-                            (j.span
-                              ? t('{axis}축 끝은 조립 설명서대로 첫 번째 {base}축의 브래킷 끝에 맞춥니다(장착 위치의 {axis} 이동 방향 값은 쓰지 않음).', {
-                                  axis: j.carried.toUpperCase(),
-                                  base: j.base.toUpperCase(),
-                                })
-                              : t('{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.', { axis: j.carried.toUpperCase() }))}
-                          {j.span && j.status === 'ok' && Math.abs(j.span.mismatch) > 1 && ' '}
-                          {j.span &&
-                            j.status === 'ok' &&
-                            Math.abs(j.span.mismatch) > 1 &&
-                            t('다른 끝은 두 번째 브래킷 끝과 {d} mm 어긋납니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 맞습니다.', {
-                              d: fmt(j.span.mismatch, 1),
-                              base: j.base.toUpperCase(),
-                              spacing: fmt(j.span.spacing, 1),
-                            })}
+                          {t(n.text, n.args)}
                         </span>
-                      )}
+                      ))}
                       {j.kit?.accessories.map((x) => (
                         <span key={x.partNumber}>
                           {' '}
@@ -147,7 +135,7 @@ export function GantryDrawing({
           </div>
           <p className="muted small-print">
             {t(
-              '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 키트 면에 붙이고 이동 방향 위치는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.',
+              '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 조립 설명서대로 키트가 잡는 위치(핀과 볼트 구멍)에 붙이고, 그 데이터가 없는 키트는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.',
             )}
             {unkitted.length > 0 && (
               <span className="warn-text"> {t('키트 없이 배치한 결합: {pairs}', { pairs: unkitted.join(', ') })}</span>
@@ -171,5 +159,25 @@ function kitModels(kits: AxisAdapter[]) {
     if (row) row.n++
     else out.push({ model: k.model, partNumber: k.partNumber, n: 1 })
   }
+  return out
+}
+
+/** Where the kit holds the carried axis (Korean source text with arguments) */
+function placementNotes(j: GantryJoint): { text: string; args: Record<string, string> }[] {
+  if (!j.aligned) return []
+  const args: Record<string, string> = { axis: j.carried.toUpperCase(), base: j.base.toUpperCase() }
+  const out = [
+    j.pinned
+      ? { text: '{axis}축은 키트의 핀과 볼트가 프로파일 아랫면의 핀 구멍과 나사 구멍에 들어가도록 모터 쪽 끝을 키트에 고정합니다(조립 설명서).', args }
+      : { text: '{axis}축은 키트의 원통 핀 위에 얹고 끝을 콘솔 끝에서 77.5 mm(간격 A)에 맞춥니다(조립 설명서).', args },
+    j.span || j.kit?.joint === 'plate'
+      ? { text: '장착 위치의 {axis} 이동 방향 값은 쓰지 않습니다.', args }
+      : { text: '장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.', args },
+  ]
+  if (j.span && j.status === 'ok' && !j.pinned && Math.abs(j.span.mismatch) > 1)
+    out.push({
+      text: '다른 끝은 두 번째 브래킷 끝과 {d} mm 어긋납니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 맞습니다.',
+      args: { ...args, d: fmt(j.span.mismatch, 1), spacing: fmt(j.span.spacing, 1) },
+    })
   return out
 }

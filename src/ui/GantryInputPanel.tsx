@@ -174,6 +174,9 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
                   ? 'Y 슬라이드 중심에서 고정된 Z 슬라이드 중심까지'
                   : 'Y 슬라이드 중심에서 Z축 본체 중심까지',
               )}
+              {gantry.zMode !== 'profile' && gantry.yMounting === 'wall'
+                ? ` ${t('어댑터 플레이트(EHAM-MA)를 쓰면 Z축은 모터 쪽 끝이 핀 구멍에 맞춰 플레이트에 고정되고, Z 값은 쓰지 않습니다.')}`
+                : ''}
             </p>
           </>
         )}
@@ -188,8 +191,8 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
               {gantry.yMounting === 'wall' && gantry.xMounting === 'floor'
                 ? ` ${t(
                     gantry.xParallel.mode === 'twinMotor' || gantry.xParallel.mode === 'twinShaft'
-                      ? '앵글 키트(EHAM-AK)를 쓰면 Y축 끝은 첫 번째 X축의 브래킷 끝에 맞춰 놓이고, Y 값은 쓰지 않습니다.'
-                      : '앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.',
+                      ? '앵글 키트(EHAM-AK)를 쓰면 Y축은 첫 번째 X축의 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 쓰지 않습니다.'
+                      : '앵글 키트(EHAM-AK)를 쓰면 Y축은 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.',
                   )}`
                 : ''}
             </p>

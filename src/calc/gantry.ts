@@ -131,9 +131,10 @@ export interface Stage {
 /**
  * The mass points of a selected axis, from its mounting point (profile centre, or the clamped slide for a moving
  * profile). The moving part sits at the end of the stroke: Z extended downwards, Y at the drive end, the end that
- * puts the most load on one side of the axis below.
+ * puts the most load on one side of the axis below. The drive is at the +t end (on top of Z), or at −t with
+ * `driveSign` −1 (a gantry kit pinning the axis at its drive end on that side).
  */
-export function stageOf(a: GantryAxis, g: GantryInputs, evaluation: AxisEvaluation, req: Requirements, driveMass: number): Stage {
+export function stageOf(a: GantryAxis, g: GantryInputs, evaluation: AxisEvaluation, req: Requirements, driveMass: number, driveSign: 1 | -1 = 1): Stage {
   const f = slideFrame(a, axisMounting(g, a))
   const axis = evaluation.axis
   const stroke = req.stroke
@@ -152,10 +153,10 @@ export function stageOf(a: GantryAxis, g: GantryInputs, evaluation: AxisEvaluati
     // payload COG measured from the profile's free end
     points.push([payload, add(scale(f.t, out * (stroke + base / 2)), toWorld(req.cog, f))])
   } else {
-    const at = scale(f.t, (out * stroke) / 2)
+    const at = scale(f.t, ((a === 'z' ? out : driveSign) * stroke) / 2)
     points.push([profile, [0, 0, 0]])
-    // drive on the far end: on top of Z, at the +Y end of Y
-    points.push([driveMass, scale(f.t, length / 2)])
+    // drive on the far end: on top of Z, at the +Y end of Y (−Y with driveSign −1)
+    points.push([driveMass, scale(f.t, (driveSign * length) / 2)])
     points.push([slide, at])
     points.push([payload, add(at, toWorld(req.cog, f))])
   }

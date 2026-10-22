@@ -16,16 +16,21 @@ export interface GantryJoint {
    *  kits take the hand whose wall reaches towards the carried axis (`kitHand`), so two X axes get a mirrored pair */
   kits: AxisAdapter[]
   quantity: number
-  /** world mm from the base axis's (arrangement) centre: the carried axis's mounting point (profile centre) and
-   *  the kits' centre. With one angle kit the carried axis lies along the bracket as the assembly instructions
-   *  show (`aligned`: its end at the kit's `carriedEnd`, the entered offset only picks the side), else at the
-   *  entered offset; the kits sit on the base slide(s) */
+  /** world mm from the base axis's (arrangement) centre: the carried axis's mounting point (body centre) and the
+   *  kits' centre. With kit fit data the carried axis sits where the kit holds it (`aligned`, `placement`), else
+   *  at the entered offset; the kits sit on the base slide(s) */
   offset: Vec
   kitAt: Vec
   aligned: boolean
-  /** two base slides, aligned: the carried axis's end at the first bracket; how far its other end lies beyond the
-   *  second bracket's position (mm, negative: short of it) and the base spacing that puts both ends at their
-   *  brackets */
+  /** the kit's pins and screws hold the carried axis at its drive end (ELGT): `flange` is the drive flange's
+   *  position along the carried travel (world mm from the base centre), `driveSign` the end the drive is at (+1:
+   *  +t, as the calc otherwise assumes; −1 when the kit puts it at −t) */
+  pinned: boolean
+  flange: number | null
+  driveSign: 1 | -1
+  /** two base slides: the carried axis is held at the first; `mismatch` (mm) is how far the second kit misses its
+   *  place on it (pinned: its screws against the profile's threaded bores, modulo their pitch; clamped: the far end
+   *  against the second bracket's end position), `spacing` the base spacing that fits */
   span?: { mismatch: number; spacing: number }
   status: Status
   /** Korean source text with `{name}` placeholders */
@@ -83,17 +88,21 @@ const fits = (list: AdapterAxis[], axis: Axis) =>
   )
 
 /**
- * Where the carried axis and the kits sit (see `GantryJoint.offset`). `length` (mm, overall length of the carried
- * axis) null when unknown: the carried axis then stays at the entered offset.
+ * Where the carried axis and the kits sit (see `GantryJoint.offset`), from the kit's fit for the carried axis
+ * (`AdapterAxis.end`, assembly instructions): along the body direction from the first base slide (angle kits: the
+ * wall's reach; plates: from the drive end at +t, as the calc takes it) the near end at `end`, the body beyond. A
+ * pinned axis has its drive there. `length` (mm, drive flange to far end) null when unknown: the carried axis then
+ * stays at the entered offset.
  */
 function placement(
   g: GantryInputs,
   base: GantryAxis,
   carried: GantryAxis,
+  carriedAxis: Axis,
   kits: AxisAdapter[],
   slides: number[],
   length: number | null,
-): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'span'> & { short?: boolean } {
+): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign' | 'span'> & { short?: boolean } {
   const b = slideFrame(base, axisMounting(g, base))
   const c = slideFrame(carried, axisMounting(g, carried))
   const o = carried === 'z' ? g.offsets.yz : g.offsets.xy
@@ -103,20 +112,42 @@ function placement(
   const across = v.map((x, i) => x - along * c.t[i])
   const vec = (w: number[]): Vec => ({ x: w[0] + 0, y: w[1] + 0, z: w[2] + 0 })
   const kitAt = vec(across.map((x, i) => x + at * b.l[i]))
-  if (!length || !kits.length || kits.some((k) => !k.hand || k.carriedEnd == null)) return { offset: o, kitAt, aligned: false }
-  // the wall's reach along the carried travel and the foot's position on it; the carried axis's end at carriedEnd
-  // from the foot, its body beyond (two base slides: at the first one's bracket, reaching inwards)
-  const reach = (k: AxisAdapter) => (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t))
+  const fit = kits.length ? fits(kits[0].carried, carriedAxis) : undefined
+  const free = { offset: o, kitAt, aligned: false, pinned: false, flange: null, driveSign: 1 as const }
+  if (!length || !fit || fit.end == null || (kits[0].joint === 'angle' && kits.some((k) => !k.hand))) return free
+  // the body's direction along the carried travel (angle kits: the wall's reach), the foot's position on it
+  const body = (k: AxisAdapter) => (k.joint === 'plate' ? -1 : (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t)))
   const foot = (i: number) => slides[i] * dot(b.l, c.t)
-  const r0 = reach(kits[0])
-  const centre = foot(0) + r0 * (kits[0].carriedEnd! + length / 2)
-  const offset = vec(across.map((x, i) => x + centre * c.t[i]))
-  if (kits.length < 2) return { offset, kitAt, aligned: true }
-  // the other end against the second bracket's position for it
-  const end = centre + (r0 * length) / 2
-  const mismatch = r0 * (end - (foot(1) + reach(kits[1]) * kits[1].carriedEnd!))
-  const spacing = Math.abs(slides[1] - slides[0]) + mismatch
-  return { offset, kitAt, aligned: true, span: { mismatch, spacing }, short: r0 * (end - foot(1)) < 0 }
+  const r0 = body(kits[0])
+  const near = foot(0) + r0 * fit.end
+  const centre = near + (r0 * length) / 2
+  const pinned = !!fit.pinned
+  const placed = {
+    offset: vec(across.map((x, i) => x + centre * c.t[i])),
+    kitAt,
+    aligned: true,
+    pinned,
+    flange: pinned ? near : null,
+    // pinned: the drive end is the near one, opposite the body
+    driveSign: (pinned ? -r0 : 1) as 1 | -1,
+  }
+  if (kits.length < 2) return placed
+  const d = r0 * (foot(1) - foot(0))
+  const spacing = Math.abs(slides[1] - slides[0])
+  if (pinned && fit.threads && fit.screws) {
+    // the second kit (mirrored) only screws on: its screws at d − a, the profile's bores at end + first + k·pitch
+    // (the first kit's screws sit on them, so a ≡ end + first): d ≡ 2·(end + first) modulo the pitch
+    const { first, pitch } = fit.threads
+    const off = (((d - 2 * (fit.end + first)) % pitch) + pitch * 1.5) % pitch - pitch / 2
+    // the profile has to reach past the second kit's farthest screw
+    const covered = fit.end + length >= d - fit.screws[0] + 5
+    let fitting = spacing - off
+    while (fit.end + length < fitting - fit.screws[0] + 5) fitting -= pitch
+    return { ...placed, span: { mismatch: off, spacing: fitting }, short: !covered || Math.abs(off) > 0.5 }
+  }
+  // clamped: the far end against the second bracket's position for it
+  const mismatch = fit.end + length - (d - fit.end)
+  return { ...placed, span: { mismatch, spacing: spacing + mismatch }, short: fit.end + length < d }
 }
 
 /**
@@ -136,15 +167,18 @@ export function gantryJoint(
 ): GantryJoint {
   const slides = baseSlides(g, base)
   const joint = pickJoint(g, base, carried, baseAxis, carriedAxis, carriedStroke, adapters, slides)
-  const { short, ...place } = placement(g, base, carried, joint.kits, slides, carriedLength)
-  // the carried axis not reaching the second base slide hangs on one bracket only
+  const { short, ...place } = placement(g, base, carried, carriedAxis, joint.kits, slides, carriedLength)
+  const args = { axis: carried.toUpperCase(), base: base.toUpperCase(), spacing: Math.round((place.span?.spacing ?? 0) * 10) / 10 }
+  // the second kit off the carried axis's bores, or the carried axis not reaching it
   if (short && joint.status === 'ok')
     return {
       ...joint,
       ...place,
       status: 'warn',
-      note: '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.',
-      noteArgs: { axis: carried.toUpperCase(), base: base.toUpperCase(), spacing: Math.round(place.span!.spacing * 10) / 10 },
+      note: place.pinned
+        ? '두 번째 {base}축 키트의 볼트가 {axis}축 나사 구멍에 맞지 않거나 {axis}축이 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 맞습니다.'
+        : '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.',
+      noteArgs: args,
     }
   return { ...joint, ...place }
 }
@@ -158,7 +192,7 @@ function pickJoint(
   carriedStroke: number,
   adapters: AxisAdapter[],
   slides: number[],
-): Omit<GantryJoint, 'offset' | 'kitAt' | 'aligned'> {
+): Omit<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign'> {
   const quantity = slides.length
   const pair = `${base.toUpperCase()}–${carried.toUpperCase()}`
   if (carried === 'z' && g.zMode === 'profile')

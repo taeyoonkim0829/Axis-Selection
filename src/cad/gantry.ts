@@ -29,6 +29,10 @@ export interface GantryJointDrawing {
   /** world mm from the base axis's (arrangement) centre: the carried axis's mounting point as the calc takes it
    *  (`GantryJoint.offset`: along an angle kit, as the assembly instructions place it); absent = the entered one */
   offset?: { x: number; y: number; z: number }
+  /** a kit pinning the carried axis (`GantryJoint.flange` / `driveSign`): its drive flange's position along the carried
+   *  travel from the base centre, and the end its drive is at (+1: +t) */
+  flange?: number | null
+  driveSign?: 1 | -1
 }
 
 export interface GantryCombo extends Combo {
@@ -48,10 +52,11 @@ function worldOf(g: GantryInputs, a: GantryAxis) {
  * The kit placed on a base slide (`at`, slide normal `n`): its base frame on the slide, turned about the normal so
  * the carried face holds the carried axis with its slide facing `carriedNormal` and its travel along `travel`.
  */
-function placeKit(meta: AdapterMeta, at: Vec3, n: Vec3, travel: Vec3, carriedNormal: Vec3): Transform | null {
+function placeKit(meta: AdapterMeta, at: Vec3, n: Vec3, travel: Vec3, carriedNormal: Vec3, upward?: Vec3): Transform | null {
   for (const s of [1, -1]) {
     const k = mate(identity, { origin: at, axis: n, up: scale(travel, s) }, { origin: meta.base.origin, axis: meta.base.axis, up: meta.carried.up })
-    if (near(rotate(k, meta.carried.axis), carriedNormal)) return k
+    // a plate fits either way round: `upward` is where its carried up has to point (the pinned axis's body)
+    if (near(rotate(k, meta.carried.axis), carriedNormal) && (!upward || dot(rotate(k, meta.carried.up), upward) > 0)) return k
   }
   return null
 }
@@ -139,7 +144,10 @@ export async function buildGantry(
       continue
     }
     const profile: Frame = { origin: c.profile.origin, axis: scale(c.profile.axis, -1), up: c.profile.up }
-    const first = meta ? placeKit(meta, slides[0], wb.n, w.t, w.n) : null
+    // the drive at +t as the calc takes it, at −t when the kit pins it there; a pinned plate's body away from it
+    const sign = joint?.driveSign ?? 1
+    const upward = drawn?.[0].kit.joint === 'plate' && joint?.flange != null ? scale(w.t, -sign) : undefined
+    const first = meta ? placeKit(meta, slides[0], wb.n, w.t, w.n, upward) : null
     if (!meta || !first || !drawn) {
       placed.set(a, toWorld(profile, target, w.n, scale(w.t, -1)))
       unkitted.push(pair)
@@ -155,16 +163,22 @@ export async function buildGantry(
         return t && dot(rotate(t, reach(d.meta)), w.t) * want > 0 ? t : null
       }
       const pick = (Math.abs(want) > 1e-6 && drawn.find((d) => fits(d))) || drawn[k]
-      const kt = (Math.abs(want) > 1e-6 && fits(pick)) || placeKit(pick.meta, p, wb.n, w.t, w.n)
+      const kt = (Math.abs(want) > 1e-6 && fits(pick)) || placeKit(pick.meta, p, wb.n, w.t, w.n, upward)
       if (!kt) return
       const url = pick.url
       if (!files.has(url)) files.set(url, parseStep(kitTexts.get(url)!))
       kits.push({ role: 'adapter', name: `${pick.kit.model}${k ? ` (${k + 1})` : ''}`, file: files.get(url)!, transform: kt })
     })
-    // the carried profile on the kit face, its middle at the entered mounting point along its travel
+    // the carried profile on the kit face (across: on its centreline), its middle at the mounting point along its
+    // travel; pinned: its drive flange where the kit's pins hold it
     const face = apply(first, meta.carried.origin)
     const along = add(face, scale(w.t, dot(sub(target, face), w.t)))
-    placed.set(a, toWorld(profile, along, w.n, scale(w.t, -1)))
+    let t = toWorld(profile, along, w.n, scale(w.t, -sign))
+    if (joint?.flange != null) {
+      const shift = dot(centre, w.t) + joint.flange - dot(apply(t, c.driveFlange), w.t)
+      t = { ...t, t: add(t.t, scale(w.t, shift)) }
+    }
+    placed.set(a, t)
   }
 
   const parts: (AssemblyPart & { role: PartRole })[] = []

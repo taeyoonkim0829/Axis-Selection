@@ -130,6 +130,11 @@ export function computeGantry(g: GantryInputs, settings: Record<GantryAxis, Sett
         : null
     let joint = jointFor(sel)
     if (joint?.kit) {
+      // a kit pinning the carried axis at its drive end on the −t side turns the carried stage
+      if (joint.driveSign === -1 && below!.sel?.selectedAxis && below!.req && below!.drive) {
+        below!.stage = stageOf(below!.axis, g, below!.sel.selectedAxis, below!.req, below!.drive.mass, -1)
+        stages[stages.length - 1] = below!.stage
+      }
       req = gantryRequirements(g, a, below!.stage, stages, { mass: joint.kits.reduce((m, k) => m + k.mass, 0), offset: joint.offset, at: joint.kitAt })
       if (req.movingProfile) req = { ...req, movingProfile: { driveMass: drive.mass } }
       sel = computeSelection(req, settings[a], picks[a])

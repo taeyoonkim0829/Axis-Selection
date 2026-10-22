@@ -364,6 +364,17 @@ export interface AdapterAxis {
   drive: Axis['drive']
   /** the axis needs the long slide (ELGD …-L) */
   longSlide?: boolean
+  /** carried axes: where the kit holds it (assembly instructions, measured on the STEP models). `end`: mm from the
+   *  base slide centre along the carried axis's body (angle kits: the wall's reach) to its near end. `pinned`: the
+   *  kit's pins and screws go into the profile's pin bores and threaded bores at the drive end (ELGT), so the near
+   *  end is the drive flange (`baseLength` is measured from it) and the axis cannot move along the kit; otherwise
+   *  the profile is clamped (ELGD on EHAM-AK-E24: its end at clearance A 77.5 mm from the console end) */
+  end?: number
+  pinned?: boolean
+  /** pinned: the profile's threaded bores, the first row's distance from the drive flange and their pitch (mm) */
+  threads?: { first: number; pitch: number }
+  /** pinned: the kit's screws into the profile, nearest and farthest from the base slide centre along the body (mm) */
+  screws?: [number, number]
 }
 
 /**
@@ -386,9 +397,6 @@ export interface AxisAdapter {
   layout: 'cantilever' | 'gantry' | null
   /** mm, working stroke range of the carried axis the kit is for */
   carriedStroke: [number, number] | null
-  /** angle kits: mm along the wall's reach from the foot (base slide centre) to the carried axis's end facing the foot,
-   *  as the assembly instructions place it (negative: behind the foot); else null or absent */
-  carriedEnd?: number | null
   /** kg */
   mass: number
   /** further parts to order with it (`quantity` per kit, when known) */

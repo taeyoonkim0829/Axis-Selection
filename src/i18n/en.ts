@@ -419,18 +419,24 @@ export const en: Record<string, string> = {
   '키트 없음': 'No kit',
   '조합 키트 미정': 'Gantry kits not yet known',
   '브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).': 'The bracket wall reaches towards the side the {axis} axis lies on (ML/MR, assembly instructions).',
-  '{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.':
-    "The {axis} axis's end is set at the bracket end as in the assembly instructions; the mounting position's {axis} travel value only picks the side (+/−).",
-  '앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.':
-    'With an angle kit (EHAM-AK) the Y axis sits at the bracket end; the Y value only picks the side (+/−).',
-  '{axis}축 끝은 조립 설명서대로 첫 번째 {base}축의 브래킷 끝에 맞춥니다(장착 위치의 {axis} 이동 방향 값은 쓰지 않음).':
-    "The {axis} axis's end is set at the first {base} axis's bracket end as in the assembly instructions (the mounting position's {axis} travel value is not used).",
   '다른 끝은 두 번째 브래킷 끝과 {d} mm 어긋납니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 맞습니다.':
     'The other end is {d} mm off the second bracket end. A {base} axis spacing of {spacing} mm puts both ends at their brackets.',
   '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.':
     "The {axis} axis does not reach the second {base} axis's bracket. A {base} axis spacing of {spacing} mm puts both ends at their bracket ends.",
-  '앵글 키트(EHAM-AK)를 쓰면 Y축 끝은 첫 번째 X축의 브래킷 끝에 맞춰 놓이고, Y 값은 쓰지 않습니다.':
-    "With an angle kit (EHAM-AK) the Y axis's end sits at the first X axis's bracket end; the Y value is not used.",
+  '{axis}축은 키트의 핀과 볼트가 프로파일 아랫면의 핀 구멍과 나사 구멍에 들어가도록 모터 쪽 끝을 키트에 고정합니다(조립 설명서).':
+    "The {axis} axis is fixed to the kit at its motor end, the kit's pins and screws in the pin and threaded holes of the profile underside (assembly instructions).",
+  '{axis}축은 키트의 원통 핀 위에 얹고 끝을 콘솔 끝에서 77.5 mm(간격 A)에 맞춥니다(조립 설명서).':
+    "The {axis} axis rests on the kit's cylindrical pin, its end 77.5 mm from the console end (clearance A, assembly instructions).",
+  '장착 위치의 {axis} 이동 방향 값은 쓰지 않습니다.': "The mounting position's {axis} travel value is not used.",
+  '장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.': "The mounting position's {axis} travel value only picks the side (+/−).",
+  '두 번째 {base}축 키트의 볼트가 {axis}축 나사 구멍에 맞지 않거나 {axis}축이 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 맞습니다.':
+    "The second {base} axis kit's screws miss the {axis} axis's threaded holes, or the {axis} axis does not reach it. A {base} axis spacing of {spacing} mm fits.",
+  '앵글 키트(EHAM-AK)를 쓰면 Y축은 첫 번째 X축의 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 쓰지 않습니다.':
+    "With an angle kit (EHAM-AK) the Y axis sits where the first X axis's kit holds it (assembly instructions); the Y value is not used.",
+  '앵글 키트(EHAM-AK)를 쓰면 Y축은 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.':
+    'With an angle kit (EHAM-AK) the Y axis sits where the kit holds it (assembly instructions); the Y value only picks the side (+/−).',
+  '어댑터 플레이트(EHAM-MA)를 쓰면 Z축은 모터 쪽 끝이 핀 구멍에 맞춰 플레이트에 고정되고, Z 값은 쓰지 않습니다.':
+    'With an adapter plate (EHAM-MA) the Z axis is fixed to the plate at its motor end by the pin holes; the Z value is not used.',
   '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
@@ -440,8 +446,8 @@ export const en: Record<string, string> = {
   '품번': 'Part no.',
   '{carried}축 → {base}축 슬라이드': '{carried} axis on the {base} slide',
   '함께 주문: {model} ({partNumber})': 'Order with it: {model} ({partNumber})',
-  '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 키트 면에 붙이고 이동 방향 위치는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.':
-    'Gantry kits follow the combination tables of the ELGT-BS and ELGD data sheets (no kit data for EGC). The axes are drawn at their start position; a carried axis sits on the kit face, along its travel at the entered mounting offset. A joint without a kit places the axis alone at the entered mounting point. The profile mountings holding an axis on a kit (EAHF-…-B4) are not drawn.',
+  '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 조립 설명서대로 키트가 잡는 위치(핀과 볼트 구멍)에 붙이고, 그 데이터가 없는 키트는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.':
+    'Gantry kits follow the combination tables of the ELGT-BS and ELGD data sheets (no kit data for EGC). The axes are drawn at their start position; a carried axis sits where the kit holds it as in the assembly instructions (pin and screw holes), else at the entered mounting offset. A joint without a kit places the axis alone at the entered mounting point. The profile mountings holding an axis on a kit (EAHF-…-B4) are not drawn.',
   '키트 없이 배치한 결합: {pairs}': 'Joints placed without a kit: {pairs}',
   '도면이 없는 부품이 있어 조합할 수 없습니다: {parts}': 'Parts without a drawing, the gantry cannot be assembled: {parts}',
   '프로파일 이동형 Z축용 조합 키트 데이터가 없습니다. 장착 부품을 별도로 준비하세요.':

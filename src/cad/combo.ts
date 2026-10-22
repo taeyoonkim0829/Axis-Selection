@@ -328,6 +328,8 @@ export interface ComboParts {
    *  normal, up = travel) and its profile's mounting face (middle of its length, axis out of the face, up = travel) */
   slide: Frame
   profile: Frame
+  /** world point of the first axis's drive flange (its JSON's drive origin, where `baseLength` is measured from) */
+  driveFlange: Vec3
 }
 
 export async function comboParts(
@@ -464,5 +466,6 @@ export async function comboParts(
     stretch,
     slide: { origin: [0, 0, 0], axis: rotate(axisToWorld, slide.normal), up: rotate(axisToWorld, slide.travel) },
     profile: { origin: apply(axisToWorld, middle), axis: rotate(axisToWorld, own.normal), up: rotate(axisToWorld, slide.travel) },
+    driveFlange: apply(axisToWorld, axisMeta.drive.origin),
   }
 }
