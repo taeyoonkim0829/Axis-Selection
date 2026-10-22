@@ -7,6 +7,10 @@ import '@fontsource/barlow-semi-condensed/700.css'
 import App from './App'
 import './index.css'
 import { readShared } from './share'
+import { applySkin, skinFromUrl } from './ui/skin'
+
+// the screen skin from the address (?skin=…), before the first paint
+applySkin(skinFromUrl())
 
 // a shared link (`?r=…`) opens its calculation
 void readShared().then((shared) =>
