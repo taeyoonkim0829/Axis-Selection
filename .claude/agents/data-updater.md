@@ -1,7 +1,7 @@
 ---
 name: data-updater
-description: Brings the app up to date after the user changes the data/ folder. New or changed product documents (data sheets, catalogs, CSV exports) → update or add the product JSON in data/<kind>/<maker>/. New STEP drawings → file them under Drawings/ and generate the mating-frame (assembly offset) JSON so step 5 can assemble them. Use when the user says they added products, data sheets or drawings to data/, or asks to sync the data folder with the app.
-tools: Read, Edit, Write, Glob, Grep, Bash, PowerShell
+description: Brings the app up to date after the user changes the data/ folder. New or changed product documents (data sheets, catalogs, CSV exports) → update or add the product JSON in data/<kind>/<maker>/. New STEP drawings → file them under Drawings/ and generate the mating-frame (assembly offset) JSON so step 5 can assemble them. Writes a report (missing data, missing products, what was updated) and notifies the user on the PC and phone. Use when the user says they added products, data sheets or drawings to data/, or asks to sync the data folder with the app.
+tools: Read, Edit, Write, Glob, Grep, Bash, PowerShell, PushNotification
 ---
 
 You maintain `data/` of AxisPilot (repo root `C:\Users\theok\OneDrive\Desktop\AxisPilot`). It holds the product
@@ -65,10 +65,34 @@ file is only the workflow. In the Bash tool run `export PATH="/c/Program Files/n
   changed. Fix failures you caused; report others with their output.
 - Spot-check: JSON parses, units are plausible against neighbours (a 10× jump usually means a unit slip), ids unique.
 
-## 5. Finish
+## 5. Report
 
-- Commit and push without asking (the user's standing rule): stage only the files you meant to change
-  (never DWG/DXF/IGES/ZIP), a short English message saying what was added, ending with
+Keep track, while you work, of everything the material did not cover:
+- **부족한 데이터**: fields left `null` because the document does not give them (per product: which fields, which
+  document was checked), values taken from another row or generation, ranges where a bound was chosen.
+- **누락된 제품**: products the documents or the drawings imply but that are not in the data (a size, ratio, brake
+  variant, stroke or interface pair listed in the source but missing, a STEP file that matches no product, a product
+  without a drawing or a drawing without a frame JSON, kits whose code pair has no axis or motor).
+- **완료된 업데이트**: products added/changed (file, count, source document with number, date and pages), drawings
+  filed, frame JSONs written (with the script output that matters), README/CLAUDE.md/types changes, test results,
+  what to check in the 3D preview.
+
+Write the report in Korean to `reports/data-updates/<YYYY-MM-DD-HHMM>.md` (repo root, create the folder if needed)
+with the three sections above (write "없음" for an empty one), and commit it with the update. Your final answer is
+the same report, so the main conversation can show it.
+
+## 6. Commit, push, notify
+
+- Commit and push without asking (the user's standing rule): stage only the files you meant to change and the
+  report (never DWG/DXF/IGES/ZIP), a short English message saying what was added, ending with
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, then `git push`.
-- Report back, in Korean: products added/changed (file, count, source document), drawings filed and frames written,
-  values left `null` and why, anything to check in the 3D preview, test results.
+- Notify the user on the PC and the phone, one line, under 200 characters, Korean, leading with what needs action,
+  e.g. `데이터 업데이트 완료: EMMT 12종 추가, 도면 5개+오프셋 · 부족 데이터 3건, 누락 제품 2건 → 리포트 확인`:
+  1. PC (Windows toast):
+     `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notify.ps1 -Title "AxisPilot 데이터" -Message "<line>"`
+  2. Phone (and the Claude Code desktop/terminal): the `PushNotification` tool with `status: "proactive"` and the
+     same line. It reaches the phone when Remote Control is connected; a "not sent" result is fine.
+  If `PushNotification` is not available to you, end your final answer with a line `NOTIFY: <line>` so the main
+  conversation sends it.
+- Notify in the same way, earlier, when you are blocked and need the user (a document you cannot place, a choice
+  only the user can make): `확인 필요: …`. Then stop and say what you need.
