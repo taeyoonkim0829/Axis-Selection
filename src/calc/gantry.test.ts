@@ -105,6 +105,22 @@ describe('computeGantry', () => {
     expect(x.req!.parallel?.mode).toBe('twinMotor')
   })
 
+  it('sets the X spacing to fit the angle kits under two X axes (no overlap, screws on the Y bores)', () => {
+    const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!.id
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 600 } }
+    const chosen = { ...picks, x: { ...noPicks, axisId: elgt(160) }, y: { ...noPicks, axisId: elgt(120) } }
+    const [, x] = computeGantry(g, initialGantrySettings, chosen)
+    const j = x.joint!
+    expect(j.kit?.family).toBe('EHAM-AK')
+    // 600 mm: the walls (375 mm ahead of each foot) would overlap; the spacing used clears them and fits the bores
+    expect(x.spacing?.entered).toBe(600)
+    expect(x.spacing!.used).toBeGreaterThanOrEqual(j.span!.clear)
+    expect(x.req!.parallel!.spacing).toBe(x.spacing!.used)
+    expect(j.interference).toBe(false)
+    expect(j.span!.mismatch).toBeCloseTo(0)
+    expect(j.status).toBe('ok')
+  })
+
   it('runs a moving Z profile with its selected drive', () => {
     const g: GantryInputs = { ...defaultGantry, config: 'yz', zMode: 'profile' }
     const [z, y] = computeGantry(g, initialGantrySettings, picks)

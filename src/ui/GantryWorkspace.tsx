@@ -60,7 +60,15 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
           onLang={setLang}
         />
         <main className="layout">
-          <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
+          <GantryInputPanel
+            gantry={gantry}
+            onGantry={setGantry}
+            settings={gantrySettings}
+            onSettings={setGantrySettings}
+            mode={mode}
+            onMode={setMode}
+            xSpacing={results.find((r) => r.axis === 'x')?.spacing}
+          />
           <div className="results">
             <GantrySummary
               results={results}
@@ -258,6 +266,7 @@ function gantryReportRows(r: GantryAxisResult, g: GantryInputs): [string, string
     ['무게 중심 X / Y / Z', `${fmt(req.cog.x)} / ${fmt(req.cog.y)} / ${fmt(req.cog.z)} mm`],
     ['교차 가속도 (측면 / 수직)', `${fmt(req.cross?.lateral ?? 0)} / ${fmt(req.cross?.normal ?? 0)} m/s²`],
     ...(req.movingProfile ? ([['함께 움직이는 구동부', `${fmt(req.movingProfile.driveMass, 2)} kg`]] as [string, string][]) : []),
+    ...(r.spacing ? ([['X축 간격 (조합 키트에 맞춰 조정)', `${fmt(r.spacing.used, 1)} mm ← ${fmt(r.spacing.entered, 1)} mm`]] as [string, string][]) : []),
     // the kit carrying the axis above on this axis's slide
     ...(r.joint
       ? ([['조합 키트', r.joint.kit ? kitList(r.joint.kits, true) : '—']] as [string, string][])

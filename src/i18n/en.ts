@@ -437,6 +437,15 @@ export const en: Record<string, string> = {
     'With an angle kit (EHAM-AK) the Y axis sits where the kit holds it (assembly instructions); the Y value only picks the side (+/−).',
   '어댑터 플레이트(EHAM-MA)를 쓰면 Z축은 모터 쪽 끝이 핀 구멍에 맞춰 플레이트에 고정되고, Z 값은 쓰지 않습니다.':
     'With an adapter plate (EHAM-MA) the Z axis is fixed to the plate at its motor end by the pin holes; the Z value is not used.',
+  '조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 Y축이 두 키트에 맞는 간격, 입력 {entered} mm).':
+    'Calculated with the spacing set to {used} mm to fit the gantry kits (kits clear of each other, the Y axis fitting both; entered {entered} mm).',
+  '두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격은 {clear} mm 이상이어야 하는데 그 간격에서는 {axis}축이 두 번째 키트에 맞게 닿지 않습니다. 더 긴 {axis}축 스트로크가 필요합니다.':
+    "The two {base} axes' gantry kits overlap (interference). The {base} spacing must be at least {clear} mm, and at that spacing the {axis} axis does not reach the second kit where it fits. A longer {axis} stroke is needed.",
+  '{axis}축이 짧아 두 번째 {base}축 키트에 맞는 간격이 없습니다. 더 긴 {axis}축 스트로크가 필요합니다.':
+    'The {axis} axis is too short for any spacing that fits the second {base} axis kit. A longer {axis} stroke is needed.',
+  '두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격을 {spacing} mm로 하면 겹치지 않고 맞습니다.':
+    "The two {base} axes' gantry kits overlap (interference). A {base} spacing of {spacing} mm clears them and fits.",
+  'X축 간격 (조합 키트에 맞춰 조정)': 'X axis spacing (set to fit the gantry kits)',
   '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',

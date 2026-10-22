@@ -397,6 +397,9 @@ export interface AxisAdapter {
   layout: 'cantilever' | 'gantry' | null
   /** mm, working stroke range of the carried axis the kit is for */
   carriedStroke: [number, number] | null
+  /** angle kits: mm the wall spans along its reach from the base slide centre, [behind, ahead] (STEP models); two
+   *  mirrored kits reaching towards each other collide unless the base spacing is at least twice the ahead value */
+  wall?: [number, number] | null
   /** kg */
   mass: number
   /** further parts to order with it (`quantity` per kit, when known) */

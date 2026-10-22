@@ -134,6 +134,20 @@ describe('gantry kits', () => {
     expect(fit.span!.mismatch).toBeCloseTo(0)
   })
 
+  it('finds the two mirrored angle kits overlapping when the X axes are close', () => {
+    const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
+    const close = gantryJoint({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor', spacing: 600 } }, 'x', 'y', x, y, 500, adapters, 716)
+    // the walls reach 375 mm from each foot: they clear from 752 mm; 806 is the nearest fitting spacing
+    expect(close.interference).toBe(true)
+    expect(close.span!.clear).toBe(752)
+    expect(close.span!.spacing).toBe(806)
+    expect(close.status).toBe('warn')
+    // a Y axis too short to reach the second kit at any clear spacing
+    const short = gantryJoint({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor', spacing: 600 } }, 'x', 'y', x, y, 100, adapters, 316)
+    expect(short.span!.spacing).toBeNull()
+    expect(short.status).toBe('warn')
+  })
+
   it('hangs Z on the adapter plate by its drive end, above the Y slide centre', () => {
     const [y, z] = [find('ELGT', 120, 'spindle'), find('ELGT', 90, 'spindle')]
     const j = gantryJoint(wallY, 'y', 'z', y, z, 300, adapters, 300 + z.baseLength!)

@@ -262,7 +262,18 @@ export function InputPanel({ req, settings, onReq, onSettings, mode, onMode }: P
 }
 
 /** 축 구성: single axis, two axes or LM guides, with spacing and the mode's own inputs. */
-export function ParallelSection({ parallel, onParallel, title = '축 구성' }: { parallel: ParallelConfig; onParallel: (p: ParallelConfig) => void; title?: string }) {
+export function ParallelSection({
+  parallel,
+  onParallel,
+  title = '축 구성',
+  spacingNote,
+}: {
+  parallel: ParallelConfig
+  onParallel: (p: ParallelConfig) => void
+  title?: string
+  /** shown under the spacing (translated), e.g. the gantry's spacing adjusted to its kits */
+  spacingNote?: string
+}) {
   const t = useT()
   const setParallel = <K extends keyof ParallelConfig>(key: K, value: ParallelConfig[K]) => onParallel({ ...parallel, [key]: value })
   return (
@@ -323,6 +334,7 @@ export function ParallelSection({ parallel, onParallel, title = '축 구성' }: 
           )}
         </div>
       )}
+      {parallel.mode !== 'single' && spacingNote && <p className="field-hint">{spacingNote}</p>}
     </section>
   )
 }

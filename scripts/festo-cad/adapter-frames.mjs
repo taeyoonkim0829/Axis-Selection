@@ -235,6 +235,7 @@ for (const f of readdirSync(dir).filter((f) => /\.stp$/i.test(f))) {
     const reach = Math.sign((lo + hi) / 2 - base.origin[2])
     const behind = reach > 0 ? base.origin[2] - lo : hi - base.origin[2]
     carried = { origin: [fixed(wall.lo[0]), 0, 0], axis: [1, 0, 0], up: [0, 0, 1] }
+    const ahead = reach > 0 ? hi - base.origin[2] : base.origin[2] - lo
     const axisFile = carriedAxisFile(model)
     if (/-L9-/.test(model) && axisFile) {
       const fit = pinFit(above, carried, axisFile, reach)
@@ -250,6 +251,7 @@ for (const f of readdirSync(dir).filter((f) => /\.stp$/i.test(f))) {
       info = `rests on pin, end ${fixed(77.5 - behind)}`
     }
     carried.origin[1] = fixed(y)
+    info += ` wall ${fixed(-behind)}…${fixed(ahead)}`
   } else if (/^EHAM-MA/.test(model)) {
     const top = Math.max(...body.map((m) => m.hi[1]))
     carried = { origin: [0, fixed(top), 0], axis: [0, 1, 0], up: [0, 0, 1] }

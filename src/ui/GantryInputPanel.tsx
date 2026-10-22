@@ -39,9 +39,11 @@ interface Props {
   onSettings: (s: GantrySettings) => void
   mode: AppMode
   onMode: (mode: AppMode) => void
+  /** two X axes: the spacing the calculation uses, set to fit the gantry kits */
+  xSpacing?: { entered: number; used: number }
 }
 
-export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode }: Props) {
+export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode, xSpacing }: Props) {
   const t = useT()
   const chain = gantryChain(gantry.config)
   // inputs in X, Y, Z order; the selection runs from the tool end (`chain`)
@@ -143,7 +145,19 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
       </section>
 
       {chain.includes('x') && (
-        <ParallelSection parallel={gantry.xParallel} onParallel={(p) => set('xParallel', p)} title="X축 구성" />
+        <ParallelSection
+          parallel={gantry.xParallel}
+          onParallel={(p) => set('xParallel', p)}
+          title="X축 구성"
+          spacingNote={
+            xSpacing
+              ? t('조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 Y축이 두 키트에 맞는 간격, 입력 {entered} mm).', {
+                  used: fmt(xSpacing.used, 1),
+                  entered: fmt(xSpacing.entered, 1),
+                })
+              : undefined
+          }
+        />
       )}
 
       <details className="panel settings">

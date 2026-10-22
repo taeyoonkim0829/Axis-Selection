@@ -92,6 +92,8 @@ export interface GantryAxisResult {
   carried: { label: string; axis?: string; model?: string; mass: number }[]
   /** the gantry kit joining the axis below (the one this axis carries) to this axis's slide */
   joint: GantryJoint | null
+  /** two X axes: the spacing set to fit the gantry kits (mm), when it differs from the entered one */
+  spacing?: { entered: number; used: number }
 }
 
 /** mm, overall length of a selected gantry axis at its ordered stroke (as drawn); null without `baseLength` */
@@ -115,35 +117,50 @@ export function computeGantry(g: GantryInputs, settings: Record<GantryAxis, Sett
       out.push({ axis: a, req: null, sel: null, stage: null, drive: null, carried: [], joint: null })
       continue
     }
-    let req = gantryRequirements(g, a, below?.stage ?? null, stages)
-    let sel = computeSelection(req, settings[a], picks[a])
-    let drive = driveMassOf(sel, g.motorMass[a])
-    if (req.movingProfile) {
-      req = { ...req, movingProfile: { driveMass: drive.mass } }
-      sel = computeSelection(req, settings[a], picks[a])
-      drive = driveMassOf(sel, g.motorMass[a])
-    }
-    // The kit joining the axis below to this one depends on both; its mass moves with this axis: evaluated again
-    const jointFor = (s: Selection) =>
-      below?.sel?.selectedAxis && s.selectedAxis
-        ? gantryJoint(g, a, below.axis, s.selectedAxis.axis, below.sel.selectedAxis.axis, below.req!.stroke, adapters, carriedLength(below))
-        : null
-    let joint = jointFor(sel)
-    if (joint?.kit) {
-      // a kit pinning the carried axis at its drive end on the −t side turns the carried stage
-      if (joint.driveSign === -1 && below!.sel?.selectedAxis && below!.req && below!.drive) {
-        below!.stage = stageOf(below!.axis, g, below!.sel.selectedAxis, below!.req, below!.drive.mass, -1)
-        stages[stages.length - 1] = below!.stage
+    const evaluate = (g: GantryInputs) => {
+      let req = gantryRequirements(g, a, below?.stage ?? null, stages)
+      let sel = computeSelection(req, settings[a], picks[a])
+      let drive = driveMassOf(sel, g.motorMass[a])
+      if (req.movingProfile) {
+        req = { ...req, movingProfile: { driveMass: drive.mass } }
+        sel = computeSelection(req, settings[a], picks[a])
+        drive = driveMassOf(sel, g.motorMass[a])
       }
-      req = gantryRequirements(g, a, below!.stage, stages, { mass: joint.kits.reduce((m, k) => m + k.mass, 0), offset: joint.offset, at: joint.kitAt })
-      if (req.movingProfile) req = { ...req, movingProfile: { driveMass: drive.mass } }
-      sel = computeSelection(req, settings[a], picks[a])
-      drive = driveMassOf(sel, g.motorMass[a])
-      joint = jointFor(sel)
+      // The kit joining the axis below to this one depends on both; its mass moves with this axis: evaluated again
+      const jointFor = (s: Selection) =>
+        below?.sel?.selectedAxis && s.selectedAxis
+          ? gantryJoint(g, a, below.axis, s.selectedAxis.axis, below.sel.selectedAxis.axis, below.req!.stroke, adapters, carriedLength(below))
+          : null
+      let joint = jointFor(sel)
+      if (joint?.kit) {
+        // a kit pinning the carried axis at its drive end on the −t side turns the carried stage
+        if (below!.sel?.selectedAxis && below!.req && below!.drive) {
+          below!.stage = stageOf(below!.axis, g, below!.sel.selectedAxis, below!.req, below!.drive.mass, joint.driveSign)
+          stages[stages.length - 1] = below!.stage
+        }
+        req = gantryRequirements(g, a, below!.stage, stages, { mass: joint.kits.reduce((m, k) => m + k.mass, 0), offset: joint.offset, at: joint.kitAt })
+        if (req.movingProfile) req = { ...req, movingProfile: { driveMass: drive.mass } }
+        sel = computeSelection(req, settings[a], picks[a])
+        drive = driveMassOf(sel, g.motorMass[a])
+        joint = jointFor(sel)
+      }
+      return { req, sel, drive, joint }
+    }
+    let { req, sel, drive, joint } = evaluate(g)
+    // two X axes carrying Y on gantry kits: the X spacing set to the one that fits the kits (clear of each other,
+    // the second kit's screws on the carried axis's bores or its far end at the bracket); twice, as the X axis
+    // (and so its kit) may change with it
+    let spacing: GantryAxisResult['spacing']
+    for (let pass = 0; pass < 2; pass++) {
+      const fit = joint?.span?.spacing
+      const used = spacing?.used ?? g.xParallel.spacing
+      if (a !== 'x' || fit == null || Math.abs(fit - used) < 0.05) break
+      spacing = { entered: g.xParallel.spacing, used: fit }
+      ;({ req, sel, drive, joint } = evaluate({ ...g, xParallel: { ...g.xParallel, spacing: fit } }))
     }
     const kitLoad = joint?.kit ? [{ label: '조합 키트', model: kitList(joint.kits), mass: joint.kits.reduce((m, k) => m + k.mass, 0) }] : []
     const stage = sel.selectedAxis ? stageOf(a, g, sel.selectedAxis, req, drive.mass) : null
-    out.push({ axis: a, req, sel, stage, drive, carried: [...carried, ...kitLoad], joint })
+    out.push({ axis: a, req, sel, stage, drive, carried: [...carried, ...kitLoad], joint, spacing })
     if (stage && sel.selectedAxis) {
       stages.push(stage)
       const name = a.toUpperCase()

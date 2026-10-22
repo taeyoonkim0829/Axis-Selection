@@ -30,8 +30,12 @@ export interface GantryJoint {
   driveSign: 1 | -1
   /** two base slides: the carried axis is held at the first; `mismatch` (mm) is how far the second kit misses its
    *  place on it (pinned: its screws against the profile's threaded bores, modulo their pitch; clamped: the far end
-   *  against the second bracket's end position), `spacing` the base spacing that fits */
-  span?: { mismatch: number; spacing: number }
+   *  against the second bracket's end position); `spacing` the base spacing that fits (nearest the entered one, the
+   *  kits clear of each other, the carried axis reaching the second kit; null when none), `clear` the smallest base
+   *  spacing at which the two kits' walls do not collide */
+  span?: { mismatch: number; spacing: number | null; clear: number }
+  /** two base slides: the kits' walls reaching towards each other overlap at this spacing */
+  interference: boolean
   status: Status
   /** Korean source text with `{name}` placeholders */
   note: string
@@ -102,7 +106,7 @@ function placement(
   kits: AxisAdapter[],
   slides: number[],
   length: number | null,
-): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign' | 'span'> & { short?: boolean } {
+): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign' | 'span' | 'interference'> & { short?: boolean } {
   const b = slideFrame(base, axisMounting(g, base))
   const c = slideFrame(carried, axisMounting(g, carried))
   const o = carried === 'z' ? g.offsets.yz : g.offsets.xy
@@ -113,7 +117,7 @@ function placement(
   const vec = (w: number[]): Vec => ({ x: w[0] + 0, y: w[1] + 0, z: w[2] + 0 })
   const kitAt = vec(across.map((x, i) => x + at * b.l[i]))
   const fit = kits.length ? fits(kits[0].carried, carriedAxis) : undefined
-  const free = { offset: o, kitAt, aligned: false, pinned: false, flange: null, driveSign: 1 as const }
+  const free = { offset: o, kitAt, aligned: false, pinned: false, flange: null, driveSign: 1 as const, interference: false }
   if (!length || !fit || fit.end == null || (kits[0].joint === 'angle' && kits.some((k) => !k.hand))) return free
   // the body's direction along the carried travel (angle kits: the wall's reach), the foot's position on it
   const body = (k: AxisAdapter) => (k.joint === 'plate' ? -1 : (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t)))
@@ -130,24 +134,37 @@ function placement(
     flange: pinned ? near : null,
     // pinned: the drive end is the near one, opposite the body
     driveSign: (pinned ? -r0 : 1) as 1 | -1,
+    interference: false,
   }
   if (kits.length < 2) return placed
   const d = r0 * (foot(1) - foot(0))
   const spacing = Math.abs(slides[1] - slides[0])
+  // the mirrored walls reach towards each other: they collide below twice their reach (2 mm clearance)
+  const clear = 2 * Math.max(...kits.map((k) => k.wall?.[1] ?? 0)) + 2
+  const interference = spacing < clear
   if (pinned && fit.threads && fit.screws) {
     // the second kit (mirrored) only screws on: its screws at d − a, the profile's bores at end + first + k·pitch
     // (the first kit's screws sit on them, so a ≡ end + first): d ≡ 2·(end + first) modulo the pitch
     const { first, pitch } = fit.threads
-    const off = (((d - 2 * (fit.end + first)) % pitch) + pitch * 1.5) % pitch - pitch / 2
-    // the profile has to reach past the second kit's farthest screw
-    const covered = fit.end + length >= d - fit.screws[0] + 5
-    let fitting = spacing - off
-    while (fit.end + length < fitting - fit.screws[0] + 5) fitting -= pitch
-    return { ...placed, span: { mismatch: off, spacing: fitting }, short: !covered || Math.abs(off) > 0.5 }
+    const target = 2 * (fit.end + first)
+    const mismatch = ((((d - target) % pitch) + pitch * 1.5) % pitch) - pitch / 2
+    // the profile has to reach past the second kit's farthest screw: d ≤ end + length + nearest screw − 5
+    const reaches = (x: number) => fit.end! + length >= x - fit.screws![0] + 5
+    let fitting: number | null = null
+    for (let k = Math.ceil((clear - target) / pitch); target + k * pitch <= fit.end + length + fit.screws[0] - 5; k++) {
+      const x = target + k * pitch
+      if (x >= clear && reaches(x) && (fitting == null || Math.abs(x - spacing) < Math.abs(fitting - spacing))) fitting = x
+    }
+    return { ...placed, span: { mismatch, spacing: fitting, clear }, interference, short: !reaches(d) || Math.abs(mismatch) > 0.5 }
   }
-  // clamped: the far end against the second bracket's position for it
-  const mismatch = fit.end + length - (d - fit.end)
-  return { ...placed, span: { mismatch, spacing: spacing + mismatch }, short: fit.end + length < d }
+  // clamped: the far end against the second bracket's position for it (both ends at their brackets)
+  const ideal = 2 * fit.end + length
+  return {
+    ...placed,
+    span: { mismatch: ideal - spacing, spacing: ideal >= clear ? ideal : null, clear },
+    interference,
+    short: fit.end + length < d,
+  }
 }
 
 /**
@@ -168,18 +185,30 @@ export function gantryJoint(
   const slides = baseSlides(g, base)
   const joint = pickJoint(g, base, carried, baseAxis, carriedAxis, carriedStroke, adapters, slides)
   const { short, ...place } = placement(g, base, carried, carriedAxis, joint.kits, slides, carriedLength)
-  const args = { axis: carried.toUpperCase(), base: base.toUpperCase(), spacing: Math.round((place.span?.spacing ?? 0) * 10) / 10 }
-  // the second kit off the carried axis's bores, or the carried axis not reaching it
-  if (short && joint.status === 'ok')
-    return {
-      ...joint,
-      ...place,
-      status: 'warn',
-      note: place.pinned
-        ? '두 번째 {base}축 키트의 볼트가 {axis}축 나사 구멍에 맞지 않거나 {axis}축이 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 맞습니다.'
-        : '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.',
-      noteArgs: args,
-    }
+  const span = place.span
+  const args = {
+    axis: carried.toUpperCase(),
+    base: base.toUpperCase(),
+    spacing: Math.round((span?.spacing ?? 0) * 10) / 10,
+    clear: Math.round((span?.clear ?? 0) * 10) / 10,
+  }
+  const warn = (note: string) => ({ ...joint, ...place, status: 'warn' as const, note, noteArgs: args })
+  if (joint.status === 'ok' && span) {
+    // the kits colliding, then the second kit off the carried axis's bores or the carried axis not reaching it
+    if (span.spacing == null)
+      return warn(
+        place.interference
+          ? '두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격은 {clear} mm 이상이어야 하는데 그 간격에서는 {axis}축이 두 번째 키트에 맞게 닿지 않습니다. 더 긴 {axis}축 스트로크가 필요합니다.'
+          : '{axis}축이 짧아 두 번째 {base}축 키트에 맞는 간격이 없습니다. 더 긴 {axis}축 스트로크가 필요합니다.',
+      )
+    if (place.interference) return warn('두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격을 {spacing} mm로 하면 겹치지 않고 맞습니다.')
+    if (short)
+      return warn(
+        place.pinned
+          ? '두 번째 {base}축 키트의 볼트가 {axis}축 나사 구멍에 맞지 않거나 {axis}축이 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 맞습니다.'
+          : '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.',
+      )
+  }
   return { ...joint, ...place }
 }
 
@@ -192,7 +221,7 @@ function pickJoint(
   carriedStroke: number,
   adapters: AxisAdapter[],
   slides: number[],
-): Omit<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign'> {
+): Omit<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'pinned' | 'flange' | 'driveSign' | 'interference'> {
   const quantity = slides.length
   const pair = `${base.toUpperCase()}–${carried.toUpperCase()}`
   if (carried === 'z' && g.zMode === 'profile')
