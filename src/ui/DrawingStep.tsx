@@ -77,7 +77,8 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const twinMotor = axis?.layout.mode === 'twinMotor'
   const twinSides = twinOrientation(sides)
   const twinConnector = connectorSide(twinSides, parallel)
-  // a change on the first axis keeps the second as it is: its following values are fixed first
+  // a change on the first axis keeps the second's kit side and connector as they are (fixed first); its motor
+  // position keeps mirroring the first's until it is picked
   const own = (change: Partial<ComboOptions>) =>
     onSides({
       ...sides,
@@ -86,7 +87,6 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             twinKitSide: twinSides.kitSide,
             // null: automatic (towards its own kit side), as on the first axis
             twinMotorConnector: twinSides.motorConnector,
-            ...(twinTurnable ? { twinDrive: twinPosition } : {}),
           }
         : {}),
       ...change,

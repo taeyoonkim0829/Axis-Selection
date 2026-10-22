@@ -41,7 +41,7 @@ const selection = (stroke: number, motor = 'EMMT-AS-60-S-HS', kit = 'EAMM-A-T46-
   kit: kits.find((k) => k.product === kit && k.axisCode === 'T46-90')!,
 })
 
-type OcctMesh = { attributes: { position: { array: number[] } } }
+type OcctMesh = { name: string; attributes: { position: { array: number[] } } }
 type Occt = { ReadStepFile: (data: Uint8Array, params: null) => { success: boolean; meshes: OcctMesh[] } }
 const occt = import('occt-import-js').then((m) => (m.default as () => Promise<Occt>)())
 
@@ -50,15 +50,23 @@ async function meshBox(step: string) {
   expect(result.success).toBe(true)
   const lo = [Infinity, Infinity, Infinity]
   const hi = [-Infinity, -Infinity, -Infinity]
+  // each mesh's own box, by name
+  const parts: { name: string; lo: number[]; hi: number[] }[] = []
   for (const m of result.meshes) {
     const p = m.attributes.position.array
+    const part = { name: m.name, lo: [Infinity, Infinity, Infinity], hi: [-Infinity, -Infinity, -Infinity] }
     for (let i = 0; i < p.length; i += 3)
       for (let k = 0; k < 3; k++) {
-        lo[k] = Math.min(lo[k], p[i + k])
-        hi[k] = Math.max(hi[k], p[i + k])
+        part.lo[k] = Math.min(part.lo[k], p[i + k])
+        part.hi[k] = Math.max(part.hi[k], p[i + k])
       }
+    for (let k = 0; k < 3; k++) {
+      lo[k] = Math.min(lo[k], part.lo[k])
+      hi[k] = Math.max(hi[k], part.hi[k])
+    }
+    parts.push(part)
   }
-  return { lo, hi, meshes: result.meshes.length }
+  return { lo, hi, meshes: result.meshes.length, parts }
 }
 
 describe('STEP', () => {
@@ -358,6 +366,13 @@ describe('combination', () => {
     expect(mirrored.hi[1]).toBeLessThan(same.hi[1] - 1)
     // symmetric about the plane between the axes
     expect(mirrored.lo[1] + mirrored.hi[1]).toBeCloseTo(400, 0)
+    // the slides: the first stands out to −y, the second (centre at y 400) to +y, at the same place along the travel
+    const slides = mirrored.parts.filter((p) => p.name.includes('GPTB1'))
+    expect(slides).toHaveLength(2)
+    const [s1, s2] = slides.sort((a, b) => a.lo[1] - b.lo[1])
+    expect(s1.lo[1] + s1.hi[1]).toBeLessThan(-5)
+    expect(s2.lo[1] + s2.hi[1] - 800).toBeCloseTo(-(s1.lo[1] + s1.hi[1]), 0)
+    expect(s2.lo[0]).toBeCloseTo(s1.lo[0], 0)
     // both bodies along the same stretch of travel: the slides line up, the drive heads at opposite ends
     expect(mirrored.lo[0]).toBeCloseTo(plain.lo[0], 0)
     expect(mirrored.hi[0] - mirrored.lo[0]).toBeLessThan(plain.hi[0] - plain.lo[0] + 40)
