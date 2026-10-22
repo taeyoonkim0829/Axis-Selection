@@ -38,6 +38,7 @@ export function GantryDrawing({
     base: j.base,
     carried: j.carried,
     kits: j.kits.map((kit) => ({ kit, drawing: adapterDrawingFor(kit) })),
+    offset: j.offset,
   }))
   const complete = inputs.every((i) => i.selection && i.found)
   const ready = complete && inputs.every((i) => i.found!.missing.length === 0)
@@ -47,7 +48,7 @@ export function GantryDrawing({
           const o = assemblies[i.a]
           return `${i.a}:${comboKey(i.selection!, i.req!, i.twin)}|${o.kitSide}|${o.motorConnector}|${o.drive.otherEnd}${o.drive.otherSide}`
         }),
-        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}`),
+        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}@${JSON.stringify(j.offset)}`),
         JSON.stringify(gantry.offsets),
         gantry.zMode,
         gantry.xMounting,
@@ -109,6 +110,8 @@ export function GantryDrawing({
                         <span>
                           {' '}
                           {t('브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).', { axis: j.carried.toUpperCase() })}
+                          {j.aligned && ' '}
+                          {j.aligned && t('{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.', { axis: j.carried.toUpperCase() })}
                         </span>
                       )}
                       {j.kit?.accessories.map((x) => (

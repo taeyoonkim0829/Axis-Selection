@@ -29,6 +29,7 @@
         0,
         600
       ],
+      "carriedEnd": -60,
       "mass": 3.623,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -62,6 +63,7 @@
         0,
         600
       ],
+      "carriedEnd": -60,
       "mass": 3.623,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -95,6 +97,7 @@
         0,
         600
       ],
+      "carriedEnd": -76,
       "mass": 4.12,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -128,6 +131,7 @@
         0,
         600
       ],
+      "carriedEnd": -76,
       "mass": 4.12,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -161,6 +165,7 @@
         0,
         600
       ],
+      "carriedEnd": -76,
       "mass": 5.313,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -194,6 +199,7 @@
         0,
         600
       ],
+      "carriedEnd": -76,
       "mass": 5.313,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -227,6 +233,7 @@
         0,
         600
       ],
+      "carriedEnd": -99,
       "mass": 6.005,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -260,6 +267,7 @@
         0,
         600
       ],
+      "carriedEnd": -99,
       "mass": 6.005,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -293,6 +301,7 @@
         0,
         700
       ],
+      "carriedEnd": -99,
       "mass": 7.794,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -326,6 +335,7 @@
         0,
         700
       ],
+      "carriedEnd": -99,
       "mass": 7.794,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43"
@@ -359,6 +369,7 @@
         101,
         500
       ],
+      "carriedEnd": null,
       "mass": 1.437,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type B)"
@@ -392,6 +403,7 @@
         201,
         500
       ],
+      "carriedEnd": null,
       "mass": 2.748,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type B)"
@@ -425,6 +437,7 @@
         0,
         100
       ],
+      "carriedEnd": null,
       "mass": 1.159,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type C)"
@@ -458,6 +471,7 @@
         0,
         200
       ],
+      "carriedEnd": null,
       "mass": 2.136,
       "accessories": [],
       "dataSource": "ELGT-BS catalog 2026/09, p. 28–43 (type C)"
@@ -496,6 +510,7 @@
       "hand": "left",
       "layout": "cantilever",
       "carriedStroke": null,
+      "carriedEnd": 34.5,
       "mass": 2.24,
       "accessories": [
         {
@@ -541,6 +556,7 @@
       "hand": "right",
       "layout": "cantilever",
       "carriedStroke": null,
+      "carriedEnd": 34.5,
       "mass": 2.24,
       "accessories": [
         {
@@ -616,6 +632,7 @@
       "hand": "left",
       "layout": "gantry",
       "carriedStroke": null,
+      "carriedEnd": 34.5,
       "mass": 2.58,
       "accessories": [
         {
@@ -691,6 +708,7 @@
       "hand": "right",
       "layout": "gantry",
       "carriedStroke": null,
+      "carriedEnd": 34.5,
       "mass": 2.58,
       "accessories": [
         {

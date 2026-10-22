@@ -94,6 +94,12 @@ export interface GantryAxisResult {
   joint: GantryJoint | null
 }
 
+/** mm, overall length of a selected gantry axis at its ordered stroke (as drawn); null without `baseLength` */
+function carriedLength(r: GantryAxisResult): number | null {
+  const e = r.sel?.selectedAxis
+  return e && e.axis.baseLength != null ? (e.order.stroke ?? r.req!.stroke) + e.axis.baseLength : null
+}
+
 /**
  * The gantry's axes in selection order (tool first). Each axis carries the stage of the one before it; a moving
  * Z profile carries its own drive, so it is evaluated a second time with the mass of the drive selected the first
@@ -120,11 +126,11 @@ export function computeGantry(g: GantryInputs, settings: Record<GantryAxis, Sett
     // The kit joining the axis below to this one depends on both; its mass moves with this axis: evaluated again
     const jointFor = (s: Selection) =>
       below?.sel?.selectedAxis && s.selectedAxis
-        ? gantryJoint(g, a, below.axis, s.selectedAxis.axis, below.sel.selectedAxis.axis, below.req!.stroke, adapters)
+        ? gantryJoint(g, a, below.axis, s.selectedAxis.axis, below.sel.selectedAxis.axis, below.req!.stroke, adapters, carriedLength(below))
         : null
     let joint = jointFor(sel)
     if (joint?.kit) {
-      req = gantryRequirements(g, a, below!.stage, stages, joint.kits.reduce((m, k) => m + k.mass, 0))
+      req = gantryRequirements(g, a, below!.stage, stages, { mass: joint.kits.reduce((m, k) => m + k.mass, 0), offset: joint.offset, at: joint.kitAt })
       if (req.movingProfile) req = { ...req, movingProfile: { driveMass: drive.mass } }
       sel = computeSelection(req, settings[a], picks[a])
       drive = driveMassOf(sel, g.motorMass[a])

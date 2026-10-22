@@ -1,7 +1,7 @@
 // Gantry kits: the Festo part joining a carried axis's profile to the slide of the axis below it (EHAM angle and
 // adapter kits, EAHF-E24 profile mountings), from the axis data sheets' combination tables (data/adapters).
 import type { Axis, AxisAdapter, AdapterAxis } from '../data/types'
-import { axisMounting, slideFrame, type GantryAxis, type GantryInputs } from './gantry'
+import { axisMounting, slideFrame, type GantryAxis, type GantryInputs, type Vec } from './gantry'
 import type { Status } from './types'
 
 /** One joint of the gantry: `carried` sits on the slide(s) of `base` */
@@ -16,6 +16,13 @@ export interface GantryJoint {
    *  kits take the hand whose wall reaches towards the carried axis (`kitHand`), so two X axes get a mirrored pair */
   kits: AxisAdapter[]
   quantity: number
+  /** world mm from the base axis's (arrangement) centre: the carried axis's mounting point (profile centre) and
+   *  the kits' centre. With one angle kit the carried axis lies along the bracket as the assembly instructions
+   *  show (`aligned`: its end at the kit's `carriedEnd`, the entered offset only picks the side), else at the
+   *  entered offset; the kits sit on the base slide(s) */
+  offset: Vec
+  kitAt: Vec
+  aligned: boolean
   status: Status
   /** Korean source text with `{name}` placeholders */
   note: string
@@ -72,6 +79,35 @@ const fits = (list: AdapterAxis[], axis: Axis) =>
   )
 
 /**
+ * Where the carried axis and the kits sit (see `GantryJoint.offset`). `length` (mm, overall length of the carried
+ * axis) null when unknown: the carried axis then stays at the entered offset.
+ */
+function placement(
+  g: GantryInputs,
+  base: GantryAxis,
+  carried: GantryAxis,
+  kits: AxisAdapter[],
+  slides: number[],
+  length: number | null,
+): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned'> {
+  const b = slideFrame(base, axisMounting(g, base))
+  const c = slideFrame(carried, axisMounting(g, carried))
+  const o = carried === 'z' ? g.offsets.yz : g.offsets.xy
+  const v = [o.x, o.y, o.z]
+  const along = dot(v, c.t)
+  const at = slides.reduce((s, x) => s + x, 0) / slides.length
+  const across = v.map((x, i) => x - along * c.t[i])
+  const vec = (w: number[]): Vec => ({ x: w[0] + 0, y: w[1] + 0, z: w[2] + 0 })
+  const kitAt = vec(across.map((x, i) => x + at * b.l[i]))
+  const k = kits[0]
+  if (kits.length !== 1 || !k.hand || k.carriedEnd == null || !length) return { offset: o, kitAt, aligned: false }
+  // the wall's reach along the carried travel; the carried axis's end at carriedEnd from the foot, its body beyond
+  const reach = (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t))
+  const centre = slides[0] * dot(b.l, c.t) + reach * (k.carriedEnd + length / 2)
+  return { offset: vec(across.map((x, i) => x + centre * c.t[i])), kitAt, aligned: true }
+}
+
+/**
  * The kit for a joint: the data's kits of that geometry fitting both axes, the one for the carried stroke first, the
  * left-hand version of mirror-image pairs. Warns when the base axis needs the long slide, the carried stroke is out
  * of the kit's range, or no kit fits.
@@ -84,8 +120,23 @@ export function gantryJoint(
   carriedAxis: Axis,
   carriedStroke: number,
   adapters: AxisAdapter[],
+  carriedLength: number | null = null,
 ): GantryJoint {
   const slides = baseSlides(g, base)
+  const joint = pickJoint(g, base, carried, baseAxis, carriedAxis, carriedStroke, adapters, slides)
+  return { ...joint, ...placement(g, base, carried, joint.kits, slides, carriedLength) }
+}
+
+function pickJoint(
+  g: GantryInputs,
+  base: GantryAxis,
+  carried: GantryAxis,
+  baseAxis: Axis,
+  carriedAxis: Axis,
+  carriedStroke: number,
+  adapters: AxisAdapter[],
+  slides: number[],
+): Omit<GantryJoint, 'offset' | 'kitAt' | 'aligned'> {
   const quantity = slides.length
   const pair = `${base.toUpperCase()}–${carried.toUpperCase()}`
   if (carried === 'z' && g.zMode === 'profile')

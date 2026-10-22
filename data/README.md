@@ -32,7 +32,7 @@ Each file is `{ "items": [ ... ] }`. A new file in the right folder is picked up
 | `inertiaJ0` / `inertiaJHPerMeter` / `inertiaJLPerKg` | kg·cm² / kg·cm² per m stroke / kg·cm² per kg payload |
 | `FxMax`, `FyMax`, `FzMax` / `MxMax`, `MyMax`, `MzMax` | N / Nm |
 | `Iy`, `Iz` | mm⁴ |
-| `baseLength` (at 0 stroke), `slideLength`, `allowableDeflection` | mm |
+| `baseLength` (at 0 stroke), `slideLength`, `allowableDeflection` | mm; ELGT-BS `baseLength` (drive flange to the far end) measured on the CAD models (ELGD's data sheet value matches its model the same way) |
 | `screwDynamicLoadRating` | N |
 | `typeCode` | order type code with … where the stroke goes, with the base options (no stroke reserve `0H`, ELGD-TB `PU2`, EGC-BS motor left `ML`), e.g. `ELGD-BS-KF-60-…-0H-5P`. Missing on ESBF (its `model` has the …). ELGT-TB: `ELGT-TB-120-…-CS` (customer solution, CS3186566A) |
 | `strokePartNumbers` / `moduleNumber` | order number per standard stroke (mm as key) / module number for other strokes (modular product system). ESBF: documentation 203032 p.24–26. ELGT-BS, ELGD, EGC: the Festo data sheets (2026/09–10), ordering data and modular ordering tables. ELGT-TB: the CS catalogue (FEHA numbers for 50…1000 mm in 50 mm steps and 1100…2700 mm in 100 mm steps; the CP1 coated versions are left out), no module number. Long-slide ELGD (`-L`), EGC GV and EGC-HD have no standard strokes |
@@ -174,6 +174,7 @@ Festo parts joining a carried axis's profile to the slide of the axis below it i
 | `base` / `carried` | the axes it fits: `family`, `variant` (`WD` or null), `size`, `drive` (`spindle`/`belt`; ELGT kits list ELGT-BS only), `longSlide: true` when the base axis needs the long slide (ELGD …-L) |
 | `hand` | `left`/`right` for the mirror-image angle kits (…-ML / …-MR), else null. They differ in the side the wall reaches to from the foot on the base slide (assembly instructions EHAM-AK-L9 8140647, EHAM-AK-E24 8238670): seen facing the carried slide, ML to the right, MR to the left. The app takes the hand whose wall reaches towards the carried axis (two X axes: a mirrored pair, both inwards; carried axis centred on the slide: ML) |
 | `layout` | ELGD angle kits: `cantilever` (…-L) or `gantry` (…-S, three-dimensional gantry), else null |
+| `carriedEnd` | angle kits (EHAM-AK): mm along the wall's reach from the foot (base slide centre) to the carried axis's end facing the foot, as the assembly instructions place it: EHAM-AK-L9 flush with the bracket end (−60 / −76 / −99, behind the foot), EHAM-AK-E24 clearance A 77.5 mm from the console end (+34.5); measured on the STEP models. The app lays a carried axis on a single angle kit this way; null/absent for the others |
 | `carriedStroke` | mm `[min, max]` of the carried axis's working stroke (ELGT: angle kits up to 600/700 mm Y; plates type C up to 100/200 mm Z, type B above it up to 500 mm), or null |
 | `mass` | kg |
 | `accessories` | parts ordered with it (`model`, `partNumber`, `quantity` per kit, `note`): EAHF-E24-60-P-B4 holding the ELGD axis on an EHAM-AK-E24, 4 on E24-80-E24-60 and 2 on E24-80-E24-80 (assembly instructions 8238670) |

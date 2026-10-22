@@ -26,6 +26,9 @@ export interface GantryJointDrawing {
   carried: GantryAxis
   /** one per base slide, in slide order (`GantryJoint.kits`); the mirror-image angle kits are placed by their hand */
   kits: { kit: AxisAdapter; drawing: Drawing<AdapterMeta> | null }[]
+  /** world mm from the base axis's (arrangement) centre: the carried axis's mounting point as the calc takes it
+   *  (`GantryJoint.offset`: along an angle kit, as the assembly instructions place it); absent = the entered one */
+  offset?: { x: number; y: number; z: number }
 }
 
 export interface GantryCombo extends Combo {
@@ -118,9 +121,9 @@ export async function buildGantry(
     const wb = worldOf(g, below)
     const slides = slidesOf(below)
     const centre = scale(slides.reduce((s, p) => add(s, p), [0, 0, 0] as Vec3), 1 / slides.length)
-    const offset = a === 'z' ? g.offsets.yz : g.offsets.xy
-    const target = add(centre, [offset.x, offset.y, offset.z])
     const joint = joints.find((j) => j.base === below && j.carried === a)
+    const offset = joint?.offset ?? (a === 'z' ? g.offsets.yz : g.offsets.xy)
+    const target = add(centre, [offset.x, offset.y, offset.z])
     const drawn =
       joint?.kits.length && joint.kits.every((k) => k.drawing?.meta)
         ? joint.kits.map((k) => ({ kit: k.kit, url: k.drawing!.url, meta: k.drawing!.meta! }))

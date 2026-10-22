@@ -386,6 +386,9 @@ export interface AxisAdapter {
   layout: 'cantilever' | 'gantry' | null
   /** mm, working stroke range of the carried axis the kit is for */
   carriedStroke: [number, number] | null
+  /** angle kits: mm along the wall's reach from the foot (base slide centre) to the carried axis's end facing the foot,
+   *  as the assembly instructions place it (negative: behind the foot); else null or absent */
+  carriedEnd?: number | null
   /** kg */
   mass: number
   /** further parts to order with it (`quantity` per kit, when known) */

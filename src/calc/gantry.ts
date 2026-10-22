@@ -168,10 +168,16 @@ export function stageOf(a: GantryAxis, g: GantryInputs, evaluation: AxisEvaluati
 /**
  * Requirements of one axis of the gantry. `carried` is the stage directly above it (null for the tool axis);
  * `stages` are all stages above it, for the reaction of their accelerations. Axes below it carry it, so their
- * accelerations act on its whole moving system. `kitMass` (kg, the gantry kits on this axis's slides) moves with it,
- * at the carried axis's mounting point.
+ * accelerations act on its whole moving system. `kit`: the gantry kits on this axis's slides (kg, moving with it, at
+ * `at`) and the carried axis's mounting point they give (`offset`, else the entered one); world mm as `offsets`.
  */
-export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stage | null, stages: Stage[], kitMass = 0): Requirements {
+export function gantryRequirements(
+  g: GantryInputs,
+  a: GantryAxis,
+  carried: Stage | null,
+  stages: Stage[],
+  kit: { mass: number; offset: Vec; at: Vec } | null = null,
+): Requirements {
   const mounting = axisMounting(g, a)
   const f = slideFrame(a, mounting)
   const m = g.motion[a]
@@ -180,9 +186,10 @@ export function gantryRequirements(g: GantryInputs, a: GantryAxis, carried: Stag
   let payload: number
   let cog: Vec
   if (carried) {
-    const offset = toV3(carried.axis === 'z' ? g.offsets.yz : g.offsets.xy)
+    const offset = toV3(kit?.offset ?? (carried.axis === 'z' ? g.offsets.yz : g.offsets.xy))
+    const kitMass = kit?.mass ?? 0
     payload = carried.mass + kitMass
-    cog = toSlide(add(scale(add(carried.cog, offset), carried.mass / payload), scale(offset, kitMass / payload)), f)
+    cog = toSlide(add(scale(add(carried.cog, offset), carried.mass / payload), scale(kit ? toV3(kit.at) : offset, kitMass / payload)), f)
   } else {
     payload = g.payload
     // the 소재 무게 중심 input counts X and Z the other way (+X = world −X, away from the Z slide face; +Z = down)

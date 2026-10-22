@@ -419,6 +419,10 @@ export const en: Record<string, string> = {
   '키트 없음': 'No kit',
   '조합 키트 미정': 'Gantry kits not yet known',
   '브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).': 'The bracket wall reaches towards the side the {axis} axis lies on (ML/MR, assembly instructions).',
+  '{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.':
+    "The {axis} axis's end is set at the bracket end as in the assembly instructions; the mounting position's {axis} travel value only picks the side (+/−).",
+  '앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.':
+    'With an angle kit (EHAM-AK) the Y axis sits at the bracket end; the Y value only picks the side (+/−).',
   '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
