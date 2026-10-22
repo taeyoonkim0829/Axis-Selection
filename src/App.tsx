@@ -15,6 +15,7 @@ import { Report } from './ui/Report'
 import type { AppMode } from './ui/ModeSwitch'
 import { RouteRail } from './ui/RouteRail'
 import { useReportExport } from './ui/useReportExport'
+import type { Shared, SingleShare } from './share'
 import { isStaleBuild, STALE_BUILD_NOTICE } from './ui/staleBuild'
 
 const initialRequirements: Requirements = {
@@ -42,8 +43,8 @@ interface Inputs {
 /** The screen from the address: #gantry = gantry, else the single axis. */
 const modeFromHash = (): AppMode => (window.location.hash === '#gantry' ? 'gantry' : 'single')
 
-function useMode(): [AppMode, (mode: AppMode) => void] {
-  const [mode, setModeState] = useState<AppMode>(modeFromHash)
+function useMode(initial?: AppMode): [AppMode, (mode: AppMode) => void] {
+  const [mode, setModeState] = useState<AppMode>(initial ?? modeFromHash)
   useEffect(() => {
     const onHash = () => setModeState(modeFromHash())
     window.addEventListener('hashchange', onHash)
@@ -57,15 +58,18 @@ function useMode(): [AppMode, (mode: AppMode) => void] {
   return [mode, setMode]
 }
 
-export default function App() {
+/** `shared`: the calculation a shared link opened (`share.ts`), its screen shown with its inputs and choices */
+export default function App({ shared = null }: { shared?: Shared | null }) {
   const [lang, setLang] = useState<Lang>(storedLang)
   useEffect(() => storeLang(lang), [lang])
-  const [req, setReq] = useState(initialRequirements)
-  const [settings, setSettings] = useState<Settings>(defaultSettings)
-  const [mode, setMode] = useMode()
+  const single = shared?.mode === 'single' ? shared : null
+  const gantryShared = shared?.mode === 'gantry' ? shared : null
+  const [req, setReq] = useState(single?.req ?? initialRequirements)
+  const [settings, setSettings] = useState<Settings>(single?.settings ?? defaultSettings)
+  const [mode, setMode] = useMode(shared?.mode)
   // Both screens keep their inputs while the other one is shown.
-  const [gantry, setGantry] = useState<GantryInputs>(defaultGantry)
-  const [gantrySettings, setGantrySettings] = useState<GantrySettings>(initialGantrySettings)
+  const [gantry, setGantry] = useState<GantryInputs>(gantryShared?.gantry ?? defaultGantry)
+  const [gantrySettings, setGantrySettings] = useState<GantrySettings>(gantryShared?.gantrySettings ?? initialGantrySettings)
   const inputs: Inputs = { req, settings, setReq, setSettings, lang, setLang, mode, setMode }
   const gantryState: GantryState = { gantry, setGantry, gantrySettings, setGantrySettings, lang, setLang, mode, setMode }
 
@@ -74,7 +78,7 @@ export default function App() {
     <LangProvider value={lang}>
       {mode === 'single' ? (
         <ErrorBoundary key="single" resetKeys={[req, settings, lang]} fallback={(error, retry) => <Fallback {...inputs} error={error} retry={retry} />}>
-          <Workspace {...inputs} />
+          <Workspace {...inputs} shared={single} />
         </ErrorBoundary>
       ) : (
         <ErrorBoundary
@@ -82,7 +86,7 @@ export default function App() {
           resetKeys={[gantry, gantrySettings, lang]}
           fallback={(error, retry) => <GantryFallback {...gantryState} error={error} retry={retry} />}
         >
-          <GantryWorkspace {...gantryState} />
+          <GantryWorkspace {...gantryState} shared={gantryShared} />
         </ErrorBoundary>
       )}
     </LangProvider>
@@ -144,12 +148,12 @@ function ErrorPanel({ error, retry }: { error: Error; retry: () => void }) {
   )
 }
 
-function Workspace({ req, settings, setReq, setSettings, lang, setLang, mode, setMode }: Inputs) {
-  const [picks, setPicks] = useState<Picks>(noPicks)
+function Workspace({ req, settings, setReq, setSettings, lang, setLang, mode, setMode, shared }: Inputs & { shared: SingleShare | null }) {
+  const [picks, setPicks] = useState<Picks>(shared?.picks ?? noPicks)
   // Motion profile view (왕복 / 전진 / 복귀); the PDF prints the same view
-  const [profileView, setProfileView] = useState<ProfileView>('cycle')
+  const [profileView, setProfileView] = useState<ProfileView>(shared?.profileView ?? 'cycle')
   // step 5 assembly orientation (parallel kit side, motor connector), printed in the report
-  const [assembly, setAssembly] = useState<ComboOptions>(defaultComboOptions)
+  const [assembly, setAssembly] = useState<ComboOptions>(shared?.assembly ?? defaultComboOptions)
 
   const deferredReq = useDeferredValue(req)
   const deferredSettings = useDeferredValue(settings)
@@ -157,7 +161,14 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang, mode, se
   const { selectedAxis, selectedDrive, selectedKitEval } = sel
 
   // PDF export: the report is mounted off screen only while the PDF is being made.
-  const { exporting, start: startExport, reportRef } = useReportExport(lang, selectedAxis?.order.model ?? null)
+  const { exporting, start: startExport, reportRef } = useReportExport(lang, selectedAxis?.order.model ?? null, () => ({
+    mode: 'single',
+    req,
+    settings,
+    picks,
+    profileView,
+    assembly,
+  }))
 
   return (
     <>

@@ -144,7 +144,7 @@ Restrained workspace under a committed blue shell.
 
 Full-width sticky rail (112px) over a centered 1600px workspace: a 320px sticky condition panel on the left and the results column on the right (axis step, motion profile, motor, gearbox, kit), 20px gaps. Steps have `scroll-margin-top` so a click on a route box lands the step just below the rail. Below 1280px the rail drops its brand block; below 1000px the rail becomes static, signs go 2×2 (1 column under 560px) and the layout stacks.
 
-PDF export (PDF로 내보내기) renders a separate report (`Report.tsx`, mounted off screen at A4 content width, 703px) to a PDF that opens in a new tab: six chapters, each on a new page, with a sign-blue chapter bar, label/value spec tables and the check tables. The report always uses the light tokens.
+PDF export (PDF로 내보내기) renders a separate report (`Report.tsx`, mounted off screen at A4 content width, 703px) to a PDF that opens in a new tab: six chapters, each on a new page, with a sign-blue chapter bar, label/value spec tables and the check tables. The report always uses the light tokens. Chapter 1's meta line ends in `.report-link` (웹에서 이 계산 열기: accent colour, underlined), which the PDF makes a link to the same calculation on the web.
 
 ## Elevation & Depth
 

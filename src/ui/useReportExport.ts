@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { translate, type Lang } from '../i18n'
+import { shareUrl, type Shared } from '../share'
 import { openPendingTab, reportTitle, reportToPdf } from './pdfExport'
 import { isStaleBuild, STALE_BUILD_NOTICE } from './staleBuild'
 
 /**
  * PDF export: `start` opens the waiting tab inside the click and mounts the report (render it off screen into
- * `reportRef` while `exporting`); the PDF then replaces the waiting page. `name` goes into the file name.
+ * `reportRef` while `exporting`); the PDF then replaces the waiting page. `name` goes into the file name; `share`
+ * gives the state the report's link opens on the web.
  */
-export function useReportExport(lang: Lang, name: string | null) {
+export function useReportExport(lang: Lang, name: string | null, share: () => Shared) {
   const [exporting, setExporting] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
   const pdfTab = useRef<Window | null>(null)
@@ -18,7 +20,9 @@ export function useReportExport(lang: Lang, name: string | null) {
   useEffect(() => {
     if (!exporting || !reportRef.current || !name) return
     const title = reportTitle(name, lang)
-    reportToPdf(reportRef.current, title)
+    const root = reportRef.current
+    shareUrl(share())
+      .then((link) => reportToPdf(root, title, link))
       .then((blob) => {
         const url = URL.createObjectURL(new File([blob], `${title}.pdf`, { type: 'application/pdf' }))
         const tab = pdfTab.current

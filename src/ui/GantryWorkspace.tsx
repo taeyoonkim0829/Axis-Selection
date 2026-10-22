@@ -15,6 +15,7 @@ import { Report } from './Report'
 import type { AppMode } from './ModeSwitch'
 import { RouteRail } from './RouteRail'
 import { useReportExport } from './useReportExport'
+import type { GantryShare } from '../share'
 
 export interface GantryState {
   gantry: GantryInputs
@@ -30,12 +31,23 @@ export interface GantryState {
 const perAxis = <T,>(value: T): Record<GantryAxis, T> => ({ x: value, y: value, z: value })
 const axisName = (a: GantryAxis) => a.toUpperCase()
 
-export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySettings, lang, setLang, mode, setMode }: GantryState) {
+/** `shared`: the open tab and the choices of a shared link (`share.ts`) */
+export function GantryWorkspace({
+  gantry,
+  setGantry,
+  gantrySettings,
+  setGantrySettings,
+  lang,
+  setLang,
+  mode,
+  setMode,
+  shared = null,
+}: GantryState & { shared?: GantryShare | null }) {
   const t = useT()
-  const [tab, setTab] = useState<GantryAxis>('z')
-  const [picks, setPicks] = useState<Record<GantryAxis, Picks>>(perAxis(noPicks))
-  const [views, setViews] = useState<Record<GantryAxis, ProfileView>>(perAxis<ProfileView>('cycle'))
-  const [assemblies, setAssemblies] = useState<Record<GantryAxis, ComboOptions>>(perAxis(defaultComboOptions))
+  const [tab, setTab] = useState<GantryAxis>(shared?.tab ?? 'z')
+  const [picks, setPicks] = useState<Record<GantryAxis, Picks>>(shared?.picks ?? perAxis(noPicks))
+  const [views, setViews] = useState<Record<GantryAxis, ProfileView>>(shared?.views ?? perAxis<ProfileView>('cycle'))
+  const [assemblies, setAssemblies] = useState<Record<GantryAxis, ComboOptions>>(shared?.assemblies ?? perAxis(defaultComboOptions))
 
   const deferredGantry = useDeferredValue(gantry)
   const deferredSettings = useDeferredValue(gantrySettings)
@@ -45,7 +57,11 @@ export function GantryWorkspace({ gantry, setGantry, gantrySettings, setGantrySe
   const current = results.find((r) => r.axis === active) ?? results[0]
   const sel = current.sel
 
-  const { exporting, start: startExport, reportRef } = useReportExport(lang, sel?.selectedAxis ? `${axisName(active)}_${sel.selectedAxis.order.model}` : null)
+  const { exporting, start: startExport, reportRef } = useReportExport(
+    lang,
+    sel?.selectedAxis ? `${axisName(active)}_${sel.selectedAxis.order.model}` : null,
+    () => ({ mode: 'gantry', gantry, gantrySettings, picks, views, assemblies, tab: active }),
+  )
 
   return (
     <>

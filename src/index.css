@@ -1522,6 +1522,12 @@ th.num {
   color: var(--muted);
 }
 
+/* the PDF makes it a link (pdfExport) */
+.report-link {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 .report-note {
   margin: 6px 0;
 }

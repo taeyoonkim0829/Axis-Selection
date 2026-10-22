@@ -6,9 +6,13 @@ import '@fontsource/barlow-semi-condensed/600.css'
 import '@fontsource/barlow-semi-condensed/700.css'
 import App from './App'
 import './index.css'
+import { readShared } from './share'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+// a shared link (`?r=…`) opens its calculation
+void readShared().then((shared) =>
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App shared={shared} />
+    </StrictMode>,
+  ),
 )

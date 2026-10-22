@@ -174,7 +174,11 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   return (
     <div className="report">
       <Chapter no={1} title={t('입력 데이터 · 선정 모델')}>
-        <p className="report-meta">{t('직교 축 선정 계산서 · {date}', { date: today })}</p>
+        <p className="report-meta">
+          {t('직교 축 선정 계산서 · {date}', { date: today })} ·{' '}
+          {/* the PDF puts the link to this calculation on the web over it (pdfExport) */}
+          <span className="report-link">{t('웹에서 이 계산 열기')}</span>
+        </p>
 
         {gantry && (
           <>

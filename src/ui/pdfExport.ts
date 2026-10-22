@@ -6,8 +6,11 @@ const PAGE_W = 210
 const PAGE_H = 297
 const MARGIN = 12
 
-/** Builds the PDF from a mounted `Report`. The libraries load only when a PDF is made. */
-export async function reportToPdf(root: HTMLElement, title: string): Promise<Blob> {
+/**
+ * Builds the PDF from a mounted `Report`. The libraries load only when a PDF is made. `link`: the address the
+ * report's `.report-link` lines open (a clickable area over each).
+ */
+export async function reportToPdf(root: HTMLElement, title: string, link?: string): Promise<Blob> {
   const [{ jsPDF }, { domToCanvas }] = await Promise.all([import('jspdf'), import('modern-screenshot')])
   await document.fonts.ready
 
@@ -21,6 +24,15 @@ export async function reportToPdf(root: HTMLElement, title: string): Promise<Blo
     const canvas = await domToCanvas(chapter, { scale: 2, backgroundColor: '#ffffff' })
     const mmPerPx = contentW / canvas.width
     const pagePx = Math.floor(contentH / mmPerPx)
+    // link lines in canvas px (the canvas is the chapter at `scale` 2)
+    const box = chapter.getBoundingClientRect()
+    const px = canvas.width / box.width
+    const links = link
+      ? [...chapter.querySelectorAll<HTMLElement>('.report-link')].map((el) => {
+          const r = el.getBoundingClientRect()
+          return { x: (r.left - box.left) * px, y: (r.top - box.top) * px, w: r.width * px, h: r.height * px }
+        })
+      : []
     for (let top = 0; top < canvas.height; top += pagePx) {
       const slice = document.createElement('canvas')
       slice.width = canvas.width
@@ -29,6 +41,8 @@ export async function reportToPdf(root: HTMLElement, title: string): Promise<Blo
       if (!firstPage) pdf.addPage()
       firstPage = false
       pdf.addImage(slice, 'PNG', MARGIN, MARGIN, contentW, slice.height * mmPerPx, undefined, 'FAST')
+      for (const l of links.filter((l) => l.y >= top && l.y < top + slice.height))
+        pdf.link(MARGIN + l.x * mmPerPx, MARGIN + (l.y - top) * mmPerPx, l.w * mmPerPx, l.h * mmPerPx, { url: link })
     }
   }
   return pdf.output('blob')
