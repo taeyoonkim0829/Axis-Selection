@@ -138,6 +138,10 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
       (motor.partNumber != null && d.partNumber === motor.partNumber),
   )
   if (exact) return { drawing: exact, otherOptions: false }
+  if (motor.maker === 'Siemens') {
+    const variant = list.find((d) => d.names.some((n) => siemensVariant(motor.model, n)))
+    return variant ? { drawing: variant, otherOptions: true } : null
+  }
   if (motor.maker !== 'Festo') return null
   const base = motor.brake ? motor.model.replace(/-B$/, '') : motor.model
   const variant = list.find((d) => {
@@ -148,7 +152,19 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
   return variant ? { drawing: variant, otherOptions: true } : null
 }
 
-export const kitDrawingFor = (kit: Kit, all = drawings) =>
+/**
+ * Siemens files name the full order number (`1FK2102-1AG10-0MA0_3D_en.STP`), the data a shorter or other one:
+ * 1FK2 stops at the brake digit (`1FK2102-1AG1` = with brake; the file adds shaft end, protection and encoder),
+ * 1FL6 names the plain shaft (`…-1LG1`, `…-1LH1` with brake), whose featherkey versions (`…-1LA1`, `…-1LB1`) have the
+ * same dimensions.
+ */
+export function siemensVariant(model: string, name: string): boolean {
+  if (/^1FK2/.test(model)) return name.startsWith(model) && name.length > model.length
+  const fl6 = /^(1FL6\d{3}-\d\w{4}-\d\w)([GH])(\d)$/.exec(model)
+  return fl6 != null && name === `${fl6[1]}${fl6[2] === 'G' ? 'A' : 'B'}${fl6[3]}`
+}
+
+export const kitDrawingFor =(kit: Kit, all = drawings) =>
   (all.find(
     (d) => d.kind === 'kits' && (d.names.includes(kit.product) || (kit.partNumber != null && d.partNumber === kit.partNumber)),
   ) as Drawing<KitMeta> | undefined) ?? null

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { axes, kits, motors, shafts } from '../data'
 import {
   buildCombo,
@@ -10,36 +10,37 @@ import {
   type ComboOptions,
   type ComboSelection,
 } from './combo'
-import { motorDrawingFor, parseDrawingPath, shaftDrawingFor, type Drawing, type ShaftMeta } from './drawings'
+import { motorDrawingFor, parseDrawingPath, shaftDrawingFor, siemensVariant, type Drawing, type ShaftMeta } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
 import { closure, parseStep, pointOf, refs, typeOf, writeStep, type StepFile } from './step'
 import { stretchPart, type StretchSpec } from './stretch'
 import { definitionByName, shapeOf, solidsOf } from './structure'
 
 const files = [
-  'data/axes/Festo/Drawings/ELGT/BS/8124427_ELGT-BS-90-500-20P.stp',
+  'data/axes/Festo/Drawings/ELGT/8124427_ELGT-BS-90-500-20P.stp',
   'data/kits/Festo/Drawings/EAMM-A/4824833_EAMM-A-T46-60P.stp',
   'data/motors/Festo/Drawings/EMMT-AS/8160632_EMMT-AS-60-S-HS-RMY.stp',
   'data/motors/Mitsubishi/Drawings/HG-KR/hg-kr43_.stp',
   'data/kits/Festo/Drawings/EAMM-U/4824069_EAMM-U-87-T46-60P-114.stp',
 ]
+// loaded on demand: the drawing folders hold gigabytes of STEP text
 const texts = import.meta.glob<string>(
   [
     '../../data/*/Festo/Drawings/**/*.stp',
     '../../data/motors/Mitsubishi/Drawings/HG-KR/hg-kr43_.stp',
   ],
-  { query: '?raw', import: 'default', eager: true },
+  { query: '?raw', import: 'default' },
 )
 // every drawing file's path, not loaded
 const allPaths = Object.keys(import.meta.glob('../../data/*/*/Drawings/**/*.{stp,step,STP,STEP}'))
 const metas = import.meta.glob<unknown>('../../data/*/*/Drawings/**/*.json', { import: 'default', eager: true })
-const text = (path: string) => texts[`../../${path}`]
+const text = (path: string) => texts[`../../${path}`]()
 const testDrawings: Drawing[] = files.map((path) => ({
   ...parseDrawingPath(path)!,
   url: path,
   meta: metas[`../../${path.replace(/\.stp$/, '.json')}`] ?? null,
 }))
-const load = async (d: Drawing) => text(d.path)
+const load = (d: Drawing) => text(d.path)
 
 const selection = (stroke: number, motor = 'EMMT-AS-60-S-HS', kit = 'EAMM-A-T46-60P'): ComboSelection => ({
   axis: axes.find((a) => a.model === 'ELGT-BS-90-…20P')!,
@@ -79,8 +80,8 @@ async function meshBox(step: string) {
 }
 
 describe('STEP', () => {
-  it('reads and writes a file without changing its entities', () => {
-    const file = parseStep(text(files[1]))
+  it('reads and writes a file without changing its entities', async () => {
+    const file = parseStep(await text(files[1]))
     const again = parseStep(writeStep(file))
     expect(again.entities.size).toBe(file.entities.size)
     expect([...again.entities.values()]).toEqual([...file.entities.values()])
@@ -98,7 +99,10 @@ describe('STEP', () => {
 })
 
 describe('axis stretch', () => {
-  const axisFile = parseStep(text(files[0]))
+  let axisFile: StepFile
+  beforeAll(async () => {
+    axisFile = parseStep(await text(files[0]))
+  })
   const spec = testDrawings[0].meta as { stretch: StretchSpec }
 
   it.each([300, 200, -100, -250, -400])('changes the length by %i mm', async (delta) => {
@@ -144,7 +148,7 @@ describe('axis stretch', () => {
     expect(z[0] - end).toBeGreaterThan(40)
   })
 
-  it('keeps a one-off feature in place when whole pitches are removed', () => {
+  it('keeps a one-off feature in place when whole pitches are removed', async () => {
     // ELGT-BS-160-500: mounting holes every 100 mm, a centring slot (x = 0, r 4, z ≈ −600) 126.5 mm from the moving
     // end; Festo's 300 model has it at −400
     const path = 'data/axes/Festo/Drawings/ELGT/8124517_ELGT-BS-160-500-10P'
@@ -161,7 +165,7 @@ describe('axis stretch', () => {
         }
       return [...z].sort((a, b) => a - b)
     }
-    const file = parseStep(text(`${path}.stp`))
+    const file = parseStep(await text(`${path}.stp`))
     expect(slot(file)).toEqual([-601, -599, -201, -199, -100])
     const r = stretchPart(file, meta.stretch, -200)
     expect(r.pitch).toBe(100)
@@ -282,7 +286,7 @@ describe('combination', () => {
     expect(caps.filter((c) => c.hi[0] < 0).map((c) => Math.round(c.lo[1]))).toEqual([440])
     expect(caps.filter((c) => c.lo[0] > 500)).toHaveLength(4)
     // the lengthened shaft alone: 318 mm plus the drive shafts reaching 24 mm into each axis
-    const stretched = stretchPart(parseStep(text(paths[3])), meta.stretch, 118).file
+    const stretched = stretchPart(parseStep(await text(paths[3])), meta.stretch, 118).file
     const box = await meshBox(writeStep(stretched))
     expect(box.hi[2] - box.lo[2]).toBeCloseTo(318 + 2 * 24, 0)
   }, 60000)
@@ -440,5 +444,17 @@ describe('combination', () => {
     const box = await meshBox(combo.step)
     // seen from the motor end, right is −Y: the connector reaches 71 mm off the shaft, past the profile (50 mm)
     expect(box.lo[1]).toBeCloseTo(-71, 0)
+  })
+})
+
+describe('Siemens motor drawings', () => {
+  it('match the full order number in the file name', () => {
+    // 1FK2: the model ends at the brake digit
+    expect(siemensVariant('1FK2102-1AG1', '1FK2102-1AG10-0MA0')).toBe(true)
+    expect(siemensVariant('1FK2102-1AG0', '1FK2102-1AG10-0MA0')).toBe(false)
+    // 1FL6: plain shaft G/H takes the featherkey file A/B of the same brake option
+    expect(siemensVariant('1FL6064-1AC61-2LH1', '1FL6064-1AC61-2LB1')).toBe(true)
+    expect(siemensVariant('1FL6064-1AC61-2LG1', '1FL6064-1AC61-2LB1')).toBe(false)
+    expect(siemensVariant('1FL6032-2AF21-1LG1', '1FL6032-2AF21-1LA1')).toBe(true)
   })
 })

@@ -150,8 +150,16 @@ function frames(file, model) {
   // motor end (±z) and, for belt axes, the kit side (±x)
   let motor = /^ESBF/.test(model) ? -1 : 1
   let side = 1
+  // shaft cover caps: CADENAS names them (CUP); the ELGT-TB-…-CS models (Creo, from Festo) name no parts, so there
+  // a cap is a thin square-boxed disc across x at the profile's side
+  const named = others.some((m) => /CUP/.test(m.name))
+  const isCap = (m) => {
+    if (named) return /CUP/.test(m.name)
+    const [dx, dy, dz] = [0, 1, 2].map((k) => m.hi[k] - m.lo[k])
+    return dx < 3 && dy > 20 && Math.abs(dy - dz) < 2 && Math.abs(centre(m.lo, m.hi, 0) - x0) > 0.4 * width
+  }
   if (family === 'TB') {
-    const caps = others.filter((m) => /CUP/.test(m.name))
+    const caps = others.filter(isCap)
     const at = (end, s) => caps.some((c) => Math.sign(centre(c.lo, c.hi, 2) - centre(profile.lo, profile.hi, 2)) === end && Math.sign(centre(c.lo, c.hi, 0) - x0) === s)
     const open = [1, -1].flatMap((end) => [1, -1].filter((s) => !at(end, s)).map((s) => ({ end, s })))
     if (open.length === 1) {
@@ -159,7 +167,7 @@ function frames(file, model) {
       side = open[0].s
     } else if (open.length === 0) {
       // every shaft end capped (EGC-HD-TB): the drive head is the one the slide starts at, as on the other belt axes
-      const slides = others.filter((m) => !hardware(m.name) && !/CUP|AK\)/.test(m.name) && m.hi[0] - m.lo[0] > 0.6 * width)
+      const slides = others.filter((m) => !hardware(m.name) && !isCap(m) && !/AK\)/.test(m.name) && m.hi[0] - m.lo[0] > 0.6 * width)
       const s = slides.reduce((a, b) => (b.hi[1] > a.hi[1] ? b : a))
       motor = Math.sign(centre(s.lo, s.hi, 2) - centre(profile.lo, profile.hi, 2))
       side = 1
@@ -191,7 +199,7 @@ function frames(file, model) {
   let drive
   const structural = ms.filter((m) => !hardware(m.name) && m !== slide.part)
   if (family === 'TB') {
-    const caps = others.filter((m) => /CUP/.test(m.name) && Math.sign(centre(m.lo, m.hi, 2) - centre(profile.lo, profile.hi, 2)) === motor)
+    const caps = others.filter((m) => isCap(m) && Math.sign(centre(m.lo, m.hi, 2) - centre(profile.lo, profile.hi, 2)) === motor)
     const cap = caps[0]
     const shaft = [centre(cap.lo, cap.hi, 1), centre(cap.lo, cap.hi, 2)]
     const faces = structural
@@ -235,15 +243,21 @@ function frames(file, model) {
   const edge = dir > 0 ? range[1] : range[0]
   const beyond = (m) => (dir > 0 ? m.lo[2] > edge : m.hi[2] < edge)
 
+  // the length change needs the profile as a part of its own (CADENAS: "<partNumber> <model>…"); the ELGT-TB-…-CS
+  // models name no parts, but ELGT-TB is ordered at its standard strokes only and each one has its own file
+  const stretchable = /\d{5,}/.test(profile.name)
   // placements of the moving parts, matched to the meshes by the box of their geometry
-  const inst = instances(text)
-  const profileInst = matchInstance(inst, profile, text)
-  if (!profileInst) throw new Error('no placement for the profile')
-  const move = others.filter(beyond).map((m) => {
-    const i = matchInstance(inst, m, text)
-    if (!i) throw new Error(`no placement for ${m.name}`)
-    return i.placement
-  })
+  let move = []
+  if (stretchable) {
+    const inst = instances(text)
+    const profileInst = matchInstance(inst, profile, text)
+    if (!profileInst) throw new Error('no placement for the profile')
+    move = others.filter(beyond).map((m) => {
+      const i = matchInstance(inst, m, text)
+      if (!i) throw new Error(`no placement for ${m.name}`)
+      return i.placement
+    })
+  }
 
   // parts running along the whole axis change length with it (ESBF piston rod)
   const also = family === "ESBF" ? others.filter((m) => m.hi[2] - m.lo[2] >= 0.6 * length).map((m) => m.name) : []
@@ -260,11 +274,13 @@ function frames(file, model) {
         ? { front: [Math.sign(centre(slide.part.lo, slide.part.hi, 0) - x0), 0, 0] }
         : {}),
     },
-    stretch: { part: profile.name, ...(also.length ? { also } : {}), axis: 2, dir, range, ...(move.length ? { move } : {}) },
+    ...(stretchable
+      ? { stretch: { part: profile.name, ...(also.length ? { also } : {}), axis: 2, dir, range, ...(move.length ? { move } : {}) } }
+      : {}),
     // the profile's mounting face (underside), middle of its length: where a gantry kit holds a carried axis
     profile: { origin: [fixed(x0), fixed(profile.lo[1]), fixed(centre(profile.lo, profile.hi, 2))], normal: [0, -1, 0] },
   }
-  return { json, info: `${family} motor ${motor > 0 ? '+z' : '-z'}${family === 'TB' ? ` side ${side > 0 ? '+x' : '-x'}` : ''}, range ${range}, moving ${move.length}` }
+  return { json, info: `${family} motor ${motor > 0 ? '+z' : '-z'}${family === 'TB' ? ` side ${side > 0 ? '+x' : '-x'}` : ''}, ${stretchable ? `range ${range}, moving ${move.length}` : 'no length change'}, profile ${fixed(length)} mm` }
 }
 
 // ---- mounting kits and gearboxes ----

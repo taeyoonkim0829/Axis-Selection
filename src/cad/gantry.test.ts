@@ -7,13 +7,14 @@ import { buildCombo, comboDrawings, defaultComboOptions, type ComboSelection } f
 import { parseDrawingPath, type AdapterMeta, type Drawing } from './drawings'
 import { buildGantry, type GantryAxisDrawing } from './gantry'
 
-const texts = import.meta.glob<string>('../../data/*/Festo/Drawings/**/*.stp', { query: '?raw', import: 'default', eager: true })
+// loaded on demand: the drawing folders hold gigabytes of STEP text
+const texts = import.meta.glob<string>('../../data/*/Festo/Drawings/**/*.stp', { query: '?raw', import: 'default' })
 const metas = import.meta.glob<unknown>('../../data/*/Festo/Drawings/**/*.json', { import: 'default', eager: true })
 const all: Drawing[] = Object.keys(texts).map((key) => {
   const path = key.slice('../../'.length)
   return { ...parseDrawingPath(path)!, url: path, meta: metas[key.replace(/\.stp$/, '.json')] ?? null }
 })
-const load = async (d: Drawing) => texts[`../../${d.path}`]
+const load = (d: Drawing) => texts[`../../${d.path}`]()
 
 type OcctMesh = { name: string; attributes: { position: { array: number[] } } }
 type Occt = { ReadStepFile: (data: Uint8Array, params: null) => { success: boolean; meshes: OcctMesh[] } }
