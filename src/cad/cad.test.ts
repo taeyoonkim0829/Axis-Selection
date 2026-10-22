@@ -344,18 +344,21 @@ describe('combination', () => {
     // the EGC slide stands out to −x, the file's drive shaft end is at +x: 우측 is the slide side
     expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['앞 좌측', '앞 우측', '뒤 좌측', '뒤 우측'])
     expect(words.map((w) => w.order)).toEqual([0, 1, 2, 3])
-    // motor sync: the second axis (at +y) takes its own position, here the other shaft end
+    // motor sync: the second axis (at +y) mirrors the first by default (motor on the other shaft end), or takes
+    // its own position, here the first's
     const twin = { spacing: 400, drive: true }
-    const same = await meshBox((await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, twin)).step)
-    const turned = await meshBox(
+    const mirrored = await meshBox((await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, twin)).step)
+    const same = await meshBox(
       (
-        await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, twinDrive: DRIVE_POSITIONS[1] }, twin)
+        await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, twinDrive: DRIVE_POSITIONS[0] }, twin)
       ).step,
     )
     expect(same.hi[1]).toBeCloseTo(400 + plain.hi[1], 0)
-    expect(turned.lo[1]).toBeCloseTo(plain.lo[1], 0)
-    expect(turned.hi[1]).toBeLessThan(same.hi[1] - 1)
-    expect(turned.meshes).toBe(same.meshes)
+    expect(mirrored.lo[1]).toBeCloseTo(plain.lo[1], 0)
+    expect(mirrored.hi[1]).toBeLessThan(same.hi[1] - 1)
+    // symmetric about the plane between the axes
+    expect(mirrored.lo[1] + mirrored.hi[1]).toBeCloseTo(400, 0)
+    expect(mirrored.meshes).toBe(same.meshes)
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {

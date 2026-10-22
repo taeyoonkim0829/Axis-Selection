@@ -74,7 +74,7 @@ export interface ComboOptions {
   motorConnector: Side | null
   /** Belt axes: where the drive sits (ignored for other axes) */
   drive: DrivePosition
-  /** Belt axes, motor sync: where the second axis's drive sits; null = like the first */
+  /** Belt axes, motor sync: where the second axis's drive sits; null = the mirror image of the first (`mirroredDrive`) */
   twinDrive?: DrivePosition | null
   /** Motor sync: the second axis's kit side and motor connector; null = like the first */
   twinKitSide?: Side | null
@@ -98,6 +98,12 @@ export const DRIVE_POSITIONS: readonly DrivePosition[] = [
 export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnector: null, drive: DRIVE_POSITIONS[0] }
 
 const turnable = (axis: Axis) => axis.drive === 'belt'
+
+/**
+ * The second belt axis of a motor-sync pair mirrors the first across the plane between them: drive head at the same
+ * end, motor on the other shaft end. Kit side and connector, seen from the motor end, then mirror with the same values.
+ */
+export const mirroredDrive = (position: DrivePosition): DrivePosition => ({ ...position, otherSide: !position.otherSide })
 
 /** Drive shaft frame on the other side of a belt drive head: mirrored across the profile's middle plane */
 function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
@@ -442,11 +448,12 @@ export async function comboParts(
   const lateral = cross(world.normal, world.travel)
   let name = parts.map((p) => p.name).join(' + ')
   // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train (drive
-  // position `options.twinDrive`, kit side and connector `twinOrientation`) when it has a motor
+  // position `options.twinDrive`, by default the mirror image of the first; kit side and connector
+  // `twinOrientation`) when it has a motor
   if (twin) {
     const shift = scale(lateral, twin.spacing)
     const second = twin.drive
-      ? train(turnable(sel.axis) && options.twinDrive ? options.twinDrive : position, twinOrientation(options)).parts
+      ? train(turnable(sel.axis) ? (options.twinDrive ?? mirroredDrive(position)) : position, twinOrientation(options)).parts
       : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')

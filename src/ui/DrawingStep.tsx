@@ -7,6 +7,7 @@ import {
   connectorSide,
   DRIVE_POSITIONS,
   drivePositionWords,
+  mirroredDrive,
   motorFacesTwin,
   shaftDrivePosition,
   SIDES,
@@ -55,9 +56,9 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
           drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
       )
     : []
-  // motor sync: the second axis's drive position (default: like the first)
+  // motor sync: the second axis's drive position (default: the mirror image of the first)
   const twinTurnable = turnable && axis?.layout.mode === 'twinMotor'
-  const twinPosition = twinTurnable ? (sides.twinDrive ?? drivePosition) : null
+  const twinPosition = twinTurnable ? (sides.twinDrive ?? mirroredDrive(drivePosition)) : null
   const twinIndex = twinPosition
     ? DRIVE_POSITIONS.findIndex((p) => p.otherEnd === twinPosition.otherEnd && p.otherSide === twinPosition.otherSide)
     : -1

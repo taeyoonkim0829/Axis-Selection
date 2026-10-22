@@ -5,7 +5,15 @@ import { accelTimeFor } from '../calc/motionProfile'
 import { gearboxChecks, gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
-import { assemblyWarnings, connectorSide, drivePositionWords, shaftDrivePosition, twinOrientation, type ComboOptions } from '../cad/combo'
+import {
+  assemblyWarnings,
+  connectorSide,
+  drivePositionWords,
+  mirroredDrive,
+  shaftDrivePosition,
+  twinOrientation,
+  type ComboOptions,
+} from '../cad/combo'
 import { axisDrawingsFor } from '../cad/drawings'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, StatusBadge } from './common'
@@ -104,10 +112,10 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
     beltMeta && axis?.layout.mode === 'twinShaft' ? shaftDrivePosition(beltMeta, req.mounting, assembly.drive) : assembly.drive
   const words = beltMeta ? drivePositionWords(beltMeta, req.mounting, drivePosition) : null
   const motorPosition = words ? `${t(words.end)} · ${t(words.side)}` : null
-  // motor sync: the second axis's motor position, as in step 5
+  // motor sync: the second axis's motor position (default the mirror image of the first), as in step 5
   const twinWords =
     beltMeta && axis?.layout.mode === 'twinMotor'
-      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? drivePosition)
+      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(drivePosition))
       : null
   const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
   // motor sync: the second axis's kit side and connector, as in step 5
