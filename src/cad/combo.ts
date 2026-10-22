@@ -103,7 +103,7 @@ const turnable = (axis: Axis) => axis.drive === 'belt'
  * The second belt axis of a twin pair mirrors the first across the plane between them, its drive head at the same
  * end. A centred slide (ELGD-TB, EGC-HD-TB): the motor on the other shaft end. A slide standing out to one side
  * (`slide.front`, EGC-TB-KF): the same position, drawn mirrored (`comboParts`: the axis turned end for end with its
- * drive at the other head). Kit side and connector, seen from the motor end, mirror with the same values.
+ * drive at the other head). Its drive train is assembled on it with left and right swapped (`twinOrientation`).
  */
 export const mirroredDrive = (meta: AxisMeta | null, position: DrivePosition): DrivePosition =>
   meta?.slide.front ? position : { ...position, otherSide: !position.otherSide }
