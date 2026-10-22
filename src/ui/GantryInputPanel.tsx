@@ -185,8 +185,12 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
             <VecFields value={gantry.offsets.xy} onChange={(v) => set('offsets', { ...gantry.offsets, xy: v })} />
             <p className="field-hint">
               {t('X축 구성 중심에서 Y축 본체 중심까지')}
-              {gantry.yMounting === 'wall' && gantry.xMounting === 'floor' && gantry.xParallel.mode !== 'twinMotor' && gantry.xParallel.mode !== 'twinShaft'
-                ? ` ${t('앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.')}`
+              {gantry.yMounting === 'wall' && gantry.xMounting === 'floor'
+                ? ` ${t(
+                    gantry.xParallel.mode === 'twinMotor' || gantry.xParallel.mode === 'twinShaft'
+                      ? '앵글 키트(EHAM-AK)를 쓰면 Y축 끝은 첫 번째 X축의 브래킷 끝에 맞춰 놓이고, Y 값은 쓰지 않습니다.'
+                      : '앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.',
+                  )}`
                 : ''}
             </p>
           </>

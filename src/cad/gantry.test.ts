@@ -100,8 +100,21 @@ describe('gantry kits', () => {
     expect(j.aligned).toBe(true)
     expect(j.offset.y).toBeCloseTo(-99 + (500 + 216) / 2)
     expect(j.kitAt).toEqual({ x: 0, y: 0, z: 0 })
-    // two X axes: Y stays at the entered offset
-    expect(gantryJoint(wallY, 'x', 'y', x, y, 500, adapters, 716).aligned).toBe(false)
+  })
+
+  it('lays the carried axis from the first bracket end under two X axes, with the spacing that fits both ends', () => {
+    const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
+    const twin = (spacing: number) => ({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor' as const, spacing } })
+    // first X at −500 (MR, reaching +Y): Y end 99 mm behind its foot, 716 mm long
+    const far = gantryJoint(twin(1000), 'x', 'y', x, y, 500, adapters, 716)
+    expect(far.offset.y).toBeCloseTo(-500 - 99 + 358)
+    expect(far.span!.mismatch).toBeCloseTo(-482)
+    expect(far.span!.spacing).toBeCloseTo(518)
+    expect(far.status).toBe('warn')
+    const fit = gantryJoint(twin(518), 'x', 'y', x, y, 500, adapters, 716)
+    expect(fit.status).toBe('ok')
+    expect(fit.offset.y).toBeCloseTo(0)
+    expect(fit.span!.mismatch).toBeCloseTo(0)
   })
 
   it('has no kit for Z on a floor-mounted Y', () => {
@@ -175,20 +188,27 @@ describe('gantry drawing', () => {
   }, 120000)
 
   it('mirrors the angle kits under two X axes, both walls reaching inwards', async () => {
-    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 1000 } }
+    // Y 1000 + 216 mm long, both ends at the bracket ends (99 mm behind the feet): spacing 1216 − 198
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 1018 } }
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!
     const [x, y] = [elgt(160), elgt(120)]
-    const xy = gantryJoint(g, 'x', 'y', x, y, 1000, adapters)
+    const yd = axisDrawing('y', y, 1000, g)
+    const xy = gantryJoint(g, 'x', 'y', x, y, 1000, adapters, yd.sel.stroke + y.baseLength!)
+    expect(xy.span!.mismatch).toBeCloseTo(0)
     const drawing = (k: AxisAdapter) => (all.find((d) => d.kind === 'adapters' && d.partNumber === k.partNumber) as Drawing<AdapterMeta>) ?? null
     const combo = await buildGantry(
       g,
-      [{ ...axisDrawing('x', x, 800, g), twin: { spacing: 1000, drive: true } }, axisDrawing('y', y, 1000, g)],
-      [{ base: 'x', carried: 'y', kits: xy.kits.map((kit) => ({ kit, drawing: drawing(kit) })) }],
+      [{ ...axisDrawing('x', x, 800, g), twin: { spacing: 1018, drive: true } }, yd],
+      [{ base: 'x', carried: 'y', kits: xy.kits.map((kit) => ({ kit, drawing: drawing(kit) })), offset: xy.offset }],
       load,
     )
-    const found = (await boxes(combo.step, /EHAM-AK/)).filter((b) => /EHAM-AK/.test(b.name))
+    const all3 = await boxes(combo.step, /EHAM-AK|ELGT-BS-120/)
+    const found = all3.filter((b) => /EHAM-AK/.test(b.name))
+    // the Y axis's −Y end (no drive there) flush with the first bracket's end
+    const yLo = Math.min(...all3.filter((b) => /ELGT-BS-120/.test(b.name)).map((b) => b.lo[1]))
+    expect(Math.abs(yLo - Math.min(...found.map((b) => b.lo[1])))).toBeLessThan(10)
     expect(found.map((b) => b.name.replace(/^\d+ /, '').replace(/---.*$/, '')).sort()).toEqual(['EHAM-AK-L9-160-L9-120-ML', 'EHAM-AK-L9-160-L9-120-MR'])
-    // each wall (470 mm, foot at one end over its X axis at ∓500) lies mostly between the X axes
+    // each wall (470 mm, foot at one end over its X axis at ∓509) lies mostly between the X axes
     for (const b of found) expect(Math.abs((b.lo[1] + b.hi[1]) / 2)).toBeLessThan(450)
   }, 120000)
 })

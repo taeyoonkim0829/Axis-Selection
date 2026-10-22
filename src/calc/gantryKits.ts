@@ -23,6 +23,10 @@ export interface GantryJoint {
   offset: Vec
   kitAt: Vec
   aligned: boolean
+  /** two base slides, aligned: the carried axis's end at the first bracket; how far its other end lies beyond the
+   *  second bracket's position (mm, negative: short of it) and the base spacing that puts both ends at their
+   *  brackets */
+  span?: { mismatch: number; spacing: number }
   status: Status
   /** Korean source text with `{name}` placeholders */
   note: string
@@ -89,7 +93,7 @@ function placement(
   kits: AxisAdapter[],
   slides: number[],
   length: number | null,
-): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned'> {
+): Pick<GantryJoint, 'offset' | 'kitAt' | 'aligned' | 'span'> & { short?: boolean } {
   const b = slideFrame(base, axisMounting(g, base))
   const c = slideFrame(carried, axisMounting(g, carried))
   const o = carried === 'z' ? g.offsets.yz : g.offsets.xy
@@ -99,12 +103,20 @@ function placement(
   const across = v.map((x, i) => x - along * c.t[i])
   const vec = (w: number[]): Vec => ({ x: w[0] + 0, y: w[1] + 0, z: w[2] + 0 })
   const kitAt = vec(across.map((x, i) => x + at * b.l[i]))
-  const k = kits[0]
-  if (kits.length !== 1 || !k.hand || k.carriedEnd == null || !length) return { offset: o, kitAt, aligned: false }
-  // the wall's reach along the carried travel; the carried axis's end at carriedEnd from the foot, its body beyond
-  const reach = (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t))
-  const centre = slides[0] * dot(b.l, c.t) + reach * (k.carriedEnd + length / 2)
-  return { offset: vec(across.map((x, i) => x + centre * c.t[i])), kitAt, aligned: true }
+  if (!length || !kits.length || kits.some((k) => !k.hand || k.carriedEnd == null)) return { offset: o, kitAt, aligned: false }
+  // the wall's reach along the carried travel and the foot's position on it; the carried axis's end at carriedEnd
+  // from the foot, its body beyond (two base slides: at the first one's bracket, reaching inwards)
+  const reach = (k: AxisAdapter) => (k.hand === 'left' ? 1 : -1) * Math.sign(dot(cross(b.n, c.n), c.t))
+  const foot = (i: number) => slides[i] * dot(b.l, c.t)
+  const r0 = reach(kits[0])
+  const centre = foot(0) + r0 * (kits[0].carriedEnd! + length / 2)
+  const offset = vec(across.map((x, i) => x + centre * c.t[i]))
+  if (kits.length < 2) return { offset, kitAt, aligned: true }
+  // the other end against the second bracket's position for it
+  const end = centre + (r0 * length) / 2
+  const mismatch = r0 * (end - (foot(1) + reach(kits[1]) * kits[1].carriedEnd!))
+  const spacing = Math.abs(slides[1] - slides[0]) + mismatch
+  return { offset, kitAt, aligned: true, span: { mismatch, spacing }, short: r0 * (end - foot(1)) < 0 }
 }
 
 /**
@@ -124,7 +136,17 @@ export function gantryJoint(
 ): GantryJoint {
   const slides = baseSlides(g, base)
   const joint = pickJoint(g, base, carried, baseAxis, carriedAxis, carriedStroke, adapters, slides)
-  return { ...joint, ...placement(g, base, carried, joint.kits, slides, carriedLength) }
+  const { short, ...place } = placement(g, base, carried, joint.kits, slides, carriedLength)
+  // the carried axis not reaching the second base slide hangs on one bracket only
+  if (short && joint.status === 'ok')
+    return {
+      ...joint,
+      ...place,
+      status: 'warn',
+      note: '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.',
+      noteArgs: { axis: carried.toUpperCase(), base: base.toUpperCase(), spacing: Math.round(place.span!.spacing * 10) / 10 },
+    }
+  return { ...joint, ...place }
 }
 
 function pickJoint(

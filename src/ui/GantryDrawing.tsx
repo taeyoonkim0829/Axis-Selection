@@ -9,6 +9,7 @@ import type { GantryAxisResult } from '../selection'
 import { comboInputs, comboKey } from './comboInputs'
 import { ComboPreviewPanel } from './ComboPreviewPanel'
 import { StatusBadge } from './common'
+import { fmt } from './format'
 import { loadText, useComboPreview } from './useComboPreview'
 
 const roleWords: Record<string, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터', shaft: '연결축' }
@@ -111,7 +112,22 @@ export function GantryDrawing({
                           {' '}
                           {t('브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).', { axis: j.carried.toUpperCase() })}
                           {j.aligned && ' '}
-                          {j.aligned && t('{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.', { axis: j.carried.toUpperCase() })}
+                          {j.aligned &&
+                            (j.span
+                              ? t('{axis}축 끝은 조립 설명서대로 첫 번째 {base}축의 브래킷 끝에 맞춥니다(장착 위치의 {axis} 이동 방향 값은 쓰지 않음).', {
+                                  axis: j.carried.toUpperCase(),
+                                  base: j.base.toUpperCase(),
+                                })
+                              : t('{axis}축 끝은 조립 설명서대로 브래킷 끝에 맞추며, 장착 위치의 {axis} 이동 방향 값은 놓이는 쪽(+/−)만 정합니다.', { axis: j.carried.toUpperCase() }))}
+                          {j.span && j.status === 'ok' && Math.abs(j.span.mismatch) > 1 && ' '}
+                          {j.span &&
+                            j.status === 'ok' &&
+                            Math.abs(j.span.mismatch) > 1 &&
+                            t('다른 끝은 두 번째 브래킷 끝과 {d} mm 어긋납니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 맞습니다.', {
+                              d: fmt(j.span.mismatch, 1),
+                              base: j.base.toUpperCase(),
+                              spacing: fmt(j.span.spacing, 1),
+                            })}
                         </span>
                       )}
                       {j.kit?.accessories.map((x) => (

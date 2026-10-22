@@ -423,6 +423,14 @@ export const en: Record<string, string> = {
     "The {axis} axis's end is set at the bracket end as in the assembly instructions; the mounting position's {axis} travel value only picks the side (+/−).",
   '앵글 키트(EHAM-AK)를 쓰면 Y축은 브래킷 끝에 맞춰 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.':
     'With an angle kit (EHAM-AK) the Y axis sits at the bracket end; the Y value only picks the side (+/−).',
+  '{axis}축 끝은 조립 설명서대로 첫 번째 {base}축의 브래킷 끝에 맞춥니다(장착 위치의 {axis} 이동 방향 값은 쓰지 않음).':
+    "The {axis} axis's end is set at the first {base} axis's bracket end as in the assembly instructions (the mounting position's {axis} travel value is not used).",
+  '다른 끝은 두 번째 브래킷 끝과 {d} mm 어긋납니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 맞습니다.':
+    'The other end is {d} mm off the second bracket end. A {base} axis spacing of {spacing} mm puts both ends at their brackets.',
+  '{axis}축이 두 번째 {base}축의 브래킷까지 닿지 않습니다. {base}축 간격을 {spacing} mm로 하면 양 끝이 브래킷 끝에 맞습니다.':
+    "The {axis} axis does not reach the second {base} axis's bracket. A {base} axis spacing of {spacing} mm puts both ends at their bracket ends.",
+  '앵글 키트(EHAM-AK)를 쓰면 Y축 끝은 첫 번째 X축의 브래킷 끝에 맞춰 놓이고, Y 값은 쓰지 않습니다.':
+    "With an angle kit (EHAM-AK) the Y axis's end sits at the first X axis's bracket end; the Y value is not used.",
   '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
