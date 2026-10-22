@@ -115,7 +115,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   // motor sync: the second axis's motor position (default the mirror image of the first), as in step 5
   const twinWords =
     beltMeta && axis?.layout.mode === 'twinMotor'
-      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(drivePosition))
+      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(beltMeta, drivePosition))
       : null
   const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
   // motor sync: the second axis's kit side and connector, as in step 5

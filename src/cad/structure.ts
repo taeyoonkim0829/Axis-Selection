@@ -22,9 +22,9 @@ export function rootDefinition(file: StepFile): number {
   return root
 }
 
-/** Product definition whose PRODUCT name contains `name` */
-export function definitionByName(file: StepFile, name: string): number | null {
-  const product = ofType(file, 'PRODUCT').find(([, b]) => args(b)[0].includes(name))?.[0]
+/** Product definition whose PRODUCT name contains `name` (or matches it) */
+export function definitionByName(file: StepFile, name: string | RegExp): number | null {
+  const product = ofType(file, 'PRODUCT').find(([, b]) => (typeof name === 'string' ? args(b)[0].includes(name) : name.test(args(b)[0])))?.[0]
   if (product == null) return null
   const formation = [...file.entities].find(
     ([, b]) => typeOf(b).startsWith('PRODUCT_DEFINITION_FORMATION') && refs(b)[0] === product,

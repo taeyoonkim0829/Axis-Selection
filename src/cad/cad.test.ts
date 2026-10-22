@@ -344,8 +344,8 @@ describe('combination', () => {
     // the EGC slide stands out to −x, the file's drive shaft end is at +x: 우측 is the slide side
     expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['앞 좌측', '앞 우측', '뒤 좌측', '뒤 우측'])
     expect(words.map((w) => w.order)).toEqual([0, 1, 2, 3])
-    // motor sync: the second axis (at +y) mirrors the first by default (motor on the other shaft end), or takes
-    // its own position, here the first's
+    // motor sync: the second axis (at +y) mirrors the first by default (the EGC-TB-KF slide stands out to one side:
+    // the axis turned end for end, its slide at the far end of the travel), or takes its own position, here the first's
     const twin = { spacing: 400, drive: true }
     const mirrored = await meshBox((await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, twin)).step)
     const same = await meshBox(
@@ -358,6 +358,9 @@ describe('combination', () => {
     expect(mirrored.hi[1]).toBeLessThan(same.hi[1] - 1)
     // symmetric about the plane between the axes
     expect(mirrored.lo[1] + mirrored.hi[1]).toBeCloseTo(400, 0)
+    // both bodies along the same stretch of travel: the slides line up, the drive heads at opposite ends
+    expect(mirrored.lo[0]).toBeCloseTo(plain.lo[0], 0)
+    expect(mirrored.hi[0] - mirrored.lo[0]).toBeLessThan(plain.hi[0] - plain.lo[0] + 40)
     expect(mirrored.meshes).toBe(same.meshes)
   }, 60000)
 

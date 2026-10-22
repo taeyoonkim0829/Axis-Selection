@@ -100,10 +100,35 @@ export const defaultComboOptions: ComboOptions = { kitSide: 'down', motorConnect
 const turnable = (axis: Axis) => axis.drive === 'belt'
 
 /**
- * The second belt axis of a motor-sync pair mirrors the first across the plane between them: drive head at the same
- * end, motor on the other shaft end. Kit side and connector, seen from the motor end, then mirror with the same values.
+ * The second belt axis of a motor-sync pair mirrors the first across the plane between them. A centred slide
+ * (ELGD-TB, EGC-HD-TB): drive head at the same end, motor on the other shaft end. A slide standing out to one side
+ * (`slide.front`, EGC-TB-KF): the axis turned end for end, so the slide stands out the other way, with its slide
+ * moved to the far end of the travel to line up with the first's (`comboParts`); the drive head is then at the other
+ * end. Kit side and connector, seen from the motor end, mirror with the same values.
  */
-export const mirroredDrive = (position: DrivePosition): DrivePosition => ({ ...position, otherSide: !position.otherSide })
+export const mirroredDrive = (meta: AxisMeta | null, position: DrivePosition): DrivePosition =>
+  meta?.slide.front ? { ...position, otherEnd: !position.otherEnd } : { ...position, otherSide: !position.otherSide }
+
+/** The slide when it is a part of its own (EGC-TB-KF: …-GK-GPTB1--------(0)) */
+const SLIDE_PART = /TB1-{4,}/
+
+/** Moves the slide part by `shift` (file mm; new points, the old ones may be shared). False when it is no part of its own. */
+function moveSlide(file: StepFile, shift: Vec3): boolean {
+  const pd = definitionByName(file, SLIDE_PART)
+  const rep = pd != null ? shapeOf(file, pd) : null
+  const placements = rep != null ? placementIdsOf(file, rep) : []
+  const e = file.entities
+  let next = nextIdOf(e)
+  for (const id of placements) {
+    const body = e.get(id)!
+    const location = pointOf(e.get(refs(body)[0]) ?? '')
+    if (!location) return false
+    e.set(next, pointBody(add(location, shift)))
+    e.set(id, mapRefs(body, (r) => (r === refs(body)[0] ? next : r)))
+    next++
+  }
+  return placements.length > 0
+}
 
 /** Drive shaft frame on the other side of a belt drive head: mirrored across the profile's middle plane */
 function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
@@ -394,18 +419,31 @@ export async function comboParts(
   const gearboxFile = gearboxText ? parseStep(gearboxText) : null
   const motorFile = parseStep(motorText)
 
-  /** Axis with its drive train for one drive position and orientation, the slide centre at the origin */
-  const train = (at: DrivePosition, orientation: ComboOptions = options) => {
+  /**
+   * Axis with its drive train for one drive position and orientation, the slide centre at the origin; `slideAtEnd`
+   * moves a slide that is a part of its own to the far end of the travel (a second axis turned end for end)
+   */
+  const train = (at: DrivePosition, orientation: ComboOptions = options, slideAtEnd = false) => {
     let drive = base.drive
     let file = stretched
+    let slideOrigin = slide.origin
+    // moveSlide and moveCaps edit the entities: a copy, the other axis keeps them
+    const own = () => (file === stretched ? { header: stretched.header, entities: new Map(stretched.entities) } : file)
+    if (slideAtEnd) {
+      const shift = scale(slide.travel, sel.stroke)
+      const moved = own()
+      if (moveSlide(moved, shift)) {
+        file = moved
+        slideOrigin = add(slide.origin, shift)
+      }
+    }
     if (at.otherSide) {
       drive = otherShaftEnd(drive, slide)
-      // moveCaps edits the entities: a copy, the other axis may keep the caps
-      file = { header: stretched.header, entities: new Map(stretched.entities) }
+      file = own()
       moveCaps(file, drive, slide)
     }
     // axis → world: slide centre at the origin, travel and slide normal by the mounting
-    const axisToWorld = axisToWorldOf(axisMeta, req.mounting, at, slide.origin)
+    const axisToWorld = axisToWorldOf(axisMeta, req.mounting, at, slideOrigin)
     let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
     // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
     const out = rotate(axisToWorld, drive.axis)
@@ -449,12 +487,12 @@ export async function comboParts(
   let name = parts.map((p) => p.name).join(' + ')
   // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train (drive
   // position `options.twinDrive`, by default the mirror image of the first; kit side and connector
-  // `twinOrientation`) when it has a motor
+  // `twinOrientation`) when it has a motor. Turned end for end against the first, its slide goes to the far end
+  // of the travel to line up with the first's.
   if (twin) {
     const shift = scale(lateral, twin.spacing)
-    const second = twin.drive
-      ? train(turnable(sel.axis) ? (options.twinDrive ?? mirroredDrive(position)) : position, twinOrientation(options)).parts
-      : parts
+    const twinAt = turnable(sel.axis) ? (options.twinDrive ?? mirroredDrive(axisMeta, position)) : position
+    const second = twin.drive ? train(twinAt, twinOrientation(options), twinAt.otherEnd !== position.otherEnd).parts : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))
