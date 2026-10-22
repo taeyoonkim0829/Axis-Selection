@@ -75,7 +75,8 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   }
   // motor sync: the second axis's kit side and connector (default: like the first)
   const twinMotor = axis?.layout.mode === 'twinMotor'
-  const twinSides = twinOrientation(sides)
+  // belt axes: the second is the first's mirror image, left and right swapped
+  const twinSides = twinOrientation(sides, axis?.axis.drive === 'belt')
   const twinConnector = connectorSide(twinSides, parallel)
   // a change on the first axis keeps the second's kit side and connector as they are (fixed first); its motor
   // position keeps mirroring the first's until it is picked

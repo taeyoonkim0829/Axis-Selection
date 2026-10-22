@@ -274,15 +274,25 @@ function moveCaps(file: StepFile, drive: Frame, slide: AxisMeta['slide']) {
 export const connectorSide = (options: ComboOptions, parallel: boolean): Side =>
   options.motorConnector ?? (parallel ? options.kitSide : 'up')
 
+/** Left and right swapped: a side seen from the motor end of a mirror image */
+const mirrorSide: Record<Side, Side> = { up: 'up', down: 'down', left: 'right', right: 'left' }
+
 /**
  * The second axis's orientation under motor sync as options of its own: its kit side and connector, else the
- * first's (a kit side of its own with no connector picked turns the connector automatically to it).
+ * first's (a kit side of its own with no connector picked turns the connector automatically to it). `mirrored`
+ * (belt axes, the second drawn as the first's mirror image): the first's with left and right swapped, so the kit and
+ * motor point the same way along the travel on both axes.
  */
-export const twinOrientation = (options: ComboOptions): ComboOptions => ({
-  ...options,
-  kitSide: options.twinKitSide ?? options.kitSide,
-  motorConnector: options.twinMotorConnector ?? (options.twinKitSide == null ? options.motorConnector : null),
-})
+export const twinOrientation = (options: ComboOptions, mirrored = false): ComboOptions => {
+  const side = (s: Side) => (mirrored ? mirrorSide[s] : s)
+  return {
+    ...options,
+    kitSide: options.twinKitSide ?? side(options.kitSide),
+    motorConnector:
+      options.twinMotorConnector ??
+      (options.twinKitSide == null && options.motorConnector != null ? side(options.motorConnector) : null),
+  }
+}
 
 const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
 
@@ -542,7 +552,7 @@ export async function comboParts(
       const { file, axisToWorld: transform } = mirrorAxis(position, otherShaftEnd(drive, slide))
       return [{ role: 'axis' as const, name: sel.axisModel, file, transform }]
     }
-    const second = twin.drive ? train(twinAt, twinOrientation(options), mirror).parts : mirror ? shaftMirror() : parts
+    const second = twin.drive ? train(twinAt, twinOrientation(options, turnable(sel.axis)), mirror).parts : mirror ? shaftMirror() : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))

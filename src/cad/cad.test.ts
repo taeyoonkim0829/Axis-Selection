@@ -395,6 +395,30 @@ describe('combination', () => {
     )
     expect(turned.hi[1]).toBeGreaterThan(mirrored.hi[1] + 100)
     expect(turned.meshes).toBe(mirrored.meshes)
+    // the drive train is assembled on the turned axis: a connector to the left (along the travel, seen from the
+    // first's motor end) points the same way on both motors
+    const left = await meshBox(
+      (await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, motorConnector: 'left' }, twin)).step,
+    )
+    const [l1, l2] = left.parts.filter((p) => p.name.includes('EMMT')).sort((a, b) => a.lo[1] - b.lo[1])
+    expect(l1.hi[0] - l1.lo[0]).toBeGreaterThan(m1.hi[0] - m1.lo[0] + 30)
+    expect(l2.lo[0]).toBeCloseTo(l1.lo[0], 0)
+    expect(l2.hi[0]).toBeCloseTo(l1.hi[0], 0)
+    // the same value on the second (left seen from its own motor end) points the other way
+    const same = await meshBox(
+      (
+        await buildCombo(
+          sel,
+          found,
+          { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } },
+          load,
+          { ...defaultComboOptions, motorConnector: 'left', twinMotorConnector: 'left' },
+          twin,
+        )
+      ).step,
+    )
+    const [, o2] = same.parts.filter((p) => p.name.includes('EMMT')).sort((a, b) => a.lo[1] - b.lo[1])
+    expect(Math.abs(o2.lo[0] - l1.lo[0])).toBeGreaterThan(20)
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {
