@@ -251,7 +251,8 @@ describe('combination', () => {
     const plain = await buildCombo(sel, found, cog, load, undefined, twin)
     const combo = await buildCombo(sel, found, cog, load, undefined, { ...twin, shaft: { model: 'KSK-80-318', length: 318, drawing } })
     expect(combo.parts.map((p) => p.role)).toEqual(['axis', 'kit', 'motor', 'axis', 'shaft'])
-    // the cover cap on the shaft side of the first axis is gone; the shaft adds its two drive shafts and the tube part
+    // the cover cap on the shaft side of the first axis is gone (the second's moved to its other head); the shaft
+    // adds its two drive shafts and the tube part
     expect((await meshBox(combo.step)).meshes).toBe((await meshBox(plain.step)).meshes - 1 + 3)
     // the end faces sit on the drive covers facing each other (y = ±41 about each axis, the second 400 mm over)
     const meta = drawing.meta as ShaftMeta
@@ -260,6 +261,17 @@ describe('combination', () => {
     expect(apply(shaft, [0, 0, meta.length / 2 + 118])[1]).toBeCloseTo(400 - 41, 1)
     // the motor went to the shaft end away from the second axis
     expect(apply(combo.parts[2].transform, [0, 0, 0])[1]).toBeLessThan(0)
+    // the second axis is the first's mirror image: turned end for end, its slide (standing out to −y on the first)
+    // at the far end of the travel, its drive at the head on the first's drive end (−x)
+    const parts = (await meshBox(combo.step)).parts
+    const [s1, s2] = parts.filter((p) => p.name.includes('GPTB1')).sort((a, b) => a.lo[1] - b.lo[1])
+    expect(s1.lo[1] + s2.hi[1]).toBeCloseTo(400, 0)
+    expect(s1.hi[1] + s2.lo[1]).toBeCloseTo(400, 0)
+    expect(s2.lo[0]).toBeCloseTo(s1.lo[0], 0)
+    // caps: none on the shaft side of either drive head, the second's outer side capped; both far ends capped
+    const caps = parts.filter((p) => p.name.includes('(CUP)'))
+    expect(caps.filter((c) => c.hi[0] < 0).map((c) => Math.round(c.lo[1]))).toEqual([440])
+    expect(caps.filter((c) => c.lo[0] > 500)).toHaveLength(4)
     // the lengthened shaft alone: 318 mm plus the drive shafts reaching 24 mm into each axis
     const stretched = stretchPart(parseStep(text(paths[3])), meta.stretch, 118).file
     const box = await meshBox(writeStep(stretched))
