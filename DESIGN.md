@@ -166,7 +166,7 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles, 8px on pan
 - **Ratio cell**: percentage in the data face + 44px bar (ok under 80%, warn, fail).
 - **Selected row**: soft yellow fill + 2px yellow inset ring.
 - **Inputs**: 38px, data face 17px, unit at right, no spin buttons; invalid gets a red border and red soft ring.
-- **Gantry 조합 도면 tab**: a fourth `.gantry-tab` after the axes (config code in the number box, the joints' kits as detail) opens a segmented row (`.gantry-drawing-tabs`: X축 · Y축 · Z축 · XYZ 조합) over the chosen axis's step 5 panel or the 조합축 도면 panel (joint table: 결합 · 판정 · 조합 키트 · 품번 · 수량 · 비고, then the same action buttons and viewer).
+- **Gantry 조합축 도면**: its own panel below the open axis's steps (after that axis's step 5 조합 도면), whichever axis tab is open (joint table: 결합 · 판정 · 조합 키트 · 품번 · 수량 · 비고, then the same action buttons and viewer).
 - **Segmented toggles**: blue fill when active. A labelled option row under the step filters (`.axis-options`, `.filter-group`: muted 12px label + segmented control) for single choices such as the axis order options.
 - **Error panel**: replaces the results column when the calculation fails; fail-soft fill, fail border and title, the error text on a white block, an outlined fail-colour 다시 시도 button. The inputs stay usable.
 - **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; sign-blue borders between cells.
