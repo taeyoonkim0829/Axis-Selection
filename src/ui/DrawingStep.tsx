@@ -76,6 +76,20 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const twinMotor = axis?.layout.mode === 'twinMotor'
   const twinSides = twinOrientation(sides)
   const twinConnector = connectorSide(twinSides, parallel)
+  // a change on the first axis keeps the second as it is: its following values are fixed first
+  const own = (change: Partial<ComboOptions>) =>
+    onSides({
+      ...sides,
+      ...(twinMotor
+        ? {
+            twinKitSide: twinSides.kitSide,
+            // null: automatic (towards its own kit side), as on the first axis
+            twinMotorConnector: twinSides.motorConnector,
+            ...(twinTurnable ? { twinDrive: twinPosition } : {}),
+          }
+        : {}),
+      ...change,
+    })
   const shaftDrawing = axis?.shaft ? shaftDrawingFor(axis.shaft.shaft) : null
   const key = selection
     ? [
@@ -222,7 +236,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
                 <RadioGroup
                   options={positions}
                   value={positionIndex}
-                  onChange={(i) => onSides({ ...sides, drive: DRIVE_POSITIONS[i] })}
+                  onChange={(i) => own({ drive: DRIVE_POSITIONS[i] })}
                   label={positionLabel}
                 />
               </>
@@ -244,7 +258,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
                 <RadioGroup
                   options={SIDES}
                   value={sides.kitSide}
-                  onChange={(kitSide) => onSides({ ...sides, kitSide })}
+                  onChange={(kitSide) => own({ kitSide })}
                   label={(s) => t(sideLabel[s])}
                 />
               </>
@@ -253,7 +267,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             <RadioGroup
               options={SIDES}
               value={connector}
-              onChange={(motorConnector) => onSides({ ...sides, motorConnector })}
+              onChange={(motorConnector) => own({ motorConnector })}
               label={(s) => t(sideLabel[s])}
             />
             {twinMotor && parallel && (
