@@ -103,10 +103,18 @@ const turnable = (axis: Axis) => axis.drive === 'belt'
  * The second belt axis of a twin pair mirrors the first across the plane between them, its drive head at the same
  * end. A centred slide (ELGD-TB, EGC-HD-TB): the motor on the other shaft end. A slide standing out to one side
  * (`slide.front`, EGC-TB-KF): the same position, drawn mirrored (`comboParts`: the axis turned end for end with its
- * drive at the other head). Its drive train is assembled on it with left and right swapped (`twinOrientation`).
+ * drive at the other head). Its drive train is assembled on the turned axis, the sides meaning the same directions as on the first.
  */
 export const mirroredDrive = (meta: AxisMeta | null, position: DrivePosition): DrivePosition =>
   meta?.slide.front ? position : { ...position, otherSide: !position.otherSide }
+
+/**
+ * Words for the second axis's position, by the direction its motor points in the drawing, as the first's: drawn
+ * mirrored (`slide.front`) the motor points the way the other shaft end would on the first, so the same words mean
+ * the same direction on both axes.
+ */
+export const twinPositionWords = (meta: AxisMeta, mounting: Mounting, position: DrivePosition) =>
+  drivePositionWords(meta, mounting, meta.slide.front ? { ...position, otherSide: !position.otherSide } : position)
 
 /** The slide when it is a part of its own (EGC-TB-KF: …-GK-GPTB1--------(0)) */
 const SLIDE_PART = /TB1-{4,}/
@@ -274,25 +282,24 @@ function moveCaps(file: StepFile, drive: Frame, slide: AxisMeta['slide']) {
 export const connectorSide = (options: ComboOptions, parallel: boolean): Side =>
   options.motorConnector ?? (parallel ? options.kitSide : 'up')
 
-/** Left and right swapped: a side seen from the motor end of a mirror image */
-const mirrorSide: Record<Side, Side> = { up: 'up', down: 'down', left: 'right', right: 'left' }
-
 /**
  * The second axis's orientation under motor sync as options of its own: its kit side and connector, else the
- * first's (a kit side of its own with no connector picked turns the connector automatically to it). `mirrored`
- * (belt axes, the second drawn as the first's mirror image): the first's with left and right swapped, so the kit and
- * motor point the same way along the travel on both axes.
+ * first's (a kit side of its own with no connector picked turns the connector automatically to it). Sides mean the
+ * same directions as on the first axis (`comboParts` swaps left and right when its motor end faces the other way).
  */
-export const twinOrientation = (options: ComboOptions, mirrored = false): ComboOptions => {
-  const side = (s: Side) => (mirrored ? mirrorSide[s] : s)
-  return {
-    ...options,
-    kitSide: options.twinKitSide ?? side(options.kitSide),
-    motorConnector:
-      options.twinMotorConnector ??
-      (options.twinKitSide == null && options.motorConnector != null ? side(options.motorConnector) : null),
-  }
-}
+export const twinOrientation = (options: ComboOptions): ComboOptions => ({
+  ...options,
+  kitSide: options.twinKitSide ?? options.kitSide,
+  motorConnector: options.twinMotorConnector ?? (options.twinKitSide == null ? options.motorConnector : null),
+})
+
+/** Left and right swapped: the sides seen from the motor end of a mirror image */
+const mirrorSide: Record<Side, Side> = { up: 'up', down: 'down', left: 'right', right: 'left' }
+const mirrorSides = (options: ComboOptions): ComboOptions => ({
+  ...options,
+  kitSide: mirrorSide[options.kitSide],
+  motorConnector: options.motorConnector && mirrorSide[options.motorConnector],
+})
 
 const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
 
@@ -479,9 +486,11 @@ export async function comboParts(
 
   /**
    * Axis with its drive train for one drive position and orientation, the slide centre at the origin; `mirror`
-   * draws the axis as the first's mirror image (`mirrorAxis`)
+   * draws the axis as the first's mirror image (`mirrorAxis`). `reference`: the world direction the first axis's
+   * motor end faces; the sides mean the same directions as on the first, so they swap left and right when this
+   * motor end faces the other way.
    */
-  const train = (at: DrivePosition, orientation: ComboOptions = options, mirror = false) => {
+  const train = (at: DrivePosition, orientation: ComboOptions = options, mirror = false, reference?: Vec3) => {
     let drive = at.otherSide ? otherShaftEnd(base.drive, slide) : base.drive
     let file = stretched
     let axisToWorld: Transform
@@ -501,6 +510,7 @@ export async function comboParts(
     let kitToWorld = mate(axisToWorld, drive, kitMeta.axisFace)
     // sides as seen from the motor end: `drive.axis` points out towards the viewer, `drive.up` is the slide side
     const out = rotate(axisToWorld, drive.axis)
+    if (reference && dot(out, reference) < 0) orientation = mirrorSides(orientation)
     const up = rotate(axisToWorld, drive.up)
     const right = cross(up, out)
     const sideVector = (side: Side) =>
@@ -552,7 +562,7 @@ export async function comboParts(
       const { file, axisToWorld: transform } = mirrorAxis(position, otherShaftEnd(drive, slide))
       return [{ role: 'axis' as const, name: sel.axisModel, file, transform }]
     }
-    const second = twin.drive ? train(twinAt, twinOrientation(options, turnable(sel.axis)), mirror).parts : mirror ? shaftMirror() : parts
+    const second = twin.drive ? train(twinAt, twinOrientation(options), mirror, rotate(axisToWorld, drive.axis)).parts : mirror ? shaftMirror() : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))

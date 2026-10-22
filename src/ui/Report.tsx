@@ -12,6 +12,7 @@ import {
   mirroredDrive,
   shaftDrivePosition,
   twinOrientation,
+  twinPositionWords,
   type ComboOptions,
 } from '../cad/combo'
 import { axisDrawingsFor } from '../cad/drawings'
@@ -115,11 +116,11 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   // motor sync: the second axis's motor position (default the mirror image of the first), as in step 5
   const twinWords =
     beltMeta && axis?.layout.mode === 'twinMotor'
-      ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(beltMeta, drivePosition))
+      ? twinPositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(beltMeta, drivePosition))
       : null
   const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
   // motor sync: the second axis's kit side and connector, as in step 5
-  const twinAssembly = axis?.layout.mode === 'twinMotor' ? twinOrientation(assembly, axis.axis.drive === 'belt') : null
+  const twinAssembly = axis?.layout.mode === 'twinMotor' ? twinOrientation(assembly) : null
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const layout = axis.layout

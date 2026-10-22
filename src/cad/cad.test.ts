@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { axes, kits, motors, shafts } from '../data'
-import { buildCombo, comboDrawings, defaultComboOptions, drivePositionWords, DRIVE_POSITIONS, type ComboSelection } from './combo'
+import {
+  buildCombo,
+  comboDrawings,
+  defaultComboOptions,
+  drivePositionWords,
+  DRIVE_POSITIONS,
+  twinPositionWords,
+  type ComboOptions,
+  type ComboSelection,
+} from './combo'
 import { motorDrawingFor, parseDrawingPath, shaftDrawingFor, type Drawing, type ShaftMeta } from './drawings'
 import { apply, invert, mate, type Frame } from './geometry'
 import { closure, parseStep, pointOf, refs, typeOf, writeStep, type StepFile } from './step'
@@ -395,30 +404,32 @@ describe('combination', () => {
     )
     expect(turned.hi[1]).toBeGreaterThan(mirrored.hi[1] + 100)
     expect(turned.meshes).toBe(mirrored.meshes)
-    // the drive train is assembled on the turned axis: a connector to the left (along the travel, seen from the
-    // first's motor end) points the same way on both motors
-    const left = await meshBox(
-      (await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, motorConnector: 'left' }, twin)).step,
-    )
-    const [l1, l2] = left.parts.filter((p) => p.name.includes('EMMT')).sort((a, b) => a.lo[1] - b.lo[1])
+    // the drive train is assembled on the turned axis, the sides meaning the same directions as on the first: a
+    // connector to the left (along the travel, seen from the first's motor end) points the same way on both motors,
+    // to the right on the second the other way
+    const floor = { mounting: 'floor' as const, cog: { x: 0, y: 0, z: 0 } }
+    const motorsOf = async (options: ComboOptions) =>
+      (await meshBox((await buildCombo(sel, found, floor, load, options, twin)).step)).parts
+        .filter((p) => p.name.includes('EMMT'))
+        .sort((a, b) => a.lo[1] - b.lo[1])
+    const [l1, l2] = await motorsOf({ ...defaultComboOptions, motorConnector: 'left' })
     expect(l1.hi[0] - l1.lo[0]).toBeGreaterThan(m1.hi[0] - m1.lo[0] + 30)
     expect(l2.lo[0]).toBeCloseTo(l1.lo[0], 0)
     expect(l2.hi[0]).toBeCloseTo(l1.hi[0], 0)
-    // the same value on the second (left seen from its own motor end) points the other way
-    const same = await meshBox(
-      (
-        await buildCombo(
-          sel,
-          found,
-          { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } },
-          load,
-          { ...defaultComboOptions, motorConnector: 'left', twinMotorConnector: 'left' },
-          twin,
-        )
-      ).step,
-    )
-    const [, o2] = same.parts.filter((p) => p.name.includes('EMMT')).sort((a, b) => a.lo[1] - b.lo[1])
-    expect(Math.abs(o2.lo[0] - l1.lo[0])).toBeGreaterThan(20)
+    const [, r2] = await motorsOf({ ...defaultComboOptions, motorConnector: 'left', twinMotorConnector: 'right' })
+    expect(Math.abs(r2.lo[0] - l1.lo[0])).toBeGreaterThan(20)
+    // the second axis's position named like the first's: the motor points the same way, its connector too
+    const firstWords = `${words[0].end} ${words[0].side}`
+    const like = DRIVE_POSITIONS.find((p) => {
+      const w = twinPositionWords(meta, 'floor', p)
+      return `${w.end} ${w.side}` === firstWords
+    })!
+    expect(like).not.toEqual(DRIVE_POSITIONS[0])
+    const [a1, a2] = await motorsOf({ ...defaultComboOptions, motorConnector: 'left', twinDrive: like })
+    const centre = (p: { lo: number[]; hi: number[] }) => (p.lo[1] + p.hi[1]) / 2
+    expect(Math.sign(centre(a2) - 400)).toBe(Math.sign(centre(a1)))
+    expect(a2.lo[0]).toBeCloseTo(a1.lo[0], 0)
+    expect(a2.hi[0]).toBeCloseTo(a1.hi[0], 0)
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {

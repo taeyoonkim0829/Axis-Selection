@@ -11,6 +11,7 @@ import {
   motorFacesTwin,
   shaftDrivePosition,
   SIDES,
+  twinPositionWords,
   twinOrientation,
   type ComboOptions,
   type PartRole,
@@ -62,21 +63,26 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const twinIndex = twinPosition
     ? DRIVE_POSITIONS.findIndex((p) => p.otherEnd === twinPosition.otherEnd && p.otherSide === twinPosition.otherSide)
     : -1
+  // named by the direction the motor points, as on the first axis
   const twinPositions = twinTurnable
     ? [0, 1, 2, 3].sort(
         (a, b) =>
-          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
-          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
+          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
+          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
       )
     : []
   const positionLabel = (i: number) => {
     const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
     return `${t(w.end)} · ${t(w.side)}`
   }
+  const twinPositionLabel = (i: number) => {
+    const w = twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
+    return `${t(w.end)} · ${t(w.side)}`
+  }
   // motor sync: the second axis's kit side and connector (default: like the first)
   const twinMotor = axis?.layout.mode === 'twinMotor'
-  // belt axes: the second is the first's mirror image, left and right swapped
-  const twinSides = twinOrientation(sides, axis?.axis.drive === 'belt')
+  // the sides mean the same directions as on the first axis
+  const twinSides = twinOrientation(sides)
   const twinConnector = connectorSide(twinSides, parallel)
   // a change on the first axis keeps the second's kit side and connector as they are (fixed first); its motor
   // position keeps mirroring the first's until it is picked
@@ -250,7 +256,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
                   options={twinPositions}
                   value={twinIndex}
                   onChange={(i) => onSides({ ...sides, twinDrive: DRIVE_POSITIONS[i] })}
-                  label={positionLabel}
+                  label={twinPositionLabel}
                 />
               </>
             )}
