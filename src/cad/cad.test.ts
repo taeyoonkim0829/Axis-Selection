@@ -364,31 +364,37 @@ describe('combination', () => {
     // the EGC slide stands out to −x, the file's drive shaft end is at +x: 우측 is the slide side
     expect(words.map((w) => `${w.end} ${w.side}`)).toEqual(['앞 좌측', '앞 우측', '뒤 좌측', '뒤 우측'])
     expect(words.map((w) => w.order)).toEqual([0, 1, 2, 3])
-    // motor sync: the second axis (at +y) mirrors the first by default (the EGC-TB-KF slide stands out to one side:
-    // the axis turned end for end, its slide at the far end of the travel), or takes its own position, here the first's
+    // motor sync: the second axis (at +y) is the first's mirror image, the EGC-TB-KF slide standing out to one side:
+    // turned end for end with its slide at the far end of the travel and its drive at the other head
     const twin = { spacing: 400, drive: true }
     const mirrored = await meshBox((await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, defaultComboOptions, twin)).step)
-    const same = await meshBox(
+    // symmetric about the plane between the axes, along the same stretch of travel
+    expect(mirrored.lo[1]).toBeCloseTo(plain.lo[1], 0)
+    expect(mirrored.lo[1] + mirrored.hi[1]).toBeCloseTo(400, 0)
+    expect(mirrored.lo[0]).toBeCloseTo(plain.lo[0], 0)
+    expect(mirrored.hi[0]).toBeCloseTo(plain.hi[0], 0)
+    const pair = (key: string) => mirrored.parts.filter((p) => p.name.includes(key)).sort((a, b) => a.lo[1] - b.lo[1])
+    // the slides: the first stands out to −y, the second to +y, at the same place along the travel
+    const [s1, s2] = pair('GPTB1')
+    expect(s1.lo[1] + s1.hi[1]).toBeLessThan(-5)
+    expect(s1.lo[1] + s2.hi[1]).toBeCloseTo(400, 0)
+    expect(s2.lo[0]).toBeCloseTo(s1.lo[0], 0)
+    // the motors at the same end, mirrored
+    const [m1, m2] = pair('EMMT')
+    expect(m2.lo[0]).toBeCloseTo(m1.lo[0], 0)
+    expect(m1.lo[1] + m2.hi[1]).toBeCloseTo(400, 0)
+    // caps: the drive heads open on the motor side only, the far heads capped on both sides
+    const caps = mirrored.parts.filter((p) => p.name.includes('(CUP)'))
+    expect(caps.filter((c) => Math.abs(c.lo[0] - m1.lo[0]) < 100)).toHaveLength(2)
+    expect(caps).toHaveLength(6)
+    // or its own position, here the other shaft end: the motor (inwards like the first) turns outwards
+    const turned = await meshBox(
       (
-        await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, twinDrive: DRIVE_POSITIONS[0] }, twin)
+        await buildCombo(sel, found, { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } }, load, { ...defaultComboOptions, twinDrive: DRIVE_POSITIONS[1] }, twin)
       ).step,
     )
-    expect(same.hi[1]).toBeCloseTo(400 + plain.hi[1], 0)
-    expect(mirrored.lo[1]).toBeCloseTo(plain.lo[1], 0)
-    expect(mirrored.hi[1]).toBeLessThan(same.hi[1] - 1)
-    // symmetric about the plane between the axes
-    expect(mirrored.lo[1] + mirrored.hi[1]).toBeCloseTo(400, 0)
-    // the slides: the first stands out to −y, the second (centre at y 400) to +y, at the same place along the travel
-    const slides = mirrored.parts.filter((p) => p.name.includes('GPTB1'))
-    expect(slides).toHaveLength(2)
-    const [s1, s2] = slides.sort((a, b) => a.lo[1] - b.lo[1])
-    expect(s1.lo[1] + s1.hi[1]).toBeLessThan(-5)
-    expect(s2.lo[1] + s2.hi[1] - 800).toBeCloseTo(-(s1.lo[1] + s1.hi[1]), 0)
-    expect(s2.lo[0]).toBeCloseTo(s1.lo[0], 0)
-    // both bodies along the same stretch of travel: the slides line up, the drive heads at opposite ends
-    expect(mirrored.lo[0]).toBeCloseTo(plain.lo[0], 0)
-    expect(mirrored.hi[0] - mirrored.lo[0]).toBeLessThan(plain.hi[0] - plain.lo[0] + 40)
-    expect(mirrored.meshes).toBe(same.meshes)
+    expect(turned.hi[1]).toBeGreaterThan(mirrored.hi[1] + 100)
+    expect(turned.meshes).toBe(mirrored.meshes)
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {
