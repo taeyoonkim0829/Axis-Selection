@@ -388,7 +388,7 @@ export interface AxisAdapter {
   carriedStroke: [number, number] | null
   /** kg */
   mass: number
-  /** further parts to order with it */
-  accessories: { model: string; partNumber: string; note?: string }[]
+  /** further parts to order with it (`quantity` per kit, when known) */
+  accessories: { model: string; partNumber: string; quantity?: number; note?: string }[]
   dataSource: string
 }

@@ -1,4 +1,5 @@
 import { gantryAxes, type GantryInputs } from '../calc/gantry'
+import type { AxisAdapter } from '../data/types'
 import type { GantryAxis } from '../calc/gantry'
 import type { ComboOptions } from '../cad/combo'
 import { adapterDrawingFor } from '../cad/drawings'
@@ -36,9 +37,7 @@ export function GantryDrawing({
   const jointDrawings: GantryJointDrawing[] = joints.map((j) => ({
     base: j.base,
     carried: j.carried,
-    kit: j.kit,
-    drawing: j.kit ? adapterDrawingFor(j.kit) : null,
-    quantity: j.quantity,
+    kits: j.kits.map((kit) => ({ kit, drawing: adapterDrawingFor(kit) })),
   }))
   const complete = inputs.every((i) => i.selection && i.found)
   const ready = complete && inputs.every((i) => i.found!.missing.length === 0)
@@ -48,7 +47,7 @@ export function GantryDrawing({
           const o = assemblies[i.a]
           return `${i.a}:${comboKey(i.selection!, i.req!, i.twin)}|${o.kitSide}|${o.motorConnector}|${o.drive.otherEnd}${o.drive.otherSide}`
         }),
-        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kit?.id ?? ''}×${j.quantity}`),
+        ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}`),
         JSON.stringify(gantry.offsets),
         gantry.zMode,
         gantry.xMounting,
@@ -101,18 +100,26 @@ export function GantryDrawing({
                     <td>
                       <StatusBadge status={j.status} />
                     </td>
-                    <td className="model">{j.kit?.model ?? '—'}</td>
-                    <td className="num">{j.kit?.partNumber ?? '—'}</td>
-                    <td className="num">{j.kit ? j.quantity : '—'}</td>
+                    <td className="model">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.model}</div>) : '—'}</td>
+                    <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.partNumber}</div>) : '—'}</td>
+                    <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.n}</div>) : '—'}</td>
                     <td className="muted">
                       {j.status !== 'ok' ? t(j.note, j.noteArgs) : ''}
+                      {j.kit?.hand && (
+                        <span>
+                          {' '}
+                          {t('브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).', { axis: j.carried.toUpperCase() })}
+                        </span>
+                      )}
                       {j.kit?.accessories.map((x) => (
                         <span key={x.partNumber}>
                           {' '}
-                          {t('함께 주문: {model} ({partNumber})', { model: x.model, partNumber: x.partNumber })}
+                          {x.quantity
+                            ? t('함께 주문: {model} ({partNumber}) × {n}', { model: x.model, partNumber: x.partNumber, n: x.quantity * j.quantity })
+                            : t('함께 주문: {model} ({partNumber})', { model: x.model, partNumber: x.partNumber })}
                         </span>
                       ))}
-                      {j.kit && !adapterDrawingFor(j.kit) ? ` ${t('도면 없음')}` : ''}
+                      {j.kits.some((k) => !adapterDrawingFor(k)) ? ` ${t('도면 없음')}` : ''}
                     </td>
                   </tr>
                 ))}
@@ -135,4 +142,15 @@ export function GantryDrawing({
       )}
     </section>
   )
+}
+
+/** The joint's kits by model (a mirrored pair under two X axes is two rows) */
+function kitModels(kits: AxisAdapter[]) {
+  const out: { model: string; partNumber: string; n: number }[] = []
+  for (const k of kits) {
+    const row = out.find((r) => r.model === k.model)
+    if (row) row.n++
+    else out.push({ model: k.model, partNumber: k.partNumber, n: 1 })
+  }
+  return out
 }

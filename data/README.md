@@ -172,11 +172,11 @@ Festo parts joining a carried axis's profile to the slide of the axis below it i
 | `family` / `model` / `partNumber` | `EHAM-AK`, `EHAM-MA` or `EAHF` / order type / part number |
 | `joint` | `angle`: the carried slide faces across the base slide's normal (X on the floor, Y on its side); `plate`: both slides face the same way (Y crossed on X, Z on a wall-mounted Y) |
 | `base` / `carried` | the axes it fits: `family`, `variant` (`WD` or null), `size`, `drive` (`spindle`/`belt`; ELGT kits list ELGT-BS only), `longSlide: true` when the base axis needs the long slide (ELGD …-L) |
-| `hand` | `left`/`right` for the mirror-image angle kits (…-ML / …-MR), else null; the app takes the left one |
+| `hand` | `left`/`right` for the mirror-image angle kits (…-ML / …-MR), else null. They differ in the side the wall reaches to from the foot on the base slide (assembly instructions EHAM-AK-L9 8140647, EHAM-AK-E24 8238670): seen facing the carried slide, ML to the right, MR to the left. The app takes the hand whose wall reaches towards the carried axis (two X axes: a mirrored pair, both inwards; carried axis centred on the slide: ML) |
 | `layout` | ELGD angle kits: `cantilever` (…-L) or `gantry` (…-S, three-dimensional gantry), else null |
 | `carriedStroke` | mm `[min, max]` of the carried axis's working stroke (ELGT: angle kits up to 600/700 mm Y; plates type C up to 100/200 mm Z, type B above it up to 500 mm), or null |
 | `mass` | kg |
-| `accessories` | parts ordered with it (`model`, `partNumber`, `note`): EAHF-E24-60-P-B4 holding the ELGD axis on an EHAM-AK-E24 (quantity not given in the catalog) |
+| `accessories` | parts ordered with it (`model`, `partNumber`, `quantity` per kit, `note`): EAHF-E24-60-P-B4 holding the ELGD axis on an EHAM-AK-E24, 4 on E24-80-E24-60 and 2 on E24-80-E24-80 (assembly instructions 8238670) |
 | `dataSource` | catalog and pages |
 
 Drawings: `adapters/Festo/Drawings/<partNumber>_<model>.stp` with frame JSONs (see "Drawings").

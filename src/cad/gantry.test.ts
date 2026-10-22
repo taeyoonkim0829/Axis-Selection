@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defaultGantry, type GantryAxis, type GantryInputs } from '../calc/gantry'
 import { gantryJoint } from '../calc/gantryKits'
 import { adapters, axes, kits, motors } from '../data'
-import type { Axis } from '../data/types'
+import type { Axis, AxisAdapter } from '../data/types'
 import { buildCombo, comboDrawings, defaultComboOptions, type ComboSelection } from './combo'
 import { parseDrawingPath, type AdapterMeta, type Drawing } from './drawings'
 import { buildGantry, type GantryAxisDrawing } from './gantry'
@@ -73,11 +73,23 @@ describe('gantry kits', () => {
   it('needs the long slide on the ELGD base axis and two kits under two X axes', () => {
     const y = find('ELGD', 80, 'belt')
     const short = gantryJoint(wallY, 'x', 'y', find('ELGD', 80, 'belt'), y, 500, adapters)
-    expect(short.kit?.model).toBe('EHAM-AK-E24-80-E24-80-ML-S')
+    expect(short.kit?.model).toBe('EHAM-AK-E24-80-E24-80-MR-S')
     expect(short.status).toBe('warn')
     const ok = gantryJoint(wallY, 'x', 'y', find('ELGD', 80, 'belt', true), y, 500, adapters)
     expect(ok.status).toBe('ok')
     expect(ok.quantity).toBe(2)
+    // mirror images, both walls reaching inwards: the first X axis (−Y) takes MR, reaching to +Y
+    expect(ok.kits.map((k) => k.model)).toEqual(['EHAM-AK-E24-80-E24-80-MR-S', 'EHAM-AK-E24-80-E24-80-ML-S'])
+  })
+
+  it('takes the angle kit hand whose wall reaches towards the carried axis', () => {
+    const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
+    const single = { ...wallY, xParallel: { ...wallY.xParallel, mode: 'single' as const } }
+    const at = (dy: number) => gantryJoint({ ...single, offsets: { ...single.offsets, xy: { x: 0, y: dy, z: 0 } } }, 'x', 'y', x, y, 500, adapters).kit?.model
+    // seen facing the Y slide (from −X), ML reaches to the right (−Y), MR to the left (+Y)
+    expect(at(300)).toBe('EHAM-AK-L9-160-L9-120-MR')
+    expect(at(-300)).toBe('EHAM-AK-L9-160-L9-120-ML')
+    expect(at(0)).toBe('EHAM-AK-L9-160-L9-120-ML')
   })
 
   it('has no kit for Z on a floor-mounted Y', () => {
@@ -108,11 +120,11 @@ describe('gantry drawing', () => {
     const yz = gantryJoint(g, 'y', 'z', y, z, 300, adapters)
     expect(xy.kit?.model).toBe('EHAM-AK-L9-160-L9-120-ML')
     expect(yz.kit?.model).toBe('EHAM-MA-L9-120-L9-90')
-    const drawing = (k: typeof xy) => (all.find((d) => d.kind === 'adapters' && d.partNumber === k.kit!.partNumber) as Drawing<AdapterMeta>) ?? null
+    const drawing = (k: AxisAdapter) => (all.find((d) => d.kind === 'adapters' && d.partNumber === k.partNumber) as Drawing<AdapterMeta>) ?? null
     const combo = await buildGantry(
       g,
       parts,
-      [xy, yz].map((j) => ({ base: j.base, carried: j.carried, kit: j.kit, drawing: drawing(j), quantity: j.quantity })),
+      [xy, yz].map((j) => ({ base: j.base, carried: j.carried, kits: j.kits.map((kit) => ({ kit, drawing: drawing(kit) })) })),
       load,
     )
     expect(combo.unkitted).toEqual([])
@@ -122,5 +134,23 @@ describe('gantry drawing', () => {
     // the angle kit stands on the X slide (top at z = 0), the plate on the Y slide (facing −X)
     expect(kitXY.lo[2]).toBeCloseTo(0, 0)
     expect(kitYZ.lo[0]).toBeLessThan(0)
+  }, 120000)
+
+  it('mirrors the angle kits under two X axes, both walls reaching inwards', async () => {
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 1000 } }
+    const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!
+    const [x, y] = [elgt(160), elgt(120)]
+    const xy = gantryJoint(g, 'x', 'y', x, y, 1000, adapters)
+    const drawing = (k: AxisAdapter) => (all.find((d) => d.kind === 'adapters' && d.partNumber === k.partNumber) as Drawing<AdapterMeta>) ?? null
+    const combo = await buildGantry(
+      g,
+      [{ ...axisDrawing('x', x, 800, g), twin: { spacing: 1000, drive: true } }, axisDrawing('y', y, 1000, g)],
+      [{ base: 'x', carried: 'y', kits: xy.kits.map((kit) => ({ kit, drawing: drawing(kit) })) }],
+      load,
+    )
+    const found = (await boxes(combo.step, /EHAM-AK/)).filter((b) => /EHAM-AK/.test(b.name))
+    expect(found.map((b) => b.name.replace(/^\d+ /, '').replace(/---.*$/, '')).sort()).toEqual(['EHAM-AK-L9-160-L9-120-ML', 'EHAM-AK-L9-160-L9-120-MR'])
+    // each wall (470 mm, foot at one end over its X axis at ∓500) lies mostly between the X axes
+    for (const b of found) expect(Math.abs((b.lo[1] + b.hi[1]) / 2)).toBeLessThan(450)
   }, 120000)
 })

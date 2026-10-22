@@ -418,6 +418,8 @@ export const en: Record<string, string> = {
   '조합축 도면': 'Gantry drawing',
   '키트 없음': 'No kit',
   '조합 키트 미정': 'Gantry kits not yet known',
+  '브래킷 벽은 {axis}축이 놓인 쪽으로 뻗습니다(ML/MR, 조립 설명서).': 'The bracket wall reaches towards the side the {axis} axis lies on (ML/MR, assembly instructions).',
+  '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
   '모든 축의 축, 모터, 연결키트를 선택하면 조합축 도면을 만듭니다.':

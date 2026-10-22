@@ -6,7 +6,7 @@ import { attachKit, findKits, type KitEvaluation, type KitMatch } from './calc/k
 import { evaluateDrive, gearboxOptionsFor, selectMotors, type DriveEvaluation } from './calc/motorSelection'
 import { gantryChain, gantryRequirements, stageOf, type GantryAxis, type GantryInputs, type Stage } from './calc/gantry'
 import type { Requirements, Settings } from './calc/types'
-import { gantryJoint, type GantryJoint } from './calc/gantryKits'
+import { gantryJoint, kitList, type GantryJoint } from './calc/gantryKits'
 import { adapters, axes, brakingResistors, cables, controllers, kits, motors, shafts } from './data'
 
 /** The user's picks; null = the recommendation */
@@ -124,13 +124,13 @@ export function computeGantry(g: GantryInputs, settings: Record<GantryAxis, Sett
         : null
     let joint = jointFor(sel)
     if (joint?.kit) {
-      req = gantryRequirements(g, a, below!.stage, stages, joint.kit.mass * joint.quantity)
+      req = gantryRequirements(g, a, below!.stage, stages, joint.kits.reduce((m, k) => m + k.mass, 0))
       if (req.movingProfile) req = { ...req, movingProfile: { driveMass: drive.mass } }
       sel = computeSelection(req, settings[a], picks[a])
       drive = driveMassOf(sel, g.motorMass[a])
       joint = jointFor(sel)
     }
-    const kitLoad = joint?.kit ? [{ label: '조합 키트', model: `${joint.kit.model} × ${joint.quantity}`, mass: joint.kit.mass * joint.quantity }] : []
+    const kitLoad = joint?.kit ? [{ label: '조합 키트', model: kitList(joint.kits), mass: joint.kits.reduce((m, k) => m + k.mass, 0) }] : []
     const stage = sel.selectedAxis ? stageOf(a, g, sel.selectedAxis, req, drive.mass) : null
     out.push({ axis: a, req, sel, stage, drive, carried: [...carried, ...kitLoad], joint })
     if (stage && sel.selectedAxis) {

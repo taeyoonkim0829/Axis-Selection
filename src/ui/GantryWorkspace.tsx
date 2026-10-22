@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from 'react'
 import { defaultComboOptions, type ComboOptions } from '../cad/combo'
 import { gantryAxes, gantryChain, type GantryAxis, type GantryInputs, type GantrySettings } from '../calc/gantry'
 import { useT, type Lang } from '../i18n'
+import { kitList } from '../calc/gantryKits'
 import { computeGantry, noPicks, type GantryAxisResult, type Picks } from '../selection'
 import { AxisSteps } from './AxisSteps'
 import { StatusBadge } from './common'
@@ -259,7 +260,7 @@ function gantryReportRows(r: GantryAxisResult, g: GantryInputs): [string, string
     ...(req.movingProfile ? ([['함께 움직이는 구동부', `${fmt(req.movingProfile.driveMass, 2)} kg`]] as [string, string][]) : []),
     // the kit carrying the axis above on this axis's slide
     ...(r.joint
-      ? ([['조합 키트', r.joint.kit ? `${r.joint.kit.model} (${r.joint.kit.partNumber}) × ${r.joint.quantity}` : '—']] as [string, string][])
+      ? ([['조합 키트', r.joint.kit ? kitList(r.joint.kits, true) : '—']] as [string, string][])
       : []),
   ]
 }

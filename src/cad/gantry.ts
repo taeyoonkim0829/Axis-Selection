@@ -24,9 +24,8 @@ export interface GantryAxisDrawing {
 export interface GantryJointDrawing {
   base: GantryAxis
   carried: GantryAxis
-  kit: AxisAdapter | null
-  drawing: Drawing<AdapterMeta> | null
-  quantity: number
+  /** one per base slide, in slide order (`GantryJoint.kits`); the mirror-image angle kits are placed by their hand */
+  kits: { kit: AxisAdapter; drawing: Drawing<AdapterMeta> | null }[]
 }
 
 export interface GantryCombo extends Combo {
@@ -54,6 +53,9 @@ function placeKit(meta: AdapterMeta, at: Vec3, n: Vec3, travel: Vec3, carriedNor
   return null
 }
 
+/** The way a kit's carried face reaches from its foot along the carried travel (file coordinates) */
+const reach = (meta: AdapterMeta): Vec3 => scale(meta.carried.up, dot(sub(meta.carried.origin, meta.base.origin), meta.carried.up))
+
 export async function buildGantry(
   g: GantryInputs,
   axes: GantryAxisDrawing[],
@@ -74,7 +76,11 @@ export async function buildGantry(
     ),
   )
   const kitTexts = new Map(
-    await Promise.all(joints.filter((j) => j.drawing).map(async (j) => [j.drawing!.url, await load(j.drawing!)] as const)),
+    await Promise.all(
+      [...new Map(joints.flatMap((j) => j.kits.flatMap((k) => (k.drawing ? [[k.drawing.url, k.drawing] as const] : [])))).values()].map(
+        async (d) => [d.url, await load(d)] as const,
+      ),
+    ),
   )
 
   // combination → world for each axis, from the base up
@@ -115,7 +121,11 @@ export async function buildGantry(
     const offset = a === 'z' ? g.offsets.yz : g.offsets.xy
     const target = add(centre, [offset.x, offset.y, offset.z])
     const joint = joints.find((j) => j.base === below && j.carried === a)
-    const meta = joint?.drawing?.meta ?? null
+    const drawn =
+      joint?.kits.length && joint.kits.every((k) => k.drawing?.meta)
+        ? joint.kits.map((k) => ({ kit: k.kit, url: k.drawing!.url, meta: k.drawing!.meta! }))
+        : null
+    const meta = drawn?.[0].meta ?? null
     const pair = `${below.toUpperCase()}–${a.toUpperCase()}`
     // moving Z profile: its slide is clamped to the Y slide, facing it
     if (a === 'z' && g.zMode === 'profile') {
@@ -127,15 +137,26 @@ export async function buildGantry(
     }
     const profile: Frame = { origin: c.profile.origin, axis: scale(c.profile.axis, -1), up: c.profile.up }
     const first = meta ? placeKit(meta, slides[0], wb.n, w.t, w.n) : null
-    if (!meta || !first || !joint?.drawing) {
+    if (!meta || !first || !drawn) {
       placed.set(a, toWorld(profile, target, w.n, scale(w.t, -1)))
       unkitted.push(pair)
       continue
     }
-    const file = parseStep(kitTexts.get(joint.drawing.url)!)
-    slides.slice(0, joint.quantity).forEach((p, k) => {
-      const kt = { ...first, t: add(first.t, sub(p, slides[0])) }
-      kits.push({ role: 'adapter', name: `${joint.kit!.model}${k ? ` (${k + 1})` : ''}`, file, transform: kt })
+    // each slide's kit with its wall reaching towards the carried axis's mounting point (two X axes: inwards, a
+    // mirrored pair); on the slide itself the calc's choice
+    const files = new Map<string, ReturnType<typeof parseStep>>()
+    slides.slice(0, drawn.length).forEach((p, k) => {
+      const want = dot(sub(target, p), w.t)
+      const fits = (d: { meta: AdapterMeta }) => {
+        const t = placeKit(d.meta, p, wb.n, w.t, w.n)
+        return t && dot(rotate(t, reach(d.meta)), w.t) * want > 0 ? t : null
+      }
+      const pick = (Math.abs(want) > 1e-6 && drawn.find((d) => fits(d))) || drawn[k]
+      const kt = (Math.abs(want) > 1e-6 && fits(pick)) || placeKit(pick.meta, p, wb.n, w.t, w.n)
+      if (!kt) return
+      const url = pick.url
+      if (!files.has(url)) files.set(url, parseStep(kitTexts.get(url)!))
+      kits.push({ role: 'adapter', name: `${pick.kit.model}${k ? ` (${k + 1})` : ''}`, file: files.get(url)!, transform: kt })
     })
     // the carried profile on the kit face, its middle at the entered mounting point along its travel
     const face = apply(first, meta.carried.origin)
