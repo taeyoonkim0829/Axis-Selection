@@ -1,0 +1,6 @@
+{
+  "stroke": 1700,
+  "drive": { "origin": [66, 1, 44], "axis": [1, 0, 0], "up": [0, 1, 0] },
+  "slide": { "origin": [0, 46, -86.5], "normal": [0, 1, 0], "travel": [0, 0, -1] },
+  "profile": { "origin": [0, -44, -936.5], "normal": [0, -1, 0] }
+}

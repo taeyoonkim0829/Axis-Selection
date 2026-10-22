@@ -42,7 +42,9 @@ node scripts/festo-cad/import.mjs <folder>           # copy them (--move to move
   (part numbers from the ELGT-BS / ELGD catalogs, `-Kind adapters`), copied as `<partNumber>_<model>.stp`; their frame
   JSONs come from `node scripts/festo-cad/adapter-frames.mjs` (rules in its header). `frames.mjs --profile` adds
   the profile's mounting face (`profile`) to existing axis JSONs, where a gantry kit holds a carried axis.
-- ELGT-TB-…-CS (customer solution) is not in the catalog.
+- ELGT-TB-…-CS (customer solution) is not in the catalog: its files are Festo Korea's Creo exports, one per standard
+  stroke (`<partNumber>_ELGT-TB-<size>-<stroke>-CS.stp`). `frames.mjs` finds their unnamed cover caps by geometry and
+  writes no `stretch` (the profile is not a part of its own), so every stroke needs its own file.
 - Motors of other makers whose flange is not at z = 0 with the shaft along +z (Siemens 1FK2 / 1FL6):
   `node scripts/festo-cad/motor-frames.mjs [--dry-run] file.stp …` writes their `flange` JSON from the geometry
   (shaft, flange face, connector side; rules in its header).
