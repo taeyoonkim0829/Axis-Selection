@@ -76,6 +76,9 @@ export interface ComboOptions {
   drive: DrivePosition
   /** Belt axes, motor sync: where the second axis's drive sits; null = like the first */
   twinDrive?: DrivePosition | null
+  /** Motor sync: the second axis's kit side and motor connector; null = like the first */
+  twinKitSide?: Side | null
+  twinMotorConnector?: Side | null
 }
 
 /**
@@ -241,6 +244,16 @@ function moveCaps(file: StepFile, drive: Frame, slide: AxisMeta['slide']) {
 export const connectorSide = (options: ComboOptions, parallel: boolean): Side =>
   options.motorConnector ?? (parallel ? options.kitSide : 'up')
 
+/**
+ * The second axis's orientation under motor sync as options of its own: its kit side and connector, else the
+ * first's (a kit side of its own with no connector picked turns the connector automatically to it).
+ */
+export const twinOrientation = (options: ComboOptions): ComboOptions => ({
+  ...options,
+  kitSide: options.twinKitSide ?? options.kitSide,
+  motorConnector: options.twinMotorConnector ?? (options.twinKitSide == null ? options.motorConnector : null),
+})
+
 const opposite: Record<Side, Side> = { up: 'down', down: 'up', left: 'right', right: 'left' }
 
 /** Warnings about the chosen orientation (Korean source text), shown in step 5 and the report. */
@@ -375,8 +388,8 @@ export async function comboParts(
   const gearboxFile = gearboxText ? parseStep(gearboxText) : null
   const motorFile = parseStep(motorText)
 
-  /** Axis with its drive train for one drive position, the slide centre at the origin */
-  const train = (at: DrivePosition) => {
+  /** Axis with its drive train for one drive position and orientation, the slide centre at the origin */
+  const train = (at: DrivePosition, orientation: ComboOptions = options) => {
     let drive = base.drive
     let file = stretched
     if (at.otherSide) {
@@ -398,7 +411,7 @@ export async function comboParts(
       const offset = sub(apply(kitToWorld, kitMeta.motorFace.origin), apply(kitToWorld, kitMeta.axisFace.origin))
       const radial = sub(offset, scale(out, dot(offset, out)))
       if (Math.hypot(...radial) > 1)
-        kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, drive.origin), out, radial, sideVector(options.kitSide))
+        kitToWorld = turnAbout(kitToWorld, apply(axisToWorld, drive.origin), out, radial, sideVector(orientation.kitSide))
     }
     const parts: (AssemblyPart & { role: PartRole })[] = [
       { role: 'axis', name: sel.axisModel, file, transform: axisToWorld },
@@ -415,7 +428,7 @@ export async function comboParts(
     const shaft = rotate(motorToWorld, motorMeta.flange.axis)
     const connector = rotate(motorToWorld, motorMeta.connector ?? motorMeta.flange.up)
     // the side across the shaft; behind an angle gearbox the shaft itself can point to that side: the motor keeps its turn
-    const side = sideVector(connectorSide(options, parallel))
+    const side = sideVector(connectorSide(orientation, parallel))
     const target = sub(side, scale(shaft, dot(side, shaft)))
     if (Math.hypot(...target) > 1e-6)
       motorToWorld = turnAbout(motorToWorld, apply(motorToWorld, motorMeta.flange.origin), shaft, connector, target)
@@ -428,11 +441,13 @@ export async function comboParts(
   const parts = first.parts
   const lateral = cross(world.normal, world.travel)
   let name = parts.map((p) => p.name).join(' + ')
-  // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train (and drive
-  // position, `options.twinDrive`) when it has a motor
+  // Second axis of a twin arrangement at +y (the COG's lateral direction), with its own drive train (drive
+  // position `options.twinDrive`, kit side and connector `twinOrientation`) when it has a motor
   if (twin) {
     const shift = scale(lateral, twin.spacing)
-    const second = twin.drive && turnable(sel.axis) && options.twinDrive ? train(options.twinDrive).parts : parts
+    const second = twin.drive
+      ? train(turnable(sel.axis) && options.twinDrive ? options.twinDrive : position, twinOrientation(options)).parts
+      : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
       .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))

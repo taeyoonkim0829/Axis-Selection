@@ -10,6 +10,7 @@ import {
   motorFacesTwin,
   shaftDrivePosition,
   SIDES,
+  twinOrientation,
   type ComboOptions,
   type PartRole,
 } from '../cad/combo'
@@ -71,9 +72,21 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
     const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
     return `${t(w.end)} · ${t(w.side)}`
   }
+  // motor sync: the second axis's kit side and connector (default: like the first)
+  const twinMotor = axis?.layout.mode === 'twinMotor'
+  const twinSides = twinOrientation(sides)
+  const twinConnector = connectorSide(twinSides, parallel)
   const shaftDrawing = axis?.shaft ? shaftDrawingFor(axis.shaft.shaft) : null
   const key = selection
-    ? [comboKey(selection, req, twin), parallel ? sides.kitSide : '', connector, turnable ? positionIndex : '', twinTurnable ? twinIndex : ''].join('|')
+    ? [
+        comboKey(selection, req, twin),
+        parallel ? sides.kitSide : '',
+        connector,
+        turnable ? positionIndex : '',
+        twinTurnable ? twinIndex : '',
+        twinMotor && parallel ? twinSides.kitSide : '',
+        twinMotor ? twinConnector : '',
+      ].join('|')
     : ''
   const ready = found != null && found.missing.length === 0
   const state = useComboPreview(key, ready, () =>
@@ -85,7 +98,9 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
     `Stroke ${selection!.stroke} mm, mounting: ${req.mounting}, COG (x, y, z) = (${req.cog.x}, ${req.cog.y}, ${req.cog.z}) mm` +
       (turnable && positionIndex > 0 ? `, drive ${drivePosition.otherEnd ? 'at the other end' : ''}${drivePosition.otherEnd && drivePosition.otherSide ? ', ' : ''}${drivePosition.otherSide ? 'on the other shaft end' : ''}` : '') +
       (parallel ? `, parallel kit: motor ${sides.kitSide}` : '') +
-      `, motor connector ${connector} (seen from the motor end)`,
+      `, motor connector ${connector}` +
+      (twinMotor ? `; second axis: ${parallel ? `parallel kit: motor ${twinSides.kitSide}, ` : ''}motor connector ${twinConnector}` : '') +
+      ' (seen from the motor end)',
     'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
   ]
 
@@ -225,7 +240,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             )}
             {parallel && (
               <>
-                <span>{t('키트 조립 방향 (모터 위치)')}</span>
+                <span>{t(twinMotor ? '키트 조립 방향 (첫 번째 축, 모터 위치)' : '키트 조립 방향 (모터 위치)')}</span>
                 <RadioGroup
                   options={SIDES}
                   value={sides.kitSide}
@@ -234,16 +249,38 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
                 />
               </>
             )}
-            <span>{t('모터 조립 방향 (커넥터)')}</span>
+            <span>{t(twinMotor ? '모터 조립 방향 (첫 번째 축, 커넥터)' : '모터 조립 방향 (커넥터)')}</span>
             <RadioGroup
               options={SIDES}
               value={connector}
               onChange={(motorConnector) => onSides({ ...sides, motorConnector })}
               label={(s) => t(sideLabel[s])}
             />
+            {twinMotor && parallel && (
+              <>
+                <span>{t('키트 조립 방향 (두 번째 축, 모터 위치)')}</span>
+                <RadioGroup
+                  options={SIDES}
+                  value={twinSides.kitSide}
+                  onChange={(twinKitSide) => onSides({ ...sides, twinKitSide })}
+                  label={(s) => t(sideLabel[s])}
+                />
+              </>
+            )}
+            {twinMotor && (
+              <>
+                <span>{t('모터 조립 방향 (두 번째 축, 커넥터)')}</span>
+                <RadioGroup
+                  options={SIDES}
+                  value={twinConnector}
+                  onChange={(twinMotorConnector) => onSides({ ...sides, twinMotorConnector })}
+                  label={(s) => t(sideLabel[s])}
+                />
+              </>
+            )}
             <p className="muted small-print">
               {t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}
-              {assemblyWarnings(sides, parallel).map((w) => (
+              {[...new Set([...assemblyWarnings(sides, parallel), ...(twinMotor ? assemblyWarnings(twinSides, parallel) : [])])].map((w) => (
                 <span key={w} className="warn-text">
                   {' '}
                   {t(w)}

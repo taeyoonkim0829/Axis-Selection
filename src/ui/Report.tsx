@@ -5,7 +5,7 @@ import { accelTimeFor } from '../calc/motionProfile'
 import { gearboxChecks, gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
-import { assemblyWarnings, connectorSide, drivePositionWords, shaftDrivePosition, type ComboOptions } from '../cad/combo'
+import { assemblyWarnings, connectorSide, drivePositionWords, shaftDrivePosition, twinOrientation, type ComboOptions } from '../cad/combo'
 import { axisDrawingsFor } from '../cad/drawings'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, StatusBadge } from './common'
@@ -110,6 +110,8 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
       ? drivePositionWords(beltMeta, req.mounting, assembly.twinDrive ?? drivePosition)
       : null
   const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
+  // motor sync: the second axis's kit side and connector, as in step 5
+  const twinAssembly = axis?.layout.mode === 'twinMotor' ? twinOrientation(assembly) : null
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const layout = axis.layout
@@ -456,13 +458,31 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                         ? ([['모터 위치 (정면도 기준)', motorPosition]] as Row[])
                         : []),
                     ...(kit.type === 'parallel'
-                      ? ([['키트 조립 방향 (모터 위치)', t(sideLabel[assembly.kitSide])]] as Row[])
+                      ? ([
+                          [twinAssembly ? '키트 조립 방향 (첫 번째 축, 모터 위치)' : '키트 조립 방향 (모터 위치)', t(sideLabel[assembly.kitSide])],
+                        ] as Row[])
                       : []),
-                    ['모터 조립 방향 (커넥터)', t(sideLabel[connectorSide(assembly, kit.type === 'parallel')])],
+                    [
+                      twinAssembly ? '모터 조립 방향 (첫 번째 축, 커넥터)' : '모터 조립 방향 (커넥터)',
+                      t(sideLabel[connectorSide(assembly, kit.type === 'parallel')]),
+                    ],
+                    ...(twinAssembly && kit.type === 'parallel'
+                      ? ([['키트 조립 방향 (두 번째 축, 모터 위치)', t(sideLabel[twinAssembly.kitSide])]] as Row[])
+                      : []),
+                    ...(twinAssembly
+                      ? ([
+                          ['모터 조립 방향 (두 번째 축, 커넥터)', t(sideLabel[connectorSide(twinAssembly, kit.type === 'parallel')])],
+                        ] as Row[])
+                      : []),
                   ]}
                 />
                 <p className="report-note">{t('모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.')}</p>
-                {assemblyWarnings(assembly, kit.type === 'parallel').map((w) => (
+                {[
+                  ...new Set([
+                    ...assemblyWarnings(assembly, kit.type === 'parallel'),
+                    ...(twinAssembly ? assemblyWarnings(twinAssembly, kit.type === 'parallel') : []),
+                  ]),
+                ].map((w) => (
                   <p key={w} className="report-note warn-text">
                     {t(w)}
                   </p>

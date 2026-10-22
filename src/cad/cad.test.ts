@@ -295,6 +295,21 @@ describe('combination', () => {
     expect(box.lo[2]).toBeCloseTo(-90, 0)
   })
 
+  it("turns the second axis's parallel kit and motor on their own under motor sync", async () => {
+    const sel = selection(800, 'EMMT-AS-60-S-HS', 'EAMM-U-87-T46-60P-114')
+    const found = comboDrawings(sel, testDrawings)
+    const twin = { spacing: 400, drive: true }
+    const req = { mounting: 'floor', cog: { x: 0, y: 0, z: 0 } } as const
+    const same = await meshBox((await buildCombo(sel, found, req, load, defaultComboOptions, twin)).step)
+    const options = { ...defaultComboOptions, twinKitSide: 'left', twinMotorConnector: 'left' } as const
+    const turned = await meshBox((await buildCombo(sel, found, req, load, options, twin)).step)
+    // both motors below the axes; then the second one (at +y) turned to its left (+Y), the first one still below
+    expect(same.hi[1]).toBeCloseTo(400 + 58.1, 0)
+    expect(turned.hi[1]).toBeCloseTo(400 + 114 + 71, 0)
+    expect(turned.lo[2]).toBeCloseTo(same.lo[2], 0)
+    expect(turned.meshes).toBe(same.meshes)
+  }, 60000)
+
   it('puts the motor of a belt axis on either shaft end and either end of the axis', async () => {
     const axis = axes.find((a) => a.id === 'EGC-70-...-TB-KF-GK')!
     const sel: ComboSelection = {

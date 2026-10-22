@@ -50,7 +50,7 @@ export function GantryDrawing({
     ? [
         ...inputs.map((i) => {
           const o = assemblies[i.a]
-          return `${i.a}:${comboKey(i.selection!, i.req!, i.twin)}|${o.kitSide}|${o.motorConnector}|${o.drive.otherEnd}${o.drive.otherSide}`
+          return `${i.a}:${comboKey(i.selection!, i.req!, i.twin)}|${o.kitSide}|${o.motorConnector}|${o.drive.otherEnd}${o.drive.otherSide}|${JSON.stringify([o.twinDrive, o.twinKitSide, o.twinMotorConnector])}`
         }),
         ...jointDrawings.map((j) => `${j.base}${j.carried}:${j.kits.map((k) => k.kit.id).join('+')}@${JSON.stringify(j.offset)}${j.flange ?? ''}${j.driveSign ?? ''}`),
         JSON.stringify(gantry.offsets),
