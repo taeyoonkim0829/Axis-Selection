@@ -445,6 +445,12 @@ describe('combination', () => {
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {
+    // the COG turns with the first slide: z along its normal (towards the second axis), y from the slide centre
+    const centred = { mounting: 'floor' as const, cog: { x: 10, y: 200 + 30, z: 50 } }
+    const cog = (await buildCombo(sel, found, centred, load, { ...defaultComboOptions, twinFacing: true }, twin)).cog
+    expect(cog[0]).toBeCloseTo(10)
+    expect(cog[1]).toBeCloseTo(50)
+    expect(Math.abs(cog[2])).toBeCloseTo(30)
     const sel = selection(800)
     const found = comboDrawings(sel, testDrawings)
     const options = { ...defaultComboOptions, kitSide: 'down', motorConnector: 'right' } as const

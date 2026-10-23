@@ -606,7 +606,11 @@ export async function comboParts(
       name += ` + ${shaftTwin.model}`
     }
   }
-  const cog = add(add(scale(world.travel, req.cog.x), scale(lateral, req.cog.y)), scale(world.normal, req.cog.z))
+  // COG in the first slide's frame (x travel, y lateral, z normal); a facing pair turns it with the slide, y then
+  // measured from the slide centre again (both slides at the same height), not from the arrangement's centre
+  const cogY = facing ? req.cog.y - twin!.spacing / 2 : req.cog.y
+  const cogOnSlide = add(add(scale(world.travel, req.cog.x), scale(lateral, cogY)), scale(world.normal, req.cog.z))
+  const cog = facing ? apply(facingTurn(identity, req.mounting, 1), cogOnSlide) : cogOnSlide
   const notices = [...new Set([axisText, kitText, motorText, gearboxText, shaftText].flatMap((t) => (t && sourceNotice(t)) || []))]
   return {
     name,
