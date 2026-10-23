@@ -58,7 +58,7 @@ export const defaultGantry: GantryInputs = {
     z: { stroke: 200, velocity: 0.5, acceleration: 2, jerk: 0 },
   },
   zMode: 'slide',
-  yMounting: 'floor',
+  yMounting: 'wall',
   xMounting: 'floor',
   xParallel: { ...defaultParallel, mode: 'twinMotor', spacing: 600 },
   offsets: { yz: { x: 0, y: 0, z: 0 }, xy: { x: 0, y: 0, z: 0 } },
@@ -69,7 +69,8 @@ export const defaultGantry: GantryInputs = {
 export type GantrySettings = Record<GantryAxis, Settings>
 
 export const initialGantrySettings: GantrySettings = {
-  x: defaultSettings,
+  // the long base axis: toothed belt
+  x: { ...defaultSettings, drives: ['belt'] },
   y: defaultSettings,
   // a vertical axis must not drop the load on power loss
   z: { ...defaultSettings, requireBrake: true },

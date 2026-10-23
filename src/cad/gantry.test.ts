@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultGantry, type GantryAxis, type GantryInputs } from '../calc/gantry'
+import { defaultGantry as appGantry, type GantryAxis, type GantryInputs } from '../calc/gantry'
 import { gantryJoint } from '../calc/gantryKits'
 import { adapters, axes, kits, motors } from '../data'
 import type { Axis, AxisAdapter } from '../data/types'
@@ -15,6 +15,8 @@ const all: Drawing[] = Object.keys(texts).map((key) => {
   return { ...parseDrawingPath(path)!, url: path, meta: metas[key.replace(/\.stp$/, '.json')] ?? null }
 })
 const load = (d: Drawing) => texts[`../../${d.path}`]()
+// the arrangement these tests were written for: Y on the floor (the app starts on a wall Y)
+const defaultGantry: GantryInputs = { ...appGantry, yMounting: 'floor' }
 
 type OcctMesh = { name: string; attributes: { position: { array: number[] } } }
 type Occt = { ReadStepFile: (data: Uint8Array, params: null) => { success: boolean; meshes: OcctMesh[] } }

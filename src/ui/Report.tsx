@@ -2,7 +2,9 @@ import { useState, type ReactNode } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { KitMatch } from '../calc/kitSelection'
 import { accelTimeFor } from '../calc/motionProfile'
-import { gearboxChecks, gearboxStatus, type DriveEvaluation } from '../calc/motorSelection'
+import { gearboxChecks, type DriveEvaluation } from '../calc/motorSelection'
+import type { GantryInputs } from '../calc/gantry'
+import type { GantryJoint } from '../calc/gantryKits'
 import { verticalForward, type Requirements, type Settings, type Status } from '../calc/types'
 import type { KitEvaluation } from '../calc/kitSelection'
 import {
@@ -18,11 +20,12 @@ import {
 import { axisDrawingsFor } from '../cad/drawings'
 import { translateData, useLang, useT } from '../i18n'
 import { CheckTable, StatusBadge } from './common'
+import { partRows } from './reportRows'
+import type { GantryAxisResult } from '../selection'
 import { DrivePackage } from './DrivePackage'
 import { KitNotes } from './KitStep'
 import {
   axisDetailChecks,
-  cableRoleLabel,
   driveLabel,
   fmt,
   kgf,
@@ -48,7 +51,9 @@ interface Props {
   profileView: ProfileView
   /** assembly orientation chosen in step 5 */
   assembly: ComboOptions
-  /** Gantry: which axis this report is for and what it carries (labels are Korean source text) */
+  /** Gantry: which axis this report is for and what it carries (labels are Korean source text). Its chapters
+   *  follow the gantry overview (`GantryOverview`, which carries the date and the web link): titles start with the
+   *  axis, no meta line */
   gantry?: { axis: string; rows: [string, string][] }
 }
 
@@ -89,11 +94,22 @@ function q(value: number | null | undefined, unit: string, digits = 3): string {
   return value == null ? '—' : `${fmt(value, digits)} ${unit}`
 }
 
-function Chapter({ no, title, children }: { no: number; title: string; children: ReactNode }) {
+/** Report date and the link to this calculation on the web (the PDF lays the link over it, pdfExport) */
+function ReportMeta({ date }: { date: string }) {
+  const t = useT()
+  return (
+    <p className="report-meta">
+      {t('직교 축 선정 계산서 · {date}', { date })} · <span className="report-link">{t('웹에서 이 계산 열기')}</span>
+    </p>
+  )
+}
+
+/** `axis`: the gantry axis the chapter is about, before the title */
+function Chapter({ no, title, axis, children }: { no: number; title: string; axis?: string; children: ReactNode }) {
   return (
     <section className="report-chapter">
       <h2>
-        <span className="step-no">{no}</span> {title}
+        <span className="step-no">{no}</span> {axis ? `${axis} · ${title}` : title}
       </h2>
       {children}
     </section>
@@ -127,61 +143,13 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   const times = t('배')
   const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
   const layout = axis.layout
-  // Quantities: two axes in a twin arrangement; one drive train per motor
-  const nAxes = layout.axes
-  const nDrive = drive ? layout.motors : null
-  type SelectionRow = [string, string, string, string | null, number | null, Status | null]
-  const selection: SelectionRow[] = [
-    [t('직교 축'), 'Festo', axis.order.model, axis.order.partNumber, nAxes, axis.status],
-    [
-      t('모터'),
-      drive?.motor.maker ?? '—',
-      drive ? (drive.motor.orderCode ?? drive.motor.model) : t('선택 안 됨'),
-      drive?.motor.partNumber ?? null,
-      nDrive,
-      drive?.status ?? null,
-    ],
-    // Festo drive package: drive, cables, external braking resistor
-    ...(drive?.controller?.controller
-      ? ([[t('서보 드라이브'), 'Festo', drive.controller.controller.model, drive.controller.controller.partNumber, nDrive, drive.controller.status]] as SelectionRow[])
-      : []),
-    ...(drive?.controller?.cables ?? []).map(
-      (c): SelectionRow => [t(cableRoleLabel[c.role]), 'Festo', c.type, c.partNumber, nDrive, null],
-    ),
-    ...(drive?.controller?.resistor.item && drive.controller.resistor.required
-      ? ([[t('제동저항'), 'Festo', drive.controller.resistor.item.model, drive.controller.resistor.item.partNumber, nDrive, null]] as SelectionRow[])
-      : []),
-    [
-      t('감속기'),
-      g?.maker ?? '—',
-      drive ? (g ? `${g.model} (${g.ratio}:1)` : t('감속기 미사용')) : '—',
-      g?.partNumber ?? null,
-      g ? nDrive : null,
-      drive ? gearboxStatus(drive) : null,
-    ],
-    [
-      t('연결키트'),
-      kit ? 'Festo' : '—',
-      kit?.product ?? (drive ? t('해당 키트 없음') : '—'),
-      kit?.partNumber ?? null,
-      kit ? nDrive : null,
-      kitEval?.status ?? null,
-    ],
-    ...(layout.guides
-      ? ([[t('LM 가이드'), '—', t('별도 선정 (참고값: 3장)'), null, layout.guides, null]] as SelectionRow[])
-      : []),
-    ...(axis.shaft ? ([[t('연결축'), 'Festo', axis.shaft.model, axis.shaft.shaft.partNumber, 1, null]] as SelectionRow[]) : []),
-  ]
+  const selection = partRows(axis, drive, kitEval, t)
   const noMotor = <p className="empty">{t('모터를 선택하지 않았습니다.')}</p>
 
   return (
     <div className="report">
-      <Chapter no={1} title={t('입력 데이터 · 선정 모델')}>
-        <p className="report-meta">
-          {t('직교 축 선정 계산서 · {date}', { date: today })} ·{' '}
-          {/* the PDF puts the link to this calculation on the web over it (pdfExport) */}
-          <span className="report-link">{t('웹에서 이 계산 열기')}</span>
-        </p>
+      <Chapter no={1} axis={gantry?.axis} title={t('입력 데이터 · 선정 모델')}>
+        {!gantry && <ReportMeta date={today} />}
 
         {gantry && (
           <>
@@ -287,7 +255,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
         </table>
       </Chapter>
 
-      <Chapter no={2} title={t('모션 프로파일')}>
+      <Chapter no={2} axis={gantry?.axis} title={t('모션 프로파일')}>
         <ProfileNumbers axis={axis} />
         <figure className="profile-chart report-chart">
           <figcaption>
@@ -299,7 +267,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
         </figure>
       </Chapter>
 
-      <Chapter no={3} title={t('축 선정 세부사항')}>
+      <Chapter no={3} axis={gantry?.axis} title={t('축 선정 세부사항')}>
         <h3>{axis.order.model}</h3>
         <SpecTable
           rows={[
@@ -348,7 +316,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
         )}
       </Chapter>
 
-      <Chapter no={4} title={t('모터 선정 세부사항')}>
+      <Chapter no={4} axis={gantry?.axis} title={t('모터 선정 세부사항')}>
         {!drive ? (
           noMotor
         ) : (
@@ -400,12 +368,12 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
       </Chapter>
 
       {drive?.controller && (
-        <Chapter no={4} title={t('드라이브 · 케이블 · 제동저항')}>
+        <Chapter no={4} axis={gantry?.axis} title={t('드라이브 · 케이블 · 제동저항')}>
           <DrivePackage selection={drive.controller} cableLength={settings.cableLength} hideTitle />
         </Chapter>
       )}
 
-      <Chapter no={5} title={t('감속기 세부사항')}>
+      <Chapter no={5} axis={gantry?.axis} title={t('감속기 세부사항')}>
         {!drive ? (
           noMotor
         ) : (
@@ -439,7 +407,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
         )}
       </Chapter>
 
-      <Chapter no={6} title={t('연결키트 세부사항')}>
+      <Chapter no={6} axis={gantry?.axis} title={t('연결키트 세부사항')}>
         {!kitMatch ? (
           noMotor
         ) : (
@@ -517,5 +485,189 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
         )}
       </Chapter>
     </div>
+  )
+}
+
+/** One gantry axis in the overview: its letter, its place in the selection order and its result */
+export interface GantryReportAxis {
+  /** 'X축' … (translated) */
+  name: string
+  /** place in the selection order, 1 = the tool end */
+  order: number
+  result: GantryAxisResult
+}
+
+/** Verdicts of the selected axis, drive and kit together; null before the axis is selected */
+function axisVerdict(s: GantryAxisResult['sel']): Status | null {
+  const list = [s?.selectedAxis?.status, s?.selectedDrive?.status, s?.selectedKitEval?.status]
+  return list.includes('fail') ? 'fail' : list.includes('warn') ? 'warn' : s?.selectedAxis ? 'ok' : null
+}
+
+/**
+ * First chapter of the gantry report: the arrangement, each axis's conditions and selection, the gantry kits and
+ * every part to order; each axis's own chapters (`Report` with `gantry`) follow.
+ */
+export function GantryOverview({ gantry, axes }: { gantry: GantryInputs; axes: GantryReportAxis[] }) {
+  const t = useT()
+  const lang = useLang()
+  const [today] = useState(() => new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US'))
+  const joints = axes.flatMap(({ result }) => (result.joint ? [result.joint] : []))
+  const where = (j: GantryJoint) => t('{carried}축 → {base}축 슬라이드', { carried: j.carried.toUpperCase(), base: j.base.toUpperCase() })
+  return (
+    <section className="report-chapter">
+      <h2>{t('조합축 {config} 개요', { config: gantry.config.toUpperCase() })}</h2>
+      <ReportMeta date={today} />
+
+      <h3>{t('사용 조건')}</h3>
+      <SpecTable
+        rows={[
+          ['조합축 구성', gantry.config.toUpperCase()],
+          ['하중', q(gantry.payload, 'kg')],
+          ['무게 중심 X / Y / Z', `${fmt(gantry.cog.x)} / ${fmt(gantry.cog.y)} / ${fmt(gantry.cog.z)} mm`],
+          [
+            '선정 순서',
+            [...axes]
+              .sort((a, b) => a.order - b.order)
+              .map((a) => a.name)
+              .join(' → '),
+          ],
+        ]}
+      />
+
+      <h3>{t('축별 선정 결과')}</h3>
+      <table className="report-table">
+        <thead>
+          <tr>
+            <th>{t('축')}</th>
+            <th>{t('축 설치 방향')}</th>
+            <th>{t('스트로크')}</th>
+            <th>{t('속도 / 가속도')}</th>
+            <th>{t('하중')}</th>
+            <th>{t('직교 축')}</th>
+            <th>{t('모터')}</th>
+            <th>{t('연결키트')}</th>
+            <th>{t('판정')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {axes.map(({ name, result: { req, sel } }) => {
+            const status = axisVerdict(sel)
+            return (
+              <tr key={name}>
+                <td>{name}</td>
+                <td>{req ? t(mountingLabel[req.mounting]) : '—'}</td>
+                <td>{req ? q(req.stroke, 'mm', 0) : '—'}</td>
+                <td>{req ? `${q(req.velocity, 'm/s')} / ${q(req.acceleration, 'm/s²')}` : '—'}</td>
+                <td>{req ? q(req.payload, 'kg', 2) : '—'}</td>
+                <td className="model">{sel?.selectedAxis?.order.model ?? '—'}</td>
+                <td className="model">{sel?.selectedDrive?.motor.model ?? '—'}</td>
+                <td className="model">{sel?.selectedKitEval?.kit.product ?? '—'}</td>
+                <td>{status ? <StatusBadge status={status} /> : '—'}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+
+      {joints.length > 0 && (
+        <>
+          <h3>{t('조합 키트')}</h3>
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>{t('결합')}</th>
+                <th>{t('조합 키트')}</th>
+                <th>{t('주문번호')}</th>
+                <th>{t('수량')}</th>
+                <th>{t('판정')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {joints.map((j) => {
+                if (!j.kit)
+                  return (
+                    <tr key={where(j)}>
+                      <td>{where(j)}</td>
+                      <td colSpan={3}>{t(j.note, j.noteArgs)}</td>
+                      <td>
+                        <StatusBadge status={j.status} />
+                      </td>
+                    </tr>
+                  )
+                // one row per kit model (a mirrored pair under two X axes), then what is ordered with them
+                const kits = [...new Set(j.kits.map((k) => k.model))].map((model) => {
+                  const same = j.kits.filter((k) => k.model === model)
+                  return { model, partNumber: same[0].partNumber, n: same.length }
+                })
+                return [
+                  ...kits.map((k, i) => (
+                    <tr key={`${where(j)}${k.model}`}>
+                      <td>{i === 0 ? where(j) : ''}</td>
+                      <td className="model">{k.model}</td>
+                      <td>{k.partNumber}</td>
+                      <td>{k.n}</td>
+                      <td>{i === 0 ? <StatusBadge status={j.status} /> : ''}</td>
+                    </tr>
+                  )),
+                  ...j.kit.accessories.map((x) => (
+                    <tr key={`${where(j)}${x.partNumber}`}>
+                      <td />
+                      <td className="model">{x.model}</td>
+                      <td>{x.partNumber}</td>
+                      <td>{x.quantity ? x.quantity * j.quantity : '—'}</td>
+                      <td />
+                    </tr>
+                  )),
+                ]
+              })}
+            </tbody>
+          </table>
+          {joints
+            .filter((j) => j.kit && j.status !== 'ok')
+            .map((j) => (
+              <p key={where(j)} className="report-note warn-text">
+                {where(j)}: {t(j.note, j.noteArgs)}
+              </p>
+            ))}
+        </>
+      )}
+
+      <h3>{t('선정 모델 (전체)')}</h3>
+      <table className="report-table">
+        <thead>
+          <tr>
+            <th>{t('축')}</th>
+            <th>{t('구분')}</th>
+            <th>{t('메이커')}</th>
+            <th>{t('모델명')}</th>
+            <th>{t('주문번호')}</th>
+            <th>{t('수량')}</th>
+            <th>{t('판정')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {axes.flatMap(({ name, result: { sel } }) =>
+            sel?.selectedAxis
+              ? partRows(sel.selectedAxis, sel.selectedDrive, sel.selectedKitEval, t).map(
+                  ([part, maker, model, partNumber, count, status], i) => (
+                    <tr key={`${name}${part}${model}`}>
+                      <td>{i === 0 ? name : ''}</td>
+                      <td>{part}</td>
+                      <td>{maker}</td>
+                      <td className="model">{model}</td>
+                      <td>{partNumber ?? '—'}</td>
+                      <td>{count ?? '—'}</td>
+                      <td>{status ? <StatusBadge status={status} /> : '—'}</td>
+                    </tr>
+                  ),
+                )
+              : [],
+          )}
+        </tbody>
+      </table>
+      <p className="report-note">
+        {t('각 축의 세부 계산은 다음 장부터 {axes} 순서로 이어집니다.', { axes: axes.map((a) => a.name).join(', ') })}
+      </p>
+    </section>
   )
 }

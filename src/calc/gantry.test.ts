@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { axes } from '../data'
 import { computeGantry, noPicks } from '../selection'
 import { evaluateAxis, G, guideLoads } from './axisSelection'
-import { defaultGantry, gantryRequirements, initialGantrySettings, slideFrame, stageOf, type GantryInputs } from './gantry'
+import { defaultGantry as appGantry, gantryRequirements, initialGantrySettings as appGantrySettings, slideFrame, stageOf, type GantryInputs } from './gantry'
 import { defaultSettings as appDefaults, type Requirements } from './types'
 
 // every axis and motor filter on (the app's defaults narrow the lists)
@@ -18,6 +18,10 @@ const baseReq: Requirements = {
   mounting: 'floor',
 }
 const picks = { x: noPicks, y: noPicks, z: noPicks }
+// the arrangement these tests were written for: Y on the floor, X with every drive (the app starts on a wall Y
+// and a belt X)
+const defaultGantry: GantryInputs = { ...appGantry, yMounting: 'floor' }
+const initialGantrySettings = { ...appGantrySettings, x: { ...appGantrySettings.x, drives: ['spindle', 'belt'] } } satisfies typeof appGantrySettings
 // every filter on, Z keeping its brake (the app's defaults leave no ball screw fast enough for the default X)
 const openSettings = { x: defaultSettings, y: defaultSettings, z: { ...defaultSettings, requireBrake: true } }
 

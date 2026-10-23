@@ -184,6 +184,136 @@ h3 {
   min-width: 0;
 }
 
+/* Gantry: the X/Y/Z axis row above the open axis's signs (`RailAxes`); the rail is taller there */
+.app.gantry {
+  --rail-h: 152px;
+}
+
+.rail-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rail-main > .signs {
+  flex: 1;
+}
+
+.rail-axes {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  height: 52px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+
+.rail-axis {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 0 22px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+
+.rail-axis + .rail-axis {
+  box-shadow: inset 1px 0 0 var(--line);
+}
+
+.rail-axis:hover:not(.active) {
+  background: rgb(255 255 255 / 0.05);
+}
+
+.rail-axis:focus-visible {
+  outline-offset: -4px;
+}
+
+.rail-axis-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+  font-family: var(--din);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.rail-axis.active .rail-axis-no {
+  border-color: transparent;
+  background: var(--gem);
+  color: var(--signal-ink);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.75),
+    inset 0 -2px 3px rgb(120 70 0 / 0.5),
+    0 4px 14px rgb(242 183 5 / 0.35);
+}
+
+.rail-axis-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rail-axis-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--sign-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.rail-axis-model {
+  font-family: var(--din);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-axis-model.sign-empty {
+  font-size: 14px;
+}
+
+/* the open axis's frame slides between the axes (`useSlideThumb`) */
+.rail-axis-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: rgb(255 255 255 / 0.07);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    inset 0 -2px 0 var(--signal);
+  pointer-events: none;
+  transition:
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    width 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    height 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 /* Direction chevron between signs */
 .sign + .sign::before {
   content: '';
@@ -1710,85 +1840,6 @@ th.num {
 .gantry-note {
   display: block;
   margin: 10px 0;
-}
-
-/* One route sign per axis, in selection order; the open axis carries the signal edge like the rail */
-.gantry-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-}
-
-.gantry-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  padding: 12px 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background-color 150ms ease-out,
-    box-shadow 150ms ease-out;
-}
-
-.gantry-tab:hover:not(.active) {
-  background: var(--surface-2);
-}
-
-/* the open tab's frame slides between the tabs (`useSlideThumb`) */
-.gantry-tabs {
-  position: relative;
-  isolation: isolate;
-}
-
-.gantry-tab-thumb {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  border-radius: 6px;
-  background: var(--signal-soft);
-  box-shadow: inset 0 0 0 2px var(--signal);
-  pointer-events: none;
-  transition:
-    transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
-    width 240ms cubic-bezier(0.32, 0.72, 0, 1),
-    height 240ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.gantry-tab-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.gantry-tab-order {
-  margin-right: auto;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.gantry-tab-model {
-  font-family: var(--din);
-  font-size: 17px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.gantry-tab-detail {
-  color: var(--muted);
-  font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* 탑재 조건: what the open axis carries, as passed to its checks */

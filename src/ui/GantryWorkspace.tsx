@@ -5,14 +5,13 @@ import { useT, type Lang } from '../i18n'
 import { kitList } from '../calc/gantryKits'
 import { computeGantry, noPicks, type GantryAxisResult, type Picks } from '../selection'
 import { AxisSteps } from './AxisSteps'
-import { StatusBadge } from './common'
 import { useSlideThumb } from './useSlideThumb'
-import { fmt, mountingLabel } from './format'
+import { fmt, mountingLabel, statusLabel } from './format'
 import { Footer } from './Footer'
 import { GantryDrawing } from './GantryDrawing'
 import { GantryInputPanel } from './GantryInputPanel'
 import type { ProfileView } from './ProfileChart'
-import { Report } from './Report'
+import { GantryOverview, Report } from './Report'
 import type { AppMode } from './ModeSwitch'
 import { RouteRail } from './RouteRail'
 import { useReportExport } from './useReportExport'
@@ -58,15 +57,27 @@ export function GantryWorkspace({
   const current = results.find((r) => r.axis === active) ?? results[0]
   const sel = current.sel
 
+  // the report covers every axis (X, Y, Z order), each needing its axis, motor and kit first
+  const order = gantryAxes(gantry.config)
+  const reportAxes = order.flatMap((a) => {
+    const i = results.findIndex((r) => r.axis === a)
+    return i < 0 ? [] : [{ name: t('{axis}축', { axis: axisName(a) }), order: i + 1, result: results[i] }]
+  })
+  const unselected = reportAxes.flatMap(({ name, result: { sel: s } }) =>
+    [!s?.selectedAxis && t('직교 축'), !s?.selectedDrive && t('모터'), !s?.selectedKitEval && t('연결키트')]
+      .filter((m): m is string => !!m)
+      .map((m) => `${name} ${m}`),
+  )
+  const base = reportAxes[0]?.result.sel?.selectedAxis
   const { exporting, start: startExport, reportRef } = useReportExport(
     lang,
-    sel?.selectedAxis ? `${axisName(active)}_${sel.selectedAxis.order.model}` : null,
+    base ? `${gantry.config.toUpperCase()}_${base.order.model}` : null,
     () => ({ mode: 'gantry', gantry, gantrySettings, picks, views, assemblies, tab: active }),
   )
 
   return (
     <>
-      <div className="app">
+      <div className="app gantry">
         <RouteRail
           axis={sel?.selectedAxis ?? null}
           drive={sel?.selectedDrive ?? null}
@@ -75,6 +86,8 @@ export function GantryWorkspace({
           exporting={exporting}
           lang={lang}
           onLang={setLang}
+          axes={<RailAxes results={results} order={order} active={active} onTab={setTab} />}
+          missing={unselected}
         />
         <main className="layout">
           <GantryInputPanel
@@ -87,12 +100,6 @@ export function GantryWorkspace({
             xSpacing={results.find((r) => r.axis === 'x')?.spacing}
           />
           <div className="results">
-            <GantrySummary
-              results={results}
-              order={gantryAxes(gantry.config)}
-              active={active}
-              onTab={setTab}
-            />
             <CarriedLoad result={current} gantry={deferredGantry} />
             {current.req && sel ? (
               <AxisSteps
@@ -124,28 +131,34 @@ export function GantryWorkspace({
           </div>
         </main>
       </div>
-      {exporting && sel?.selectedAxis && current.req && (
+      {exporting && unselected.length === 0 && (
         <div className="report-stage" ref={reportRef} aria-hidden="true">
-          <Report
-            req={current.req}
-            settings={deferredSettings[active]}
-            axis={sel.selectedAxis}
-            drive={sel.selectedDrive}
-            kitMatch={sel.kitMatch}
-            kit={sel.selectedKitEval}
-            profileView={views[active]}
-            assembly={assemblies[active]}
-            gantry={{ axis: t('{axis}축', { axis: axisName(active) }), rows: gantryReportRows(current, deferredGantry) }}
-          />
+          <GantryOverview gantry={deferredGantry} axes={reportAxes} />
+          {reportAxes.map(({ name, result: r }) => (
+            <Report
+              key={r.axis}
+              req={r.req!}
+              settings={deferredSettings[r.axis]}
+              axis={r.sel!.selectedAxis!}
+              drive={r.sel!.selectedDrive}
+              kitMatch={r.sel!.kitMatch}
+              kit={r.sel!.selectedKitEval}
+              profileView={views[r.axis]}
+              assembly={assemblies[r.axis]}
+              gantry={{ axis: name, rows: gantryReportRows(r, deferredGantry) }}
+            />
+          ))}
         </div>
       )}
     </>
   )
 }
 
-/** All axes of the gantry, in selection order; a row opens that axis's steps. */
-/** The axes in display order (`order`: X, Y, Z), each with its place in the selection order (tool end first). */
-function GantrySummary({
+/**
+ * The rail's axis row: the axes in display order (`order`: X, Y, Z), each with its place in the selection order
+ * (tool end first), its verdict, model and load; the open one's frame slides to it.
+ */
+function RailAxes({
   results,
   order,
   active,
@@ -158,51 +171,38 @@ function GantrySummary({
 }) {
   const t = useT()
   const shown = order.filter((a) => results.some((r) => r.axis === a))
-  const { ref: tabsRef, thumb: tabThumb } = useSlideThumb<HTMLDivElement>(shown.indexOf(active), shown.length)
+  const { ref, thumb } = useSlideThumb<HTMLDivElement>(shown.indexOf(active), shown.length)
   return (
-    <section className="panel gantry-summary">
-      <header className="step-head">
-        <h2>{t('조합축 구성')}</h2>
-        <span className="muted">
-          {t('선정 순서 {order}: 공구 쪽 축부터 차례로 선정합니다. 행을 누르면 그 축의 선정 단계를 엽니다.', {
-            order: results.map((r) => axisName(r.axis)).join(' → '),
-          })}
-        </span>
-      </header>
-      <div className="gantry-tabs" role="tablist" aria-label={t('조합축 축')} ref={tabsRef}>
-        {order.map((a) => {
-          const i = results.findIndex((r) => r.axis === a)
-          const r = results[i]
-          if (!r) return null
-          const s = r.sel
-          return (
-            <button
-              key={r.axis}
-              type="button"
-              role="tab"
-              aria-selected={r.axis === active}
-              className={`gantry-tab${r.axis === active ? ' active' : ''}`}
-              onClick={() => onTab(r.axis)}
-            >
-              <span className="gantry-tab-head">
-                <span className="step-no">{axisName(r.axis)}</span>
-                <span className="gantry-tab-order">{t('{n}번째 선정', { n: i + 1 })}</span>
-                {s?.selectedAxis && <StatusBadge status={worst(s)} />}
+    <div className="rail-axes" role="tablist" aria-label={t('조합축 축')} ref={ref}>
+      {shown.map((a) => {
+        const i = results.findIndex((r) => r.axis === a)
+        const r = results[i]
+        const s = r.sel
+        const status = s?.selectedAxis ? worst(s) : null
+        return (
+          <button
+            key={a}
+            type="button"
+            role="tab"
+            aria-selected={a === active}
+            className={`rail-axis${a === active ? ' active' : ''}`}
+            onClick={() => onTab(a)}
+          >
+            <span className="rail-axis-no">{axisName(a)}</span>
+            <span className="rail-axis-body">
+              <span className="rail-axis-head">
+                {status && <span className={`sign-status sign-status-${status}`}>{t(statusLabel[status])}</span>}
+                <span>
+                  {t('{n}번째 선정', { n: i + 1 })} · {r.req ? t('하중 {mass} kg', { mass: fmt(r.req.payload, 1) }) : t('하위 축 선정 필요')}
+                </span>
               </span>
-              <span className="gantry-tab-model">{s?.selectedAxis?.order.model ?? t('선택 안 됨')}</span>
-              <span className="gantry-tab-detail">
-                {s?.selectedDrive ? s.selectedDrive.motor.model : '—'}
-                {s?.selectedKitEval ? ` · ${s.selectedKitEval.kit.product}` : ''}
-              </span>
-              <span className="gantry-tab-detail">
-                {r.req ? t('하중 {mass} kg', { mass: fmt(r.req.payload, 1) }) : t('하위 축 선정 필요')}
-              </span>
-            </button>
-          )
-        })}
-        {tabThumb && <span className="gantry-tab-thumb" aria-hidden style={tabThumb} />}
-      </div>
-    </section>
+              <span className={`rail-axis-model${s?.selectedAxis ? '' : ' sign-empty'}`}>{s?.selectedAxis?.order.model ?? t('선택 안 됨')}</span>
+            </span>
+          </button>
+        )
+      })}
+      {thumb && <span className="rail-axis-thumb" aria-hidden style={thumb} />}
+    </div>
   )
 }
 

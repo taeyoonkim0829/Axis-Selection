@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Check, Status } from '../calc/types'
@@ -16,6 +16,10 @@ interface Props {
   exporting: boolean
   lang: Lang
   onLang: (lang: Lang) => void
+  /** Gantry: the X/Y/Z axis row above the open axis's signs */
+  axes?: ReactNode
+  /** What has to be selected before the PDF can be made (default: this axis's axis, motor and kit) */
+  missing?: string[]
 }
 
 const stepIds = ['step-axis', 'step-motor', 'step-gearbox', 'step-kit'] as const
@@ -37,7 +41,8 @@ function useActiveStep(): number {
         const first = stepIds.findIndex((id) => visible.get(id))
         if (first >= 0) setActive(first)
       },
-      { rootMargin: '-140px 0px -45% 0px' },
+      // the band just below the rail (taller with the gantry's axis row)
+      { rootMargin: `-${Math.round((document.querySelector('.rail')?.getBoundingClientRect().bottom ?? 112) + 28)}px 0px -45% 0px` },
     )
     els.forEach((e) => io.observe(e))
     return () => io.disconnect()
@@ -95,7 +100,7 @@ function Sign({
   )
 }
 
-export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
+export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang, axes, missing: required }: Props) {
   const t = useT()
   const active = useActiveStep()
   const scrolled = useScrolled()
@@ -106,7 +111,7 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
   const g = drive?.gearbox
 
   const dialog = useRef<HTMLDialogElement>(null)
-  const missing = [!axis && t('직교 축'), !drive && t('모터'), !kit && t('연결키트')].filter((m): m is string => !!m)
+  const missing = required ?? [!axis && t('직교 축'), !drive && t('모터'), !kit && t('연결키트')].filter((m): m is string => !!m)
   const missingText = missing.join(', ')
   const exportClick = () => (missing.length ? dialog.current?.showModal() : onExport())
 
@@ -119,42 +124,45 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
             {/* the rail is sign blue in both themes, so the logo's dark-background version is used in both */}
             <img className="rail-logo" src={`${import.meta.env.BASE_URL}axispilot-logo-dark.svg`} alt="AxisPilot" width={171} height={32} />
           </div>
-          <ol className="signs" aria-label={t('선정 경로')}>
-            <Sign
-              no={1}
-              name={t('직교 축')}
-              value={axis?.order.model ?? null}
-              status={axis?.status}
-              detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
-              active={active === 0}
-            />
-            <Sign
-              no={2}
-              name={t('모터')}
-              value={drive ? drive.motor.model : null}
-              status={drive?.status}
-              detail={
-                drive ? `${drive.motor.maker}${driveTight ? ` · ${t(driveTight.label)} ${pct(driveTight.ratio)}` : ''}` : undefined
-              }
-              active={active === 1}
-            />
-            <Sign
-              no={3}
-              name={t('감속기')}
-              value={drive ? (g ? g.model : t('감속기 미사용')) : null}
-              detail={g ? `${g.maker} · ${g.ratio}:1` : undefined}
-              active={active === 2}
-            />
-            <Sign
-              no={4}
-              name={t('연결키트')}
-              value={kit?.kit.product ?? null}
-              status={kit?.status}
-              empty={drive ? t('해당 키트 없음') : undefined}
-              detail={kit ? (kitTight ? `${t(kitTight.label)} ${pct(kitTight.ratio)}` : t('축 {axis} · {motor}', { axis: kit.kit.axisCode, motor: kit.kit.motorCode })) : undefined}
-              active={active === 3}
-            />
-          </ol>
+          <div className="rail-main">
+            {axes}
+            <ol className="signs" aria-label={t('선정 경로')}>
+              <Sign
+                no={1}
+                name={t('직교 축')}
+                value={axis?.order.model ?? null}
+                status={axis?.status}
+                detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
+                active={active === 0}
+              />
+              <Sign
+                no={2}
+                name={t('모터')}
+                value={drive ? drive.motor.model : null}
+                status={drive?.status}
+                detail={
+                  drive ? `${drive.motor.maker}${driveTight ? ` · ${t(driveTight.label)} ${pct(driveTight.ratio)}` : ''}` : undefined
+                }
+                active={active === 1}
+              />
+              <Sign
+                no={3}
+                name={t('감속기')}
+                value={drive ? (g ? g.model : t('감속기 미사용')) : null}
+                detail={g ? `${g.maker} · ${g.ratio}:1` : undefined}
+                active={active === 2}
+              />
+              <Sign
+                no={4}
+                name={t('연결키트')}
+                value={kit?.kit.product ?? null}
+                status={kit?.status}
+                empty={drive ? t('해당 키트 없음') : undefined}
+                detail={kit ? (kitTight ? `${t(kitTight.label)} ${pct(kitTight.ratio)}` : t('축 {axis} · {motor}', { axis: kit.kit.axisCode, motor: kit.kit.motorCode })) : undefined}
+                active={active === 3}
+              />
+            </ol>
+          </div>
           <div className="rail-actions">
             <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
               {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
