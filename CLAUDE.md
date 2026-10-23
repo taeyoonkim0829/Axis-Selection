@@ -60,7 +60,7 @@ The original E-Drive workbook (now retired) had four calc sheets — `BS_Horizon
 
 ## Design
 
-`PRODUCT.md` (users, purpose, principles) and `DESIGN.md` (route-sign design system: tokens, rules) are the design references; keep `DESIGN.md` in sync when changing `src/index.css`. The app is dark, blueprint glass (A: navy-black ground with grid, lights and axis outline as fixed background layers, frosted `.app .panel` / `.app .rail`); the PDF report keeps the light tokens (`.report-stage`). Two design alternatives run on the same app as skins (`src/ui/skin.ts`, `<html data-skin>`): B `graphite` (charcoal, amber, the route rail as a left column) and C `cockpit` (teal glass, a floating rail, an isometric axis drawing behind), chosen by the footer's 화면 시안 switch or `?skin=graphite` / `?skin=cockpit`. Fonts are bundled from npm (`pretendard`, `@fontsource/barlow-semi-condensed`), imported in `main.tsx`.
+`PRODUCT.md` (users, purpose, principles) and `DESIGN.md` (route-sign design system: tokens, rules) are the design references; keep `DESIGN.md` in sync when changing `src/index.css`. The app is dark, blueprint glass (navy-black ground with grid and two lights as fixed background layers, frosted `.app .panel` / `.app .rail`; the input and result columns scroll in their own sticky boxes below the rail); the PDF report keeps the light tokens (`.report-stage`). Fonts are bundled from npm (`pretendard`, `@fontsource/barlow-semi-condensed`), imported in `main.tsx`.
 
 ## Commands
 

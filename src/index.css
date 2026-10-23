@@ -471,7 +471,8 @@ h3 {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 20px 24px 8px;
+  /* rail + 20 + the columns + 20 = the viewport: the page itself does not scroll, the columns do */
+  padding: 20px 24px;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
   gap: 20px;
@@ -485,11 +486,24 @@ h3 {
   }
 }
 
+/* the results scroll in their own box below the rail, like the inputs, so nothing passes behind the rail */
 .results {
+  position: sticky;
+  top: calc(var(--rail-h) + 20px);
+  max-height: calc(100vh - var(--rail-h) - 40px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+}
+
+@media (max-width: 1000px) {
+  .results {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .panel {
@@ -819,8 +833,9 @@ details summary:hover {
 
 /* ---------- steps ---------- */
 
+/* steps scroll inside .results, whose top is already below the rail */
 .step {
-  scroll-margin-top: calc(var(--rail-h) + 20px);
+  scroll-margin-top: 0;
 }
 
 @media (max-width: 1000px) {
@@ -1775,35 +1790,28 @@ th.num {
 
 /* ---------- blueprint glass ---------- */
 
-/* The ground behind the glass: blueprint grid, two soft lights and the outline of an axis (fixed, so the
-   panels move over it). Skins (below) change the tokens and the drawing. */
+/* The ground behind the glass: blueprint grid and two soft lights (fixed, so the panels move over it). */
 body {
   background-color: var(--bg);
   background-image:
-    var(--backdrop-art, none),
     radial-gradient(640px 640px at 0% 12%, var(--glow-1), transparent 70%),
     radial-gradient(560px 560px at 100% 100%, var(--glow-2), transparent 70%),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size:
-    min(1100px, 90vw) auto,
     auto,
     auto,
     40px 40px,
     40px 40px;
   background-position:
-    right -40px top 46%,
     0 0,
     0 0,
     -1px -1px,
     -1px -1px;
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
   background-attachment: fixed;
 }
 
-:root {
-  --backdrop-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1100 260' fill='none' stroke='%2338bdf8' stroke-width='1.2'%3E%3Crect x='40' y='90' width='900' height='70' rx='10' stroke-opacity='.22'/%3E%3Cpath d='M40 125h900' stroke-opacity='.1' stroke-dasharray='6 6'/%3E%3Crect x='380' y='62' width='150' height='28' rx='5' stroke-opacity='.28'/%3E%3Crect x='940' y='80' width='56' height='90' rx='6' stroke-opacity='.22'/%3E%3Crect x='996' y='92' width='80' height='66' rx='8' stroke-opacity='.22'/%3E%3Ccircle cx='968' cy='125' r='16' stroke-opacity='.22'/%3E%3Cpath d='M40 200h900M40 192v16M940 192v16' stroke-opacity='.18'/%3E%3C/svg%3E");
-}
 
 .app .panel {
   border-radius: var(--panel-radius);
@@ -1813,8 +1821,8 @@ body {
 
 .app .rail {
   background: var(--glass-rail);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  /* the bottom line drawn inside, so the rail stays --rail-h high */
+  box-shadow: inset 0 -1px 0 var(--line), 0 10px 30px rgb(0 0 0 / 0.25);
   backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
@@ -1893,238 +1901,4 @@ body {
   background: var(--surface-solid);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-/* ---------- skin switch (footer) ---------- */
-
-.skin-switch {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.skin-switch span {
-  margin-right: 4px;
-}
-
-.skin-switch button {
-  min-height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  cursor: pointer;
-}
-
-.skin-switch button[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--text);
-}
-
-/* ---------- skin B: graphite mono ---------- */
-
-:root[data-skin='graphite'] {
-  --sign: #3a3a3f;
-  --sign-deep: #2a2a2e;
-  --sign-ink-2: #b5b5af;
-  --signal: #f5b83d;
-  --signal-ink: #1b1303;
-  --signal-soft: rgb(245 184 61 / 0.12);
-  --bg: #0c0d0f;
-  --surface: rgb(22 22 25 / 0.55);
-  --surface-2: rgb(255 255 255 / 0.04);
-  --surface-solid: rgb(20 20 23 / 0.96);
-  --line: rgb(255 255 255 / 0.08);
-  --line-strong: rgb(255 255 255 / 0.16);
-  --text: #ececea;
-  --muted: #b5b5af;
-  --accent: #f5b83d;
-  --accent-ink: #1b1303;
-  --accent-soft: rgb(245 184 61 / 0.14);
-  --glass-blur: 24px;
-  --glass-rail: rgb(18 18 21 / 0.62);
-  --panel-radius: 20px;
-  --grid-line: transparent;
-  --glow-1: rgb(96 165 250 / 0.09);
-  --glow-2: rgb(245 184 61 / 0.13);
-  --backdrop-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900' fill='none' stroke='%23fff'%3E%3Ccircle cx='450' cy='450' r='420' stroke-opacity='.05'/%3E%3Ccircle cx='450' cy='450' r='340' stroke-opacity='.06'/%3E%3Ccircle cx='450' cy='450' r='260' stroke-opacity='.07' stroke-dasharray='2 10'/%3E%3Ccircle cx='450' cy='450' r='180' stroke-opacity='.08'/%3E%3Ccircle cx='450' cy='450' r='100' stroke-opacity='.1'/%3E%3Cpath d='M0 450h900M450 0v900' stroke-opacity='.06'/%3E%3C/svg%3E");
-}
-
-:root[data-skin='graphite'] .app .panel {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
-}
-
-/* the step rail as a column on the left */
-@media (min-width: 1001px) {
-  :root[data-skin='graphite'] {
-    --rail-h: 0px;
-  }
-
-  :root[data-skin='graphite'] .app {
-    display: grid;
-    grid-template-columns: 272px minmax(0, 1fr);
-    grid-template-rows: 1fr auto;
-  }
-
-  :root[data-skin='graphite'] .app .rail {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    align-self: start;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    border-bottom: 0;
-    border-right: 1px solid var(--line);
-    box-shadow: none;
-  }
-
-  :root[data-skin='graphite'] .app .layout,
-  :root[data-skin='graphite'] .app .app-footer {
-    grid-column: 2;
-  }
-
-  :root[data-skin='graphite'] .rail-inner {
-    flex-direction: column;
-    gap: 14px;
-    height: 100%;
-    min-height: 0;
-    padding: 20px 16px;
-  }
-
-  :root[data-skin='graphite'] .rail-brand {
-    display: flex;
-    width: auto;
-    padding: 4px 4px 14px;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  :root[data-skin='graphite'] .signs {
-    flex: none;
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  :root[data-skin='graphite'] .sign + .sign::before {
-    display: none;
-  }
-
-  :root[data-skin='graphite'] .sign-btn {
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-  }
-
-  :root[data-skin='graphite'] .sign-active .sign-btn {
-    border-color: rgb(245 184 61 / 0.45);
-    box-shadow: none;
-  }
-
-  :root[data-skin='graphite'] .sign-value {
-    font-size: 18px;
-  }
-
-  :root[data-skin='graphite'] .rail-actions {
-    margin-top: auto;
-    padding-left: 0;
-    border-left: 0;
-    gap: 8px;
-  }
-
-  :root[data-skin='graphite'] .rail-action {
-    min-height: 44px;
-    border-radius: 12px;
-  }
-}
-
-/* ---------- skin C: cockpit ---------- */
-
-:root[data-skin='cockpit'] {
-  --sign: #0f3d38;
-  --sign-deep: #0b2f2b;
-  --sign-ink-2: #a7c2bc;
-  --signal: #5eead4;
-  --signal-ink: #04100f;
-  --signal-soft: rgb(94 234 212 / 0.12);
-  --bg: #04100f;
-  --surface: rgb(12 40 37 / 0.42);
-  --surface-2: rgb(255 255 255 / 0.04);
-  --surface-solid: rgb(8 28 26 / 0.96);
-  --line: rgb(204 251 241 / 0.14);
-  --line-strong: rgb(204 251 241 / 0.24);
-  --text: #e2f2ef;
-  --muted: #a7c2bc;
-  --accent: #5eead4;
-  --accent-ink: #04100f;
-  --accent-soft: rgb(94 234 212 / 0.16);
-  --glass-blur: 20px;
-  --glass-rail: rgb(8 30 28 / 0.55);
-  --panel-radius: 22px;
-  --grid-line: rgb(94 234 212 / 0.035);
-  --glow-1: rgb(94 234 212 / 0.12);
-  --glow-2: rgb(242 183 5 / 0.06);
-  --rail-h: 116px;
-  /* the assembled axis, as in the 3D view: profile, slide, drive head, kit and motor, the COG */
-  --backdrop-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='260 200 840 600' stroke-width='1.2'%3E%3Cg fill='%235eead4' stroke='%2399f6e4'%3E%3Cpath d='M330 560 1000 225l60 30-670 335z' fill-opacity='.06' stroke-opacity='.35'/%3E%3Cpath d='M390 590 1060 255v45L390 635z' fill-opacity='.03' stroke-opacity='.28'/%3E%3Cpath d='M330 560l60 30v45l-60-30z' fill-opacity='.05' stroke-opacity='.28'/%3E%3Cpath d='M560 430l100-50 70 35-100 50z' fill-opacity='.12' stroke-opacity='.5'/%3E%3Cpath d='M630 465l100-50v25l-100 50z' fill-opacity='.07' stroke-opacity='.4'/%3E%3Cpath d='M560 430l70 35v25l-70-35z' fill-opacity='.09' stroke-opacity='.4'/%3E%3Cpath d='M290 540l50-25 60 30-50 25z' fill-opacity='.09' stroke-opacity='.4'/%3E%3Cpath d='M350 570l50-25v70l-50 25z' fill-opacity='.06' stroke-opacity='.32'/%3E%3Cpath d='M290 540l60 30v70l-60-30z' fill-opacity='.07' stroke-opacity='.32'/%3E%3C/g%3E%3Cg fill='%23f2b705' stroke='%23fcd34d'%3E%3Cpath d='M350 640l50-25 40 20-50 25z' fill-opacity='.08' stroke-opacity='.4'/%3E%3Cpath d='M390 660l50-25 80 40-50 25z' fill-opacity='.06' stroke-opacity='.34'/%3E%3Cpath d='M390 660l80 40v70l-80-40z' fill-opacity='.05' stroke-opacity='.34'/%3E%3Cpath d='M470 700l50-25v70l-50 25z' fill-opacity='.04' stroke-opacity='.3'/%3E%3C/g%3E%3Ccircle cx='645' cy='392' r='6' fill='%23f87171' fill-opacity='.7'/%3E%3C/svg%3E");
-}
-
-:root[data-skin='cockpit'] body {
-  background-size:
-    min(1400px, 110vw) auto,
-    auto,
-    auto,
-    40px 40px,
-    40px 40px;
-  background-position:
-    center 60%,
-    0 0,
-    0 0,
-    -1px -1px,
-    -1px -1px;
-}
-
-:root[data-skin='cockpit'] .app .panel {
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.3);
-}
-
-/* a floating rounded rail */
-:root[data-skin='cockpit'] .app .rail {
-  top: 12px;
-  margin: 12px 16px 0;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
-}
-
-:root[data-skin='cockpit'] .rail-inner {
-  min-height: 92px;
-}
-
-:root[data-skin='cockpit'] .sign-btn {
-  border-radius: 22px;
-}
-
-:root[data-skin='cockpit'] .sign-active .sign-btn {
-  box-shadow: none;
-}
-
-:root[data-skin='cockpit'] .sign-no,
-:root[data-skin='cockpit'] .step-no {
-  border-radius: 50%;
-}
-
-:root[data-skin='cockpit'] .rail-action {
-  border-radius: 999px;
-}
-
-@media (max-width: 1000px) {
-  :root[data-skin='cockpit'] .app .rail {
-    position: static;
-  }
 }

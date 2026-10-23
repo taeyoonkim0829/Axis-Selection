@@ -118,9 +118,9 @@ export function GantryWorkspace({
             )}
             {/* below the open axis's steps (its step 5 drawing): the whole gantry assembled */}
             <GantryDrawing gantry={deferredGantry} results={results} assemblies={assemblies} />
+            <Footer />
           </div>
         </main>
-        <Footer />
       </div>
       {exporting && sel?.selectedAxis && current.req && (
         <div className="report-stage" ref={reportRef} aria-hidden="true">

@@ -413,7 +413,6 @@ export const en: Record<string, string> = {
   '키트 조립 방향 (모터 위치)': 'Kit orientation (motor position)',
   '모터 조립 방향 (커넥터)': 'Motor orientation (connector)',
   '웹에서 이 계산 열기': 'Open this calculation on the web',
-  '화면 시안': 'Screen design',
   '키트 조립 방향 (첫 번째 축, 모터 위치)': 'Kit orientation (first axis, motor position)',
   '키트 조립 방향 (두 번째 축, 모터 위치)': 'Kit orientation (second axis, motor position)',
   '모터 조립 방향 (첫 번째 축, 커넥터)': 'Motor orientation (first axis, connector)',

@@ -92,7 +92,7 @@ components:
 
 **Creative North Star: "The Route Sign"**
 
-The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **blueprint glass**: a navy-black ground with a 40px blueprint grid, two soft lights (cyan top left, yellow bottom right) and the faint outline of an axis, all fixed, and frosted-glass panels (translucent white, backdrop blur) moving over it, with tables of exact numbers.
+The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **blueprint glass**: a navy-black ground with a 40px blueprint grid, two soft lights (cyan top left, yellow bottom right), both fixed, and frosted-glass panels (translucent white, backdrop blur) moving over it, with tables of exact numbers.
 
 It is an operating tool, so the world contributes only type, palette, density and the one signature move (the rail). Controls stay standard web controls.
 
@@ -114,7 +114,7 @@ Restrained workspace on a dark blueprint ground. The app is dark only; the PDF r
 - **Signal Yellow** (#f2b705): the active route box on the rail, step number boxes, the selected row outline, selection highlight, focus ring. Soft variant (yellow at 12%) fills the selected row.
 
 ### Neutral
-- **Ground** (#060a12): page background, with the blueprint grid (cyan at 6%), the two lights and the axis outline as fixed background layers (`--backdrop-art`, `--glow-1/2`, `--grid-line`).
+- **Ground** (#060a12): page background, with the blueprint grid (cyan at 6%), and the two lights as fixed background layers (`--glow-1/2`, `--grid-line`); no other lines or drawings behind the work, so nothing competes with the numbers.
 - **Surface** (white at 5.5%) glass panels, **Surface 2** (white at 5%) hover and fills inside panels, **Surface Solid** (rgb(14 21 32 / 0.94)) sticky table heads and the notice dialog, which content scrolls under.
 - **Line** (white at 11%) / **Line Strong** (white at 20%): dividers, input borders, the input switches' outlines.
 - **Text** (#e6edf5), **Muted** (#a3b1c2): secondary labels and units.
@@ -150,7 +150,7 @@ The calculation report (`.report-stage`) is white paper and keeps the light toke
 
 ## Layout
 
-Full-width sticky rail (112px) over a centered 1600px workspace: a 320px sticky condition panel on the left and the results column on the right (axis step, motion profile, motor, gearbox, kit), 20px gaps. Steps have `scroll-margin-top` so a click on a route box lands the step just below the rail. Below 1280px the rail drops its brand block; below 1000px the rail becomes static, signs go 2×2 (1 column under 560px) and the layout stacks.
+Full-width sticky rail (112px) over a centered 1600px workspace: a 320px sticky condition panel on the left and the results column on the right (axis step, motion profile, motor, gearbox, kit), 20px gaps. Both columns are sticky boxes starting 20px below the rail and scroll on their own (`.inputs`, `.results`), so no content ever passes behind the glass rail; the page itself does not scroll (the footer ends the results column); a click on a route box scrolls the results box to the step's top. Below 1280px the rail drops its brand block; below 1000px the rail becomes static, signs go 2×2 (1 column under 560px) and the layout stacks.
 
 PDF export (PDF로 내보내기) renders a separate report (`Report.tsx`, mounted off screen at A4 content width, 703px) to a PDF that opens in a new tab: six chapters, each on a new page, with a sign-blue chapter bar, label/value spec tables and the check tables. The report always uses the light tokens. Chapter 1's meta line ends in `.report-link` (웹에서 이 계산 열기: accent colour, underlined), which the PDF makes a link to the same calculation on the web.
 
@@ -183,13 +183,6 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles; panels 16p
 - **Gantry axis inputs** (`.gantry-motion`, 축별 운전 조건): per axis a 24px axis-letter box alone (the axis name only as its aria-label), axes split by a 1px line.
 - **Gantry axis tabs** (`.gantry-tabs`): one card per axis in X, Y, Z order, a yellow axis-letter box (the step number box), 몇 번째 선정 (the selection runs Z → Y → X, named in the header), the verdict, then the axis part number in the data face (17px) and muted motor · kit and carried mass lines. The open axis has the selected-row look (soft yellow + 2px yellow inset ring). Under it the 하중 조건 panel (`.gantry-load-list`): label / value in the data face / muted explanation, in an auto-fit grid.
 - **Chart spans**: dwell shaded `--surface-2`, press (press move + hold) shaded `--accent-soft`, each labelled above the plot.
-
-## Skins
-
-Two design alternatives run on the same app as skins (`src/ui/skin.ts`): the footer's 화면 시안 switch (A · B · C, pill buttons, the active one accent-outlined) or the address (`?skin=graphite`, `?skin=cockpit`; A has no parameter) sets `<html data-skin>`, and `index.css` changes the tokens and, for B, the layout. A (blueprint glass, above) is the app's look.
-
-- **B · Graphite Mono** (`data-skin='graphite'`): charcoal ground #0c0d0f with concentric machined rings and two lights (amber top right, blue bottom), no grid; darker smoked glass (rgb(22 22 25 / 0.55), blur 24px, inset top highlight), 20px panels; amber #f5b83d as accent and signal (ink #1b1303); text #ececea, muted #b5b5af. From 1001px the route rail is a 272px column on the left (sticky, full height): brand, the four signs stacked as bordered 14px cards (the active one amber-outlined, no underline), the actions at the bottom; the workspace and footer take the second column. Narrower, the rail stacks on top as in A.
-- **C · Cockpit** (`data-skin='cockpit'`): teal-black ground #04100f with a faint grid and a large isometric line drawing of the assembled axis (profile, slide, drive head, kit and motor in yellow, the COG in red) centred behind the work, as if the 3D view were the backdrop; teal glass (rgb(12 40 37 / 0.42), blur 20px, deep drop shadows), 22px panels; mint #5eead4 as accent and signal (ink #04100f); text #e2f2ef, muted #a7c2bc. The rail floats: 12px in from the edges, 28px corners, its own border and shadow; route boxes and step numbers are round, rail actions pill-shaped.
 
 ## Do's and Don'ts
 

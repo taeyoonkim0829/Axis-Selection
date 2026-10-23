@@ -102,9 +102,9 @@ function Fallback({ req, settings, setReq, setSettings, lang, setLang, mode, set
         <InputPanel req={req} settings={settings} onReq={setReq} onSettings={setSettings} mode={mode} onMode={setMode} />
         <div className="results">
           <ErrorPanel error={error} retry={retry} />
+          <Footer />
         </div>
       </main>
-      <Footer />
     </div>
   )
 }
@@ -117,9 +117,9 @@ function GantryFallback({ gantry, setGantry, gantrySettings, setGantrySettings, 
         <GantryInputPanel gantry={gantry} onGantry={setGantry} settings={gantrySettings} onSettings={setGantrySettings} mode={mode} onMode={setMode} />
         <div className="results">
           <ErrorPanel error={error} retry={retry} />
+          <Footer />
         </div>
       </main>
-      <Footer />
     </div>
   )
 }
@@ -198,9 +198,9 @@ function Workspace({ req, settings, setReq, setSettings, lang, setLang, mode, se
               assembly={assembly}
               onAssembly={setAssembly}
             />
+            <Footer />
           </div>
         </main>
-        <Footer />
       </div>
       {exporting && selectedAxis && (
         <div className="report-stage" ref={reportRef} aria-hidden="true">
