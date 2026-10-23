@@ -1,6 +1,6 @@
 ---
 name: AxisPilot
-description: Festo axis, motor, gearbox and kit sizing, laid out as a route sign on blueprint glass
+description: Festo axis, motor, gearbox and kit sizing, laid out as a route sign on crystal glass
 colors:
   sign-blue: "#0a5a8a"
   sign-blue-deep: "#08486f"
@@ -51,7 +51,7 @@ rounded:
   sm: "5px"
   md: "6px"
   lg: "8px"
-  panel: "16px"
+  panel: "20px"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -66,23 +66,23 @@ components:
     backgroundColor: "{colors.signal-yellow}"
     textColor: "{colors.signal-ink}"
   step-number:
-    backgroundColor: "{colors.signal-yellow}"
+    backgroundColor: "linear-gradient(160deg, #ffe27a, #f2b705 55%, #c98d00)"
     textColor: "{colors.signal-ink}"
-    rounded: "{rounded.sm}"
+    rounded: "8px"
     size: "28px"
   segmented-active:
-    backgroundColor: "{colors.accent}"
+    backgroundColor: "linear-gradient(120deg, #e0f2fe 0%, #7dd3fc 30%, #38bdf8 60%, #a78bfa 120%)"
     textColor: "{colors.accent-ink}"
   row-selected:
     backgroundColor: "{colors.signal-soft}"
   panel:
     backgroundColor: "{colors.surface}"
-    backdropFilter: "blur(18px) saturate(140%)"
+    backdropFilter: "blur(24px) saturate(170%)"
     rounded: "{rounded.panel}"
     padding: "18px 20px"
   input:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.md}"
+    backgroundColor: "rgb(0 0 0 / 0.28)"
+    rounded: "10px"
     height: "38px"
 ---
 
@@ -92,7 +92,7 @@ components:
 
 **Creative North Star: "The Route Sign"**
 
-The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **blueprint glass**: a navy-black ground with two soft lights (cyan top left, yellow bottom right), fixed, and frosted-glass panels (translucent white, backdrop blur) moving over it, with tables of exact numbers.
+The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **crystal glass**: a navy-black ground with three coloured lights (cyan top left, yellow right, violet below), fixed, and clear glass panels moving over it that catch the light on their rims (a light rim brightest at the top left, a faint diagonal sheen, a deep shadow), with tables of exact numbers. Buttons are **prism glass**: thin and clear with a light rim, the filled ones in a prism gradient (white, cyan, violet).
 
 It is an operating tool, so the world contributes only type, palette, density and the one signature move (the rail). Controls stay standard web controls.
 
@@ -104,17 +104,17 @@ It is an operating tool, so the world contributes only type, palette, density an
 
 ## Colors
 
-Restrained workspace on a dark blueprint ground. The app is dark only; the PDF report keeps the light tokens (below).
+Restrained workspace on a dark ground lit in three colours. The app is dark only; the PDF report keeps the light tokens (below).
 
 ### Primary
-- **Accent** (#38bdf8): the filled PDF로 내보내기 action, active segmented buttons (dark ink #04111c on it), input focus, links, the motion profile trace, outlined action buttons. Soft variant (cyan at 16%) fills the active route sign. The logo's teal is not a UI colour: green tones are reserved for verdicts.
+- **Accent** (#38bdf8): input focus, links, the motion profile trace. The filled PDF로 내보내기 action and active segmented buttons take the **prism** fill (`--prism`: #e0f2fe → #7dd3fc → #38bdf8 → #a78bfa at 120°, dark ink #04111c, a white top highlight, a cyan glow). The logo's teal is not a UI colour: green tones are reserved for verdicts.
 - **Sign Blue** (#0a5a8a): solid marks that need white text (notice dialog head, its OK button). Deep variant (#08486f) for hover.
 
 ### Secondary
 - **Signal Yellow** (#f2b705): the active route box on the rail, step number boxes, the selected row outline, selection highlight, focus ring. Soft variant (yellow at 12%) fills the selected row.
 
 ### Neutral
-- **Ground** (#060a12): page background, with the two lights as fixed background layers (`--glow-1/2`); no grid, lines or drawings behind the work, so nothing competes with the numbers.
+- **Ground** (#060a12): page background, with three coloured lights as fixed background layers (`--glow-1/2/3`: cyan 30%, yellow 16%, violet 24%) for the glass to reflect; no grid, lines or drawings behind the work, so nothing competes with the numbers.
 - **Surface** (white at 5.5%) glass panels, **Surface 2** (white at 5%) hover and fills inside panels, **Surface Solid** (rgb(14 21 32 / 0.94)) sticky table heads and the notice dialog, which content scrolls under.
 - **Line** (white at 11%) / **Line Strong** (white at 20%): dividers, input borders, the input switches' outlines.
 - **Text** (#e6edf5), **Muted** (#a3b1c2): secondary labels and units.
@@ -128,7 +128,7 @@ The calculation report (`.report-stage`) is white paper and keeps the light toke
 ### Named Rules
 **The Reserved Yellow Rule.** Signal yellow marks the selected route only. Never use it for warnings, decoration or emphasis; amber-orange (#c25e00) is the warning colour.
 
-**The Glass Over Ground Rule.** Only the shell and the panels are glass (`.app .panel`, `.app .rail`: translucent fill, `backdrop-filter: blur(18px) saturate(140%)`); anything content scrolls under (table heads, dialogs) is nearly opaque so text never sits on text.
+**The Glass Over Ground Rule.** Only the shell and the panels are glass (`.app .panel`, `.app .rail`: `--glass-fill`, `backdrop-filter: blur(24px) saturate(170%)`, the rim `--glass-rim` as a 1px masked border in `::before`, the sheen `--glass-sheen` in `::after`); anything content scrolls under (table heads, dialogs) is nearly opaque so text never sits on text.
 
 ## Typography
 
@@ -150,24 +150,24 @@ The calculation report (`.report-stage`) is white paper and keeps the light toke
 
 ## Layout
 
-Full-width sticky rail (112px) over a centered 1600px workspace: a 320px sticky condition panel on the left and the results column on the right (axis step, motion profile, motor, gearbox, kit), 20px gaps. Both columns are sticky boxes starting 20px below the rail and scroll on their own (`.inputs`, `.results`), so no content ever passes behind the glass rail; the page itself does not scroll (the footer ends the results column); a click on a route box scrolls the results box to the step's top. Below 1280px the rail drops its brand block; below 1000px the rail becomes static, signs go 2×2 (1 column under 560px) and the layout stacks.
+A floating sticky rail (100px high, 12px from the top, `--rail-top`, the workspace's width, rounded like the panels) over a centered 1600px workspace: a 320px sticky condition panel on the left and the results column on the right (axis step, motion profile, motor, gearbox, kit), 20px gaps. Both columns are sticky boxes starting 20px below the rail and scroll on their own (`.inputs`, `.results`), so no content ever passes behind the glass rail; the page itself does not scroll (the footer ends the results column); a click on a route box scrolls the results box to the step's top. Below 1280px the rail drops its brand block; below 1000px the rail becomes static, signs go 2×2 (1 column under 560px) and the layout stacks.
 
 PDF export (PDF로 내보내기) renders a separate report (`Report.tsx`, mounted off screen at A4 content width, 703px) to a PDF that opens in a new tab: six chapters, each on a new page, with a sign-blue chapter bar, label/value spec tables and the check tables. The report always uses the light tokens. Chapter 1's meta line ends in `.report-link` (웹에서 이 계산 열기: accent colour, underlined), which the PDF makes a link to the same calculation on the web.
 
 ## Elevation & Depth
 
-Glass layers. Panels are frosted glass with a 1px white-at-11% border over the fixed ground; the sticky rail is the same glass, darker (`--glass-rail`, rgb(8 14 24 / 0.62)), with a bottom line and a soft shadow (`0 10px 30px rgb(0 0 0 / 0.25)`), so it reads as sitting above the scrolling work.
+Glass layers. Panels are crystal glass over the fixed ground: a fill from white 13% (top left) to 3%, the light rim, a top inner highlight (white 40%) and a deep two-step shadow (`0 40px 80px -30px` black 75%, `0 12px 24px -12px` black 60%). The rail is the same glass, darker (`--glass-rail`), so it reads as floating above the work. Inputs are set into the glass (black 28%, inner shadow, 1px white-12% ring); route and step boxes are cut yellow gems (`--gem`, white top highlight, darker lower edge, yellow glow).
 
 ## Shapes
 
-Small, sign-like corners: 5–6px on route boxes, inputs and toggles; panels 16px (`--panel-radius`). Route boxes are square with a 3px border, like route-number plates.
+Rounded glass: panels and the rail 20px (`--panel-radius`), inputs and buttons 10px, segment tracks 12px with 9px pieces, route boxes 10px, step boxes 8px. Inactive route boxes are clear glass with a 1px rim.
 
 ## Components
 
 - **Drive package (motor details, report)**: 13px `h4`, the 모터 케이블 길이 field (max 220px wide), a parts table (구분 · 형식 · 주문번호 · 비고, model names in the model font, notes muted), the required currents in small print, then the check table and the notes list.
 - **Kit cell (motor table)**: verdict badge + kit name in muted text, one line, name cut with an ellipsis at 190px (full name in the title).
 - **추가 검토사항 (kit step, report)**: a 13px `h4` (8px below it, like the other detail headings) and a plain bulleted list (`.kit-notes`, 1.6 line height) under the kit check table; notes are advice, so no status colour.
-- **Combination drawing (step 5)**: parts table (구분 · 모델명 · 도면 파일 · 비고), then outlined action buttons (`.action-btn`: accent border and text, filled accent on hover) for 3D 미리보기 / STEP / DXF with the progress text muted beside them. `.drawing-sides` sits above the buttons: label + small segmented rows (키트 조립 방향 for a parallel kit only, 모터 조립 방향 always: 상/하/좌/우) and a muted note on the viewpoint, with `.warn-text` lines when the connector faces the axis or the kit is set to 상 (usable stroke may be shorter). The 3D viewer (`.combo-viewer`) is a bordered box: a `--surface-2` bar with the view switch (등각/정면/평면/우측면, small segmented) and the colour legend, over a `min(480px, 70vh)` canvas. Part colours: axis #b9c1cb, kit #8d97a3, gearbox #5f7088, motor #343a42, connecting shaft #7a8794, gantry kit #a1866a, edges in the text colour at 30%; the centre of gravity is a #d6392b ball with a dashed leader from the slide centre, drawn over the parts.
+- **Combination drawing (step 5)**: parts table (구분 · 모델명 · 도면 파일 · 비고), then prism glass action buttons (`.action-btn`: clear with a 1px white-22% rim and a top highlight, brighter rim and a cyan glow on hover) for 3D 미리보기 / STEP / DXF with the progress text muted beside them. `.drawing-sides` sits above the buttons: label + small segmented rows (키트 조립 방향 for a parallel kit only, 모터 조립 방향 always: 상/하/좌/우) and a muted note on the viewpoint, with `.warn-text` lines when the connector faces the axis or the kit is set to 상 (usable stroke may be shorter). The 3D viewer (`.combo-viewer`) is a bordered box: a `--surface-2` bar with the view switch (등각/정면/평면/우측면, small segmented) and the colour legend, over a `min(480px, 70vh)` canvas. Part colours: axis #b9c1cb, kit #8d97a3, gearbox #5f7088, motor #343a42, connecting shaft #7a8794, gantry kit #a1866a, edges in the text colour at 30%; the centre of gravity is a #d6392b ball with a dashed leader from the slide centre, drawn over the parts.
 - **Route sign (rail)**: numbered box + step name (12px) + part number (20px) + verdict dot and the tightest check (`속도 100%`). The whole sign is a button that scrolls to its step; the step in view gets the yellow box and a 5px yellow underline. Part number and detail stay on one line in both languages (ellipsis, full name in the title); the four columns size to their content, and below 1280px the part number drops to 17px.
 - **Step panel**: header strip with a yellow 28px number box, title, counts and toggles; body with filters, then table, then evidence (세부사항).
 - **Verdict badge**: coloured 8px dot + word, never a filled pill.
@@ -175,11 +175,11 @@ Small, sign-like corners: 5–6px on route boxes, inputs and toggles; panels 16p
 - **Selected row**: soft yellow fill + 2px yellow inset ring.
 - **Inputs**: 38px, data face 17px, unit at right, no spin buttons; invalid gets a red border and red soft ring.
 - **Gantry 조합축 도면**: its own panel below the open axis's steps (after that axis's step 5 조합 도면), whichever axis tab is open (joint table: 결합 · 판정 · 조합 키트 · 품번 · 수량 · 비고, then the same action buttons and viewer).
-- **Segmented toggles**: accent fill with dark ink when active, on a dark (black at 22%) track. A labelled option row under the step filters (`.axis-options`, `.filter-group`: muted 12px label + segmented control) for single choices such as the axis order options.
+- **Segmented toggles**: separate rounded pieces in a dark clear track (black 30%, 1px white-12% ring, 3px padding and gaps); the active piece takes the prism fill with dark ink. A labelled option row under the step filters (`.axis-options`, `.filter-group`: muted 12px label + segmented control) for single choices such as the axis order options.
 - **Error panel**: replaces the results column when the calculation fails; fail-soft fill, fail border and title, the error text on a white block, an outlined fail-colour 다시 시도 button. The inputs stay usable.
-- **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; line-strong borders between cells.
+- **Segmented grid** (`.segmented-grid`, 축 구성 in the inputs): four choices two per row in a grid instead of one overflowing row; pieces 3px apart like the other segments.
 - **Heading unit** (`.heading-unit`, 소재 무게 중심 (mm)): a muted 12px regular unit after the heading when a row of fields is too narrow for a unit inside each.
-- **Screen switch**: 단축 선정 / 조합축 선정 as a full-width segmented control at the top of the input column, above the first input box (사용 조건 / 조합축 구성): line-strong outline, the active screen filled accent, labels 600.
+- **Screen switch**: 단축 선정 / 조합축 선정 as a full-width segmented control at the top of the input column, above the first input box (사용 조건 / 조합축 구성): a segment track, the active screen in the prism fill, labels 600.
 - **Gantry axis inputs** (`.gantry-motion`, 축별 운전 조건): per axis a 24px axis-letter box alone (the axis name only as its aria-label), axes split by a 1px line.
 - **Gantry axis tabs** (`.gantry-tabs`): one card per axis in X, Y, Z order, a yellow axis-letter box (the step number box), 몇 번째 선정 (the selection runs Z → Y → X, named in the header), the verdict, then the axis part number in the data face (17px) and muted motor · kit and carried mass lines. The open axis has the selected-row look (soft yellow + 2px yellow inset ring). Under it the 하중 조건 panel (`.gantry-load-list`): label / value in the data face / muted explanation, in an auto-fit grid.
 - **Chart spans**: dwell shaded `--surface-2`, press (press move + hold) shaded `--accent-soft`, each labelled above the plot.
