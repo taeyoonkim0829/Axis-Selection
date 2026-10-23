@@ -510,9 +510,9 @@ export const en: Record<string, string> = {
   // Parallel arrangement
   '축 구성': 'Axis arrangement',
   '단일 축': 'Single axis',
-  '2축 · 모터 동기': '2 axes · motor sync',
-  '2축 · 기구 동기': '2 axes · shaft sync',
-  '축 + LM 가이드': 'Axis + LM guides',
+  '2축 · 모터 동기': 'Motor sync',
+  '2축 · 기구 동기': 'Shaft sync',
+  '축 + LM 가이드': '+LM Guide',
   '축 1개로 부하를 지지하고 구동': 'One axis carries and drives the load',
   '평행한 축 2개를 모터 2개로 동기 제어. 모터·키트·드라이브는 축 1개 기준 (각 2개)':
     'Two parallel axes, two synchronised motors. Motor, kit and drive are sized for one axis (two of each)',
