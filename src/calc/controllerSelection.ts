@@ -101,7 +101,7 @@ export function selectController(
   const fits = (c: Controller) =>
     motor.openLoop
       ? c.nominalCurrent >= (motor.nominalCurrent ?? 0)
-      : c.nominalCurrent >= rmsCurrent && c.peakCurrent >= peakCurrent && overTime(c) <= c.peakDuration
+      : c.nominalCurrent >= rmsCurrent && c.peakCurrent >= peakCurrent && (c.peakDuration == null || overTime(c) <= c.peakDuration)
   const controller = candidates.find(fits) ?? candidates.at(-1) ?? null
   const preferredItem = data.controllers.find((c) => c.model === motor.preferredController) ?? null
   const preferred = preferredItem && preferredItem.id !== controller?.id ? preferredItem : null
@@ -188,7 +188,7 @@ export function selectController(
       status: 'warn',
       note: '케이블 선정표 범위를 넘습니다 — 사전 기술 검토 필요',
     })
-  } else if (controller && length > controller.maxCableLength) {
+  } else if (controller?.maxCableLength != null && length > controller.maxCableLength) {
     checks.push({
       ...check('모터 케이블 길이', length, controller.maxCableLength, 'm'),
       status: 'warn',
@@ -240,7 +240,7 @@ export function selectController(
         .map((m) => data.resistors.find((r) => r.model === m))
         .filter((r): r is BrakingResistor => !!r)
       const rating = (r: BrakingResistor) =>
-        controller.resistorVoltage >= 700
+        (controller.resistorVoltage ?? 0) >= 700
           ? { power: r.nominalPower780, energy: r.pulseEnergy780 }
           : { power: r.nominalPower380, energy: r.pulseEnergy380 }
       const item =
@@ -251,7 +251,7 @@ export function selectController(
       resistor.item = item
       if (item) {
         checks.push(
-          check('외부 제동저항 정격 전력', averagePower, Math.min(rating(item).power ?? 0, controller.externalMaxPower), 'W'),
+          check('외부 제동저항 정격 전력', averagePower, Math.min(rating(item).power ?? 0, controller.externalMaxPower ?? Infinity), 'W'),
           check('외부 제동저항 펄스 에너지', eventEnergy, rating(item).energy, 'Ws'),
         )
       } else {

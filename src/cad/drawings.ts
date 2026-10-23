@@ -156,9 +156,10 @@ export function motorDrawingFor(motor: Motor, all = drawings): MotorDrawingMatch
  * Siemens files name the full order number (`1FK2102-1AG10-0MA0_3D_en.STP`), the data a shorter or other one:
  * 1FK2 stops at the brake digit (`1FK2102-1AG1` = with brake; the file adds shaft end, protection and encoder),
  * 1FL6 names the plain shaft (`…-1LG1`, `…-1LH1` with brake), whose featherkey versions (`…-1LA1`, `…-1LB1`) have the
- * same dimensions.
+ * same dimensions. A supply suffix (`1FK2104-4AF0 (230V)`, the motor's rating on the other supply) is left out.
  */
-export function siemensVariant(model: string, name: string): boolean {
+export function siemensVariant(motorModel: string, name: string): boolean {
+  const model = motorModel.replace(/\s*\(\d+V\)$/, '')
   if (/^1FK2/.test(model)) return name.startsWith(model) && name.length > model.length
   const fl6 = /^(1FL6\d{3}-\d\w{4}-\d\w)([GH])(\d)$/.exec(model)
   return fl6 != null && name === `${fl6[1]}${fl6[2] === 'G' ? 'A' : 'B'}${fl6[3]}`

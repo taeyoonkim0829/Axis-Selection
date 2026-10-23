@@ -97,6 +97,21 @@ describe('selectController', () => {
   })
 })
 
+describe('Siemens drive packages (data)', () => {
+  it('pairs 1FK2 with S210 by supply and 1FL6 with V90, with cables', () => {
+    const at = (motor: string) => run('ELGD-BS-KF-60-…10P', motor, { velocity: 0.2, acceleration: 2, payload: 2 }).selection
+    const k400 = at('1FK2104-4AF0')
+    expect(k400.controller).toMatchObject({ family: 'S210', voltageClass: '3AC' })
+    expect(k400.cables.some((c) => c.role === 'motor' && c.partNumber)).toBe(true)
+    expect(at('1FK2104-4AF0 (230V)').controller).toMatchObject({ family: 'S210', voltageClass: '1AC' })
+    const fl6 = at('1FL6024-2AF21-1LG1')
+    expect(fl6.controller).toMatchObject({ family: 'V90', voltageClass: '200V' })
+    expect(fl6.cables.map((c) => c.role)).toContain('encoder')
+    // no motor cable limit in the V90 manual: no cable length check
+    expect(fl6.checks.find((c) => c.label === '모터 케이블 길이')).toBeUndefined()
+  })
+})
+
 describe('motorSupply', () => {
   const m = motors[0]
   it('reads the voltage, else the drive range', () => {

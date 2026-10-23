@@ -175,21 +175,21 @@ export interface Controller {
   /** A rms per phase */
   nominalCurrent: number
   peakCurrent: number
-  /** s, max. time at peak current */
-  peakDuration: number
+  /** s, max. time at peak current; null = not documented (not checked) */
+  peakDuration: number | null
   /** W */
   nominalPower: number
-  peakPower: number
-  /** m, without external mains filter */
-  maxCableLength: number
+  peakPower: number | null
+  /** m, without external mains filter; null = not documented */
+  maxCableLength: number | null
   /** integrated braking resistor: Ω, W (pulse), Ws, W (nominal); null = none */
-  internalResistor: { resistance: number; pulsePower: number; pulseEnergy: number; nominalPower: number } | null
-  /** Ω [min, max] for an external braking resistor */
-  externalResistance: [number, number]
+  internalResistor: { resistance: number | null; pulsePower: number; pulseEnergy: number; nominalPower: number } | null
+  /** Ω [min, max] for an external braking resistor (Siemens: minimum only) */
+  externalResistance: [number, number | null]
   /** W, max. continuous power of an external braking resistor */
-  externalMaxPower: number
-  /** V, intermediate circuit level the resistor ratings are given for (380 or 780) */
-  resistorVoltage: number
+  externalMaxPower: number | null
+  /** V, intermediate circuit level the resistor ratings are given for (380 or 780); null without CACR ratings */
+  resistorVoltage: number | null
   /** matching CACR braking resistors (model names) */
   brakingResistors: string[]
 }
