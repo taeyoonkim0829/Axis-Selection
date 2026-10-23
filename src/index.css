@@ -1986,9 +1986,10 @@ body {
     padding: 0 16px 0 0;
   }
 
+  /* as wide as the logo, the same space on both sides of it */
   .app .rail-brand {
-    width: 192px;
-    padding-left: 22px;
+    width: auto;
+    padding: 0 22px;
   }
 }
 
