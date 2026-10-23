@@ -35,10 +35,16 @@ export const shafts = items<ConnectingShaft>(shaftFiles)
 export const adapters = items<AxisAdapter>(adapterFiles)
 
 /** Families of each maker present in the data, sorted by name. */
+/** Festo series in the order the motor step lists them; others (and the other makers) alphabetically after */
+const familyOrder = ['EMMT-AS', 'EMMT-ST', 'EMMT-EC', 'EMMB-AS', 'EMMB-ST', 'EMMS-ST', 'EMMH-AS']
+const familyRank = (f: string) => (familyOrder.includes(f) ? familyOrder.indexOf(f) : familyOrder.length)
+
 export const motorFamilies = Object.fromEntries(
   (['Festo', 'Siemens', 'Mitsubishi'] as const).map((maker) => [
     maker,
-    [...new Set(motors.filter((m) => m.maker === maker).map((m) => m.family))].sort(),
+    [...new Set(motors.filter((m) => m.maker === maker).map((m) => m.family))].sort(
+      (a, b) => familyRank(a) - familyRank(b) || a.localeCompare(b),
+    ),
   ]),
 ) as Record<Motor['maker'], string[]>
 

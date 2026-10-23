@@ -4,7 +4,10 @@ import type { Axis, Gearbox, Motor } from '../data/types'
 import { axisOrder, curveAt, evaluateAxis, guideLoads, memberLoads, parallelLayout, selectAxes, G } from './axisSelection'
 import { evaluateDrive, gearboxOptionsFor, gearboxStatus, selectMotors } from './motorSelection'
 import { moveProfile } from './motionProfile'
-import { defaultParallel, defaultPress, defaultSettings, verticalForward, type Requirements } from './types'
+import { defaultParallel, defaultPress, defaultSettings as appDefaults, verticalForward, type Requirements } from './types'
+
+// every axis and motor filter on (the app's defaults narrow the lists)
+const defaultSettings = { ...appDefaults, families: ['ELGT', 'ELGD', 'EGC', 'ESBF'], drives: ['spindle', 'belt'], supplies: ['ac230', 'ac400', 'dc48'], excludedMotorFamilies: [] } satisfies typeof appDefaults
 
 const baseReq: Requirements = {
   stroke: 500,

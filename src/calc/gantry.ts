@@ -53,9 +53,9 @@ export const defaultGantry: GantryInputs = {
   payload: 5,
   cog: { x: 0, y: 0, z: 50 },
   motion: {
-    x: { stroke: 1000, velocity: 1, acceleration: 5, jerk: 0 },
-    y: { stroke: 500, velocity: 1, acceleration: 5, jerk: 0 },
-    z: { stroke: 200, velocity: 0.5, acceleration: 5, jerk: 0 },
+    x: { stroke: 1000, velocity: 1, acceleration: 2, jerk: 0 },
+    y: { stroke: 500, velocity: 1, acceleration: 2, jerk: 0 },
+    z: { stroke: 200, velocity: 0.5, acceleration: 2, jerk: 0 },
   },
   zMode: 'slide',
   yMounting: 'floor',

@@ -3,7 +3,10 @@ import { axes } from '../data'
 import { computeGantry, noPicks } from '../selection'
 import { evaluateAxis, G, guideLoads } from './axisSelection'
 import { defaultGantry, gantryRequirements, initialGantrySettings, slideFrame, stageOf, type GantryInputs } from './gantry'
-import { defaultSettings, type Requirements } from './types'
+import { defaultSettings as appDefaults, type Requirements } from './types'
+
+// every axis and motor filter on (the app's defaults narrow the lists)
+const defaultSettings = { ...appDefaults, families: ['ELGT', 'ELGD', 'EGC', 'ESBF'], drives: ['spindle', 'belt'], supplies: ['ac230', 'ac400', 'dc48'], excludedMotorFamilies: [] } satisfies typeof appDefaults
 
 const baseReq: Requirements = {
   stroke: 500,
@@ -15,6 +18,8 @@ const baseReq: Requirements = {
   mounting: 'floor',
 }
 const picks = { x: noPicks, y: noPicks, z: noPicks }
+// every filter on, Z keeping its brake (the app's defaults leave no ball screw fast enough for the default X)
+const openSettings = { x: defaultSettings, y: defaultSettings, z: { ...defaultSettings, requireBrake: true } }
 
 describe('guideLoads with cross accelerations', () => {
   it('adds the lateral and normal inertial forces at the COG', () => {
@@ -94,7 +99,7 @@ describe('moving profile', () => {
 
 describe('computeGantry', () => {
   it('selects every axis of an XYZ gantry from the tool down', () => {
-    const results = computeGantry(defaultGantry, initialGantrySettings, picks)
+    const results = computeGantry(defaultGantry, openSettings, picks)
     expect(results.map((r) => r.axis)).toEqual(['z', 'y', 'x'])
     for (const r of results) expect(r.sel?.selectedAxis).toBeTruthy()
     const [z, y, x] = results

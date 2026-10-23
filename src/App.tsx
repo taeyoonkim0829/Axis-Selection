@@ -21,7 +21,7 @@ import { isStaleBuild, STALE_BUILD_NOTICE } from './ui/staleBuild'
 const initialRequirements: Requirements = {
   stroke: 500,
   velocity: 0.5,
-  acceleration: 5,
+  acceleration: 2,
   jerk: 0,
   payload: 10,
   cog: { x: 0, y: 0, z: 50 },

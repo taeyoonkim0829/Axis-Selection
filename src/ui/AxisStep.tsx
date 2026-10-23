@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { AdditionalSlideSide, Settings } from '../calc/types'
 import type { AxisFamily, DriveKind } from '../data/types'
-import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SlideGroup, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { useT } from '../i18n'
 import { axisDetailChecks, driveLabel, fmt } from './format'
@@ -108,16 +108,16 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
         </label>
       </header>
       <div className="step-filters">
-        <ToggleGroup
+        <SlideGroup
           options={drives}
-          selected={settings.drives}
+          value={settings.drives[0] ?? 'spindle'}
           label={(d) => t(driveLabel[d])}
           onChange={(v) =>
             onSettings({
               ...settings,
-              drives: v,
-              // belt only, with ESBF the only family on: the belt families come on
-              ...(!v.includes('spindle') && settings.families.every((f) => f === 'ESBF')
+              drives: [v],
+              // belt, with ESBF the only family on: the belt families come on
+              ...(v === 'belt' && settings.families.every((f) => f === 'ESBF')
                 ? { families: [...beltFamilies, ...settings.families] }
                 : {}),
             })

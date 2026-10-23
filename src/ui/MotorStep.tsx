@@ -4,7 +4,7 @@ import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Settings, Supply } from '../calc/types'
 import { motorFamilies } from '../data'
 import type { MotorMaker } from '../data/types'
-import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SlideGroup, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
 import { DrivePackage } from './DrivePackage'
@@ -24,7 +24,7 @@ interface Props {
 
 const makers: MotorMaker[] = ['Festo', 'Siemens', 'Mitsubishi']
 
-const supplies: Supply[] = ['ac230', 'ac400', 'dc48']
+const supplies: Supply[] = ['ac400', 'ac230', 'dc48']
 
 const ROW_LIMIT = 60
 
@@ -56,7 +56,8 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
   const rows = listed.slice(0, ROW_LIMIT)
   const familyOptions = settings.makers.flatMap((m) => motorFamilies[m])
   const excluded = settings.excludedMotorFamilies
-  const onMakers = (v: MotorMaker[]) => {
+  const onMaker = (maker: MotorMaker) => {
+    const v = [maker]
     // Never leave every listed family switched off: re-enable the remaining makers' families.
     const options = v.flatMap((m) => motorFamilies[m])
     const all = options.every((f) => excluded.includes(f))
@@ -82,7 +83,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
         </label>
       </header>
       <div className="step-filters">
-        <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
+        <SlideGroup options={makers} value={settings.makers[0] ?? 'Festo'} onChange={onMaker} />
         <ToggleGroup
           options={supplies}
           selected={settings.supplies}
