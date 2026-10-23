@@ -4,7 +4,7 @@ import type { Gearbox, Motor } from '../data/types'
 import { curveAt, type AxisEvaluation, type AxisSample } from './axisSelection'
 import type { ControllerSelection } from './controllerSelection'
 import type { KitEvaluation } from './kitSelection'
-import { check, worstStatus, type Check, type Settings, type Status } from './types'
+import { check, worstStatus, type Check, type Settings, type Status, type Supply } from './types'
 
 export interface DriveEvaluation {
   motor: Motor
@@ -199,6 +199,16 @@ export function gearboxOptionsFor(motor: Motor) {
 }
 
 /**
+ * Power supply of a motor: from `voltage`, else from its drive range (`controller`); null when the data has neither.
+ */
+export function motorSupply(m: Motor): Supply | null {
+  if (m.voltage != null) return m.voltage <= 60 ? 'dc48' : m.voltage < 300 ? 'ac230' : 'ac400'
+  if (!m.controller) return null
+  if (m.controller.endsWith('ST')) return 'dc48'
+  return /-(3A|1AC|200V)$/.test(m.controller) ? 'ac230' : 'ac400'
+}
+
+/**
  * One drive option per motor. Direct drive unless `settings.useGearbox`; then the lowest passing gearbox
  * ratio (the lowest ratio when none passes), and motors without a compatible gearbox drop out.
  * `attachKit` (kitSelection) adds the mounting kit and its verdict to each option before choosing and sorting.
@@ -213,6 +223,7 @@ export function selectMotors(
     .filter(
       (m) =>
         settings.makers.includes(m.maker) &&
+        [null, ...settings.supplies].includes(motorSupply(m)) &&
         !settings.excludedMotorFamilies.includes(m.family) &&
         (!settings.requireBrake || m.brake),
     )

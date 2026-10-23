@@ -1,4 +1,5 @@
-// Festo drive package for a Festo motor: servo drive (CMMT-AS / CMMT-ST), cables and braking resistor.
+// Drive package of a motor with drive data (Festo CMMT-AS / CMMT-ST, Siemens S210 / V90): servo drive, cables and
+// braking resistor.
 import type { BrakingResistor, Cable, Controller } from '../data/types'
 import type { AxisEvaluation } from './axisSelection'
 import { motorTorqueFn, type DriveEvaluation } from './motorSelection'
@@ -33,7 +34,7 @@ export interface ResistorChoice {
 
 export interface ControllerSelection {
   controller: Controller | null
-  /** Festo's preferred drive for the motor, when it differs from the selected one */
+  /** the maker's preferred drive for the motor (Festo), when it differs from the selected one */
   preferred: Controller | null
   /** A, required at the motor */
   rmsCurrent: number
@@ -52,12 +53,19 @@ export interface DrivePackageData {
   cables: Cable[]
 }
 
-/** CMMT-ST has no integrated braking resistor; below this energy per braking event the supply takes it */
+/** Drives without an integrated braking resistor (CMMT-ST): below this energy per braking event the supply takes it */
 const ST_REGEN_LIMIT = 1
+
+/** Drive range a drive belongs to, as a motor's `controller` names it (CMMT-AS-3A, CMMT-ST, S210-1AC, V90-400V …) */
+export const driveRange = (c: Controller) => (c.voltageClass === 'ST' ? c.family : `${c.family}-${c.voltageClass}`)
 
 const lengthKey = (l: number) => String(Math.round(l * 10) / 10)
 
-/** Drive, cables and braking resistor for a Festo motor; null for other makers. */
+/**
+ * Drive, cables and braking resistor for a motor with a drive range (`Motor.controller`); null for the others. The
+ * drive is the smallest of the range (and of the maker's combination table, `Controller.motors`) that covers the
+ * motor current.
+ */
 export function selectController(
   axisEval: AxisEvaluation,
   drive: DriveEvaluation,
@@ -66,10 +74,10 @@ export function selectController(
 ): ControllerSelection | null {
   const { motor, gearbox } = drive
   if (!motor.controller) return null
-  const [family, voltageClass] = motor.controller === 'CMMT-ST' ? ['CMMT-ST', 'ST'] : ['CMMT-AS', motor.controller.slice(8)]
   const candidates = data.controllers
-    .filter((c) => c.family === family && c.voltageClass === voltageClass)
+    .filter((c) => driveRange(c) === motor.controller && (!c.motors || new RegExp(c.motors).test(motor.model)))
     .toSorted((a, b) => a.nominalCurrent - b.nominalCurrent)
+  const family = candidates[0]?.family ?? motor.controller
 
   // Motor current from the torque: an open-loop stepper always runs at its nominal current
   const kt = motor.torqueConstant ?? (motor.nominalCurrent ? motor.ratedTorque / motor.nominalCurrent : null)
@@ -249,7 +257,12 @@ export function selectController(
       } else {
         checks.push({ ...check('외부 제동저항', averagePower, null, 'W'), status: 'warn', note: '맞는 제동저항 데이터가 없습니다' })
       }
-      if (!internal) notes.push({ text: 'CMMT-ST는 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다' })
+      if (!internal)
+        notes.push(
+          family === 'CMMT-ST'
+            ? { text: 'CMMT-ST는 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다' }
+            : { text: '{model}은 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다', args: { model: controller.model } },
+        )
     }
   }
   notes.push({ text: '회생 계산은 모터·드라이브 손실과 DC 링크 흡수를 빼지 않은 보수적인 값입니다' })

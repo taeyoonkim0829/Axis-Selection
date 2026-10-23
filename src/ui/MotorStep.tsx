@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import type { ParallelLayout } from '../calc/axisSelection'
 import type { DriveEvaluation } from '../calc/motorSelection'
-import type { Settings } from '../calc/types'
+import type { Settings, Supply } from '../calc/types'
 import { motorFamilies } from '../data'
 import type { MotorMaker } from '../data/types'
 import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
 import { DrivePackage } from './DrivePackage'
-import { fmt, statusLabel } from './format'
+import { fmt, statusLabel, supplyLabel } from './format'
 
 interface Props {
   /** One row per motor: direct drive, or with its recommended gearbox when settings.useGearbox */
@@ -23,6 +23,8 @@ interface Props {
 }
 
 const makers: MotorMaker[] = ['Festo', 'Siemens', 'Mitsubishi']
+
+const supplies: Supply[] = ['ac230', 'ac400', 'dc48']
 
 const ROW_LIMIT = 60
 
@@ -81,6 +83,12 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
       </header>
       <div className="step-filters">
         <ToggleGroup options={makers} selected={settings.makers} onChange={onMakers} />
+        <ToggleGroup
+          options={supplies}
+          selected={settings.supplies}
+          onChange={(v) => onSettings({ ...settings, supplies: v })}
+          label={(v) => supplyLabel[v]}
+        />
         <RadioGroup
           options={['direct', 'gearbox'] as const}
           value={settings.useGearbox ? 'gearbox' : 'direct'}

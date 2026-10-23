@@ -133,9 +133,14 @@ export interface Motor {
   peakCurrent?: number | null
   /** Nm/A */
   torqueConstant?: number | null
-  // Festo motors with Festo drives (see data/README.md)
-  /** drive range the motor runs on: CMMT-AS-3A (230 V), CMMT-AS-11A (400 V) or CMMT-ST (48 V DC) */
-  controller?: 'CMMT-AS-3A' | 'CMMT-AS-11A' | 'CMMT-ST' | null
+  /** V, supply class the item is rated for: 200/230 (200–240 V AC), 400 (380–480 V AC) or 48 (DC) */
+  voltage?: number | null
+  // Motors with a drive package in the data (see data/README.md)
+  /**
+   * drive range the motor runs on (`Controller` family + voltage class): Festo CMMT-AS-3A (230 V), CMMT-AS-11A
+   * (400 V) or CMMT-ST (48 V DC); Siemens S210-1AC / S210-3AC (1FK2), V90-200V / V90-400V (1FL6)
+   */
+  controller?: string | null
   /** Festo's preferred drive for the motor (EMMT-AS combination table) */
   preferredController?: string | null
   /** stepper motor: torque limited by `torqueCurve` */
@@ -151,17 +156,22 @@ export interface Motor {
   mass?: number | null
 }
 
-/** Festo servo drive (CMMT-AS, CMMT-ST) */
+/** Servo drive: Festo CMMT-AS / CMMT-ST, Siemens S210 / V90 */
 export interface Controller {
   id: string
   model: string
-  family: 'CMMT-AS' | 'CMMT-ST'
+  family: string
   maker: string
   partNumber: string
-  motorType: 'AS' | 'ST'
+  motorType: 'AS' | 'ST' | null
   supply: string
-  /** '3A' (1-phase 230 V), '11A' (3-phase 400 V), 'ST' (24/48 V DC) */
-  voltageClass: '3A' | '11A' | 'ST'
+  /**
+   * Festo '3A' (1-phase 230 V), '11A' (3-phase 400 V), 'ST' (24/48 V DC); Siemens S210 '1AC' / '3AC', V90 '200V' /
+   * '400V'. With the family it names the drive range a motor's `controller` points to (`driveRange`).
+   */
+  voltageClass: string
+  /** regular expression on the motor model: the motors the maker's combination table pairs with this drive */
+  motors?: string
   /** A rms per phase */
   nominalCurrent: number
   peakCurrent: number
@@ -207,8 +217,8 @@ export interface Cable {
   maker: string
   family: string
   role: 'motor' | 'encoder' | 'adapter' | 'brake'
-  /** CMMT-AS or CMMT-ST */
-  controller: 'CMMT-AS' | 'CMMT-ST'
+  /** drive family: CMMT-AS, CMMT-ST, S210, V90 */
+  controller: string
   /** regular expression on the motor model */
   motors: string
   /** only for motors with brake */

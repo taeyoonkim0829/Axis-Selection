@@ -367,6 +367,9 @@ export const en: Record<string, string> = {
   '외부 제동저항 펄스 에너지': 'External braking resistor pulse energy',
   '외부 제동저항': 'External braking resistor',
   '맞는 제동저항 데이터가 없습니다': 'No matching braking resistor data',
+  '전원': 'Power supply',
+  '{model}은 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다':
+    '{model} has no integrated braking resistor. There is regenerative energy, so an external braking resistor is recommended',
   'CMMT-ST는 내장 제동저항이 없습니다. 회생 에너지가 있어 외부 제동저항을 권장합니다':
     'CMMT-ST has no integrated braking resistor. With regenerative energy an external braking resistor is recommended',
   '회생 계산은 모터·드라이브 손실과 DC 링크 흡수를 빼지 않은 보수적인 값입니다':

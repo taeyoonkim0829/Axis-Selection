@@ -122,6 +122,8 @@ export interface Settings {
   families: AxisFamily[]
   drives: DriveKind[]
   makers: MotorMaker[]
+  /** power supplies the motors may run on (`motorSupply`); motors without supply data are always listed */
+  supplies: Supply[]
   /** motor families (`Motor.family`) turned off; families not listed are included */
   excludedMotorFamilies: string[]
   requireBrake: boolean
@@ -152,6 +154,7 @@ export const defaultSettings: Settings = {
   families: ['ELGT', 'ELGD', 'EGC', 'ESBF'],
   drives: ['spindle', 'belt'],
   makers: ['Festo'],
+  supplies: ['ac230', 'ac400', 'dc48'],
   excludedMotorFamilies: [],
   requireBrake: false,
   externalGuide: false,
@@ -161,6 +164,9 @@ export const defaultSettings: Settings = {
   additionalSlide: 'none',
   beltMaterial: { ELGD: 'PU2', EGC: null },
 }
+
+/** Motor power supply: 200–240 V AC, 380–480 V AC, DC (24/48 V) */
+export type Supply = 'ac230' | 'ac400' | 'dc48'
 
 export type Status = 'ok' | 'warn' | 'fail'
 

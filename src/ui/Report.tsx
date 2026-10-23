@@ -31,6 +31,7 @@ import {
   parallelModeLabel,
   pressDirectionLabel,
   sideLabel,
+  supplyLabel,
 } from './format'
 import { ProfileNumbers } from './MotionProfile'
 import { ProfilePlot, type ProfileView } from './ProfileChart'
@@ -248,6 +249,7 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
             ['기본 허용 관성비', q(settings.defaultInertiaRatio, times)],
             ['지지 간격', settings.supportSpan > 0 ? q(settings.supportSpan, 'mm') : t('양 끝만 지지')],
             ['일 가동 시간', q(settings.hoursPerDay, 'h')],
+            ['전원', settings.supplies.map((s) => supplyLabel[s]).join(' / ')],
             ['브레이크', settings.requireBrake ? t('필요') : t('선택')],
             ['감속기', settings.useGearbox ? t('감속기 사용') : t('감속기 미사용')],
             ...(axis.axis.family === 'ESBF'

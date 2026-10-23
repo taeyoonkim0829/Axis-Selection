@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { axes, brakingResistors, cables, controllers, motors } from '../data'
 import { evaluateAxis } from './axisSelection'
 import { attachController, selectController } from './controllerSelection'
-import { evaluateDrive } from './motorSelection'
+import { evaluateDrive, motorSupply } from './motorSelection'
 import { defaultSettings, type Requirements } from './types'
 
 const data = { controllers, resistors: brakingResistors, cables }
@@ -75,6 +75,39 @@ describe('selectController', () => {
     expect(attachController(ev, drive, settings, data).controller!.controller).not.toBeNull()
     const other = evaluateDrive(ev, motors.find((m) => m.maker === 'Mitsubishi')!, null, settings)
     expect(selectController(ev, other, settings, data)).toBeNull()
+  })
+
+  it('takes the drive from the maker combination table (Controller.motors) of the motor drive range', () => {
+    const { ev, settings } = run('ELGD-BS-KF-60-…10P', 'EMMT-AS-60-M-HS')
+    const base = controllers.find((c) => c.family === 'CMMT-AS')!
+    const drive = (model: string, motors: string, nominalCurrent: number) => ({
+      ...base, id: model, model, partNumber: model, family: 'S210', voltageClass: '3AC', motors, nominalCurrent,
+      peakCurrent: 3 * nominalCurrent, internalResistor: null, brakingResistors: [],
+    })
+    const siemens = [drive('S210-A', '^1FK2X', 1), drive('S210-B', '^1FK2Y', 1), drive('S210-C', '^1FK2Y', 50)]
+    const cable = { ...cables[0], id: 'S1', maker: 'Siemens', controller: 'S210', motors: '^1FK2Y', configurable: null,
+      range: [0, 50] as [number, number], type: 'MC-{L}', partNumbers: { '5': 'MC-5' } }
+    const motor = { ...motors.find((m) => m.id === 'EMMT-AS-60-M-HS')!, maker: 'Siemens' as const, model: '1FK2Y', controller: 'S210-3AC' }
+    const sel = selectController(ev, evaluateDrive(ev, motor, null, settings), settings, {
+      ...data, controllers: [...controllers, ...siemens], cables: [...cables, cable],
+    })!
+    // only the drives paired with 1FK2Y, the smaller one if it carries the current
+    expect(['S210-B', 'S210-C']).toContain(sel.controller!.model)
+    expect(sel.cables).toEqual([expect.objectContaining({ role: 'motor', partNumber: 'MC-5' })])
+  })
+})
+
+describe('motorSupply', () => {
+  const m = motors[0]
+  it('reads the voltage, else the drive range', () => {
+    expect(motorSupply({ ...m, voltage: 200, controller: null })).toBe('ac230')
+    expect(motorSupply({ ...m, voltage: 400, controller: null })).toBe('ac400')
+    expect(motorSupply({ ...m, voltage: 48, controller: null })).toBe('dc48')
+    expect(motorSupply({ ...m, voltage: null, controller: 'CMMT-AS-3A' })).toBe('ac230')
+    expect(motorSupply({ ...m, voltage: null, controller: 'CMMT-AS-11A' })).toBe('ac400')
+    expect(motorSupply({ ...m, voltage: null, controller: 'CMMT-ST' })).toBe('dc48')
+    expect(motorSupply({ ...m, voltage: null, controller: 'V90-200V' })).toBe('ac230')
+    expect(motorSupply({ ...m, voltage: null, controller: null })).toBeNull()
   })
 })
 

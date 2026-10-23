@@ -1,7 +1,7 @@
 import type { Side } from '../cad/combo'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { CableChoice } from '../calc/controllerSelection'
-import type { Status, VerticalDirection } from '../calc/types'
+import type { Status, Supply, VerticalDirection } from '../calc/types'
 
 /** Axis checks for the detail tables: the stroke is the user's own input, shown only when it exceeds the axis. */
 export const axisDetailChecks = (axis: AxisEvaluation) =>
@@ -47,6 +47,9 @@ export const moveLabel = (back: boolean, vertical: VerticalDirection | null) => 
   if (!vertical) return back ? '복귀' : '전진'
   return (vertical === 'up') !== back ? '상승' : '하강'
 }
+
+/** Motor power supply (`Settings.supplies`, `motorSupply`) */
+export const supplyLabel: Record<Supply, string> = { ac230: 'AC 200–240 V', ac400: 'AC 380–480 V', dc48: 'DC 24/48 V' }
 
 export const cableRoleLabel: Record<CableChoice['role'], string> = {
   motor: '모터 케이블',
