@@ -112,12 +112,14 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
   // with a connecting shaft the motor sits on the shaft end away from the second axis, as in step 5
   const drivePosition =
     beltMeta && axis?.layout.mode === 'twinShaft' ? shaftDrivePosition(beltMeta, req.mounting, assembly.drive) : assembly.drive
-  const words = beltMeta ? drivePositionWords(beltMeta, req.mounting, drivePosition) : null
+  // motor sync, single axis screen: the axes turned on their sides, the slides facing each other, as in step 5
+  const facing = !gantry && axis?.layout.mode === 'twinMotor' && assembly.twinFacing === true
+  const words = beltMeta ? drivePositionWords(beltMeta, req.mounting, drivePosition, facing ? 1 : 0) : null
   const motorPosition = words ? `${t(words.end)} · ${t(words.side)}` : null
   // motor sync: the second axis's motor position (default the mirror image of the first), as in step 5
   const twinWords =
     beltMeta && axis?.layout.mode === 'twinMotor'
-      ? twinPositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(beltMeta, drivePosition))
+      ? twinPositionWords(beltMeta, req.mounting, assembly.twinDrive ?? mirroredDrive(beltMeta, drivePosition), facing)
       : null
   const twinMotorPosition = twinWords ? `${t(twinWords.end)} · ${t(twinWords.side)}` : null
   // motor sync: the second axis's kit side and connector, as in step 5
@@ -464,6 +466,9 @@ export function Report({ req, settings, axis, drive, kitMatch, kit: kitEval, pro
                     ['관성 모멘트', kit.inertia != null ? q(kit.inertia, 'kg·cm²') : '—'],
                     ['최대 회전수', kit.maxSpeed != null ? q(kit.maxSpeed, 'rpm') : '—'],
                     ...(kit.noLoadTorque != null ? ([['무부하 토크', q(kit.noLoadTorque, 'Nm')]] as Row[]) : []),
+                    ...(twinAssembly && !gantry
+                      ? ([['축 배치', t(facing ? '슬라이드 마주보기' : '나란히 (슬라이드 위)')]] as Row[])
+                      : []),
                     ...(motorPosition && twinMotorPosition
                       ? ([
                           ['모터 위치 (첫 번째 축, 정면도 기준)', motorPosition],

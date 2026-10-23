@@ -106,6 +106,7 @@ export function GantryWorkspace({
                 onProfileView={(v) => setViews({ ...views, [active]: v })}
                 assembly={assemblies[active]}
                 onAssembly={(o) => setAssemblies({ ...assemblies, [active]: o })}
+                gantry
               />
             ) : (
               <section className="panel step" id="step-axis">

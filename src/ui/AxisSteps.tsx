@@ -24,10 +24,12 @@ interface Props {
   onProfileView: (view: ProfileView) => void
   assembly: ComboOptions
   onAssembly: (assembly: ComboOptions) => void
+  /** gantry screen: the twin X axes stay side by side (no facing arrangement choice) */
+  gantry?: boolean
 }
 
 /** Motion profile and steps 1–5 of one axis: axis, motor, gearbox, kit, combination drawing. */
-export function AxisSteps({ sel, req, calcSettings, settings, onSettings, picks, onPicks, profileView, onProfileView, assembly, onAssembly }: Props) {
+export function AxisSteps({ sel, req, calcSettings, settings, onSettings, picks, onPicks, profileView, onProfileView, assembly, onAssembly, gantry = false }: Props) {
   const t = useT()
   const { selectedAxis, selectedDrive } = sel
   return (
@@ -83,6 +85,7 @@ export function AxisSteps({ sel, req, calcSettings, settings, onSettings, picks,
         req={req}
         sides={assembly}
         onSides={onAssembly}
+        facingChoice={!gantry}
       />
     </>
   )

@@ -33,12 +33,14 @@ interface Props {
   /** assembly orientation (kept in Workspace, the report prints it) */
   sides: ComboOptions
   onSides: (sides: ComboOptions) => void
+  /** motor sync: offer the facing arrangement (single axis screen) */
+  facingChoice?: boolean
 }
 
 const roleLabel: Record<PartRole, string> = { axis: '축', kit: '연결키트', gearbox: '감속기', motor: '모터', shaft: '연결축', adapter: '조합 키트' }
 
 /** Step 5: the manufacturers' CAD models of the selection, assembled — 3D preview, STEP and DXF export. */
-export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Props) {
+export function DrawingStep({ axis, drive, kit, req: input, sides, onSides, facingChoice = true }: Props) {
   const t = useT()
   const { selection, found, twin, req } = comboInputs(axis, drive, kit, input)
   const parallel = kit?.type === 'parallel'
@@ -48,13 +50,15 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const turnable = axis?.axis.drive === 'belt' && axisMeta != null
   // with a connecting shaft the motor sits on the shaft end away from the second axis
   const shaftTwin = axis?.layout.mode === 'twinShaft'
+  // motor sync: side by side (slides up) or turned on their sides, the slides facing each other
+  const facing = facingChoice && axis?.layout.mode === 'twinMotor' && sides.twinFacing === true
   const drivePosition = shaftTwin && turnable ? shaftDrivePosition(axisMeta!, req.mounting, sides.drive) : sides.drive
   const positionIndex = DRIVE_POSITIONS.findIndex((p) => p.otherEnd === drivePosition.otherEnd && p.otherSide === drivePosition.otherSide)
   const positions = turnable
     ? [0, 1, 2, 3].filter((i) => !shaftTwin || !motorFacesTwin(axisMeta!, req.mounting, DRIVE_POSITIONS[i])).sort(
         (a, b) =>
-          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
-          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a], facing ? 1 : 0).order -
+          drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b], facing ? 1 : 0).order,
       )
     : []
   // motor sync: the second axis's drive position (default: the mirror image of the first)
@@ -67,16 +71,16 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
   const twinPositions = twinTurnable
     ? [0, 1, 2, 3].sort(
         (a, b) =>
-          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a]).order -
-          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b]).order,
+          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[a], facing).order -
+          twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[b], facing).order,
       )
     : []
   const positionLabel = (i: number) => {
-    const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
+    const w = drivePositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i], facing ? 1 : 0)
     return `${t(w.end)} · ${t(w.side)}`
   }
   const twinPositionLabel = (i: number) => {
-    const w = twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i])
+    const w = twinPositionWords(axisMeta!, req.mounting, DRIVE_POSITIONS[i], facing)
     return `${t(w.end)} · ${t(w.side)}`
   }
   // motor sync: the second axis's kit side and connector (default: like the first)
@@ -108,11 +112,12 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
         twinTurnable ? twinIndex : '',
         twinMotor && parallel ? twinSides.kitSide : '',
         twinMotor ? twinConnector : '',
+        facing ? 'facing' : '',
       ].join('|')
     : ''
   const ready = found != null && found.missing.length === 0
   const state = useComboPreview(key, ready, () =>
-    buildCombo(selection!, found!, req, loadText, { ...sides, twinDrive: twinPosition }, twin),
+    buildCombo(selection!, found!, req, loadText, { ...sides, twinDrive: twinPosition, twinFacing: facing }, twin),
   )
   const partsName = (c: { parts: { name: string }[] }) => c.parts.map((p) => p.name).join('_')
   const dxfTitle = (c: { name: string }) => [
@@ -121,6 +126,7 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
       (turnable && positionIndex > 0 ? `, drive ${drivePosition.otherEnd ? 'at the other end' : ''}${drivePosition.otherEnd && drivePosition.otherSide ? ', ' : ''}${drivePosition.otherSide ? 'on the other shaft end' : ''}` : '') +
       (parallel ? `, parallel kit: motor ${sides.kitSide}` : '') +
       `, motor connector ${connector}` +
+      (facing ? ', slides facing each other' : '') +
       (twinMotor ? `; second axis: ${parallel ? `parallel kit: motor ${twinSides.kitSide}, ` : ''}motor connector ${twinConnector}` : '') +
       ' (seen from the motor end)',
     'Third-angle projection, units: mm. 3D models: manufacturer CAD data (see STEP header for licence).',
@@ -223,7 +229,9 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             <p className="muted small-print">
               {t(
                 axis.layout.mode === 'twinMotor'
-                  ? '두 번째 축(모터·키트 포함)을 축 간격만큼 옆에 함께 배치합니다.'
+                  ? facing
+                    ? '두 축(모터·키트 포함)을 옆으로 세워 슬라이드가 서로 마주보게 배치합니다. 축 간격은 두 슬라이드 면 사이 거리입니다. 계산은 슬라이드가 위를 향한 설치 방향 기준이므로 가이드 하중을 따로 확인하세요.'
+                    : '두 번째 축(모터·키트 포함)을 축 간격만큼 옆에 함께 배치합니다.'
                   : axis.layout.mode === 'twinShaft'
                     ? twin?.shaft
                       ? '두 번째 축을 축 간격만큼 옆에 배치하고 연결축(KSK)으로 잇습니다. 모터는 두 번째 축 반대쪽 샤프트 끝에 둡니다.'
@@ -238,6 +246,17 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides }: Pr
             </p>
           )}
           <div className="drawing-sides">
+            {facingChoice && twinMotor && (
+              <>
+                <span>{t('축 배치')}</span>
+                <RadioGroup
+                  options={['side', 'facing'] as const}
+                  value={facing ? 'facing' : 'side'}
+                  onChange={(a) => onSides({ ...sides, twinFacing: a === 'facing' })}
+                  label={(a) => t(a === 'facing' ? '슬라이드 마주보기' : '나란히 (슬라이드 위)')}
+                />
+              </>
+            )}
             {turnable && (
               <>
                 <span>{t(twinTurnable ? '모터 위치 (첫 번째 축, 정면도 기준)' : '모터 위치 (정면도 기준)')}</span>

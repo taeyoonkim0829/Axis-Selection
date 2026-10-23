@@ -79,7 +79,9 @@ export async function buildGantry(
       chain.map(async (a) => {
         const d = byAxis.get(a)!
         const cog = { x: -d.req.cog.x, y: -d.req.cog.y, z: d.req.cog.z }
-        return [a, await comboParts(d.sel, d.found, { mounting: d.req.mounting, cog }, load, d.options, d.twin)] as const
+        // the carried axis sits on the slides: twin X axes side by side
+        const options = { ...d.options, twinFacing: false }
+        return [a, await comboParts(d.sel, d.found, { mounting: d.req.mounting, cog }, load, options, d.twin)] as const
       }),
     ),
   )

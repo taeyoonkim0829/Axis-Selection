@@ -484,6 +484,11 @@ export const en: Record<string, string> = {
   '앞': 'Front',
   '뒤': 'Rear',
   '아래': 'Down',
+  '축 배치': 'Axis layout',
+  '나란히 (슬라이드 위)': 'Side by side (slides up)',
+  '슬라이드 마주보기': 'Slides facing',
+  '두 축(모터·키트 포함)을 옆으로 세워 슬라이드가 서로 마주보게 배치합니다. 축 간격은 두 슬라이드 면 사이 거리입니다. 계산은 슬라이드가 위를 향한 설치 방향 기준이므로 가이드 하중을 따로 확인하세요.':
+    'Both axes (with motor and kit) are turned on their sides, the slides facing each other. The axis spacing is the distance between the two slide surfaces. The calculation assumes the slides facing up as mounted, so check the guide loads separately.',
   '위': 'Up',
   '모터 쪽 축 끝에서 축을 바라볼 때 기준이며, 슬라이드 면이 상입니다.': 'Seen from the motor end of the axis looking along it, with the slide surface at the top.',
   '모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.': 'The motor connector points towards the axis. Check for interference.',

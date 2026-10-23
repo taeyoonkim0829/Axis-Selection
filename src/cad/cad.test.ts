@@ -434,6 +434,14 @@ describe('combination', () => {
     expect(Math.sign(centre(a2) - 400)).toBe(Math.sign(centre(a1)))
     expect(a2.lo[0]).toBeCloseTo(a1.lo[0], 0)
     expect(a2.hi[0]).toBeCloseTo(a1.hi[0], 0)
+    // facing: both axes turned on their sides, the slide surfaces facing each other across the spacing, still mirrored
+    const facing = await meshBox((await buildCombo(sel, found, floor, load, { ...defaultComboOptions, twinFacing: true }, twin)).step)
+    const [f1, f2] = facing.parts.filter((p) => p.name.includes('GPTB1')).sort((a, b) => a.lo[1] - b.lo[1])
+    expect(f1.hi[1]).toBeCloseTo(0, 0)
+    expect(f2.lo[1]).toBeCloseTo(400, 0)
+    expect(facing.lo[1] + facing.hi[1]).toBeCloseTo(400, 0)
+    expect(facing.hi[2] - facing.lo[2]).toBeGreaterThan(mirrored.hi[2] - mirrored.lo[2])
+    expect(f2.lo[2]).toBeCloseTo(f1.lo[2], 0)
   }, 60000)
 
   it('turns the motor of an axial kit to the chosen connector side', async () => {

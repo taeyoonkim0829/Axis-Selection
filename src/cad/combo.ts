@@ -79,6 +79,9 @@ export interface ComboOptions {
   /** Motor sync: the second axis's kit side and motor connector; null = like the first */
   twinKitSide?: Side | null
   twinMotorConnector?: Side | null
+  /** Motor sync: both axes turned on their sides about their travel, the slides facing each other across the
+   *  spacing (`facingTurn`); false = side by side, slides up */
+  twinFacing?: boolean
 }
 
 /**
@@ -113,8 +116,8 @@ export const mirroredDrive = (meta: AxisMeta | null, position: DrivePosition): D
  * mirrored (`slide.front`) the motor points the way the other shaft end would on the first, so the same words mean
  * the same direction on both axes.
  */
-export const twinPositionWords = (meta: AxisMeta, mounting: Mounting, position: DrivePosition) =>
-  drivePositionWords(meta, mounting, meta.slide.front ? { ...position, otherSide: !position.otherSide } : position)
+export const twinPositionWords = (meta: AxisMeta, mounting: Mounting, position: DrivePosition, facing = false) =>
+  drivePositionWords(meta, mounting, meta.slide.front ? { ...position, otherSide: !position.otherSide } : position, facing ? -1 : 0)
 
 /** The slide when it is a part of its own (EGC-TB-KF: …-GK-GPTB1--------(0)) */
 const SLIDE_PART = /TB1-{4,}/
@@ -148,14 +151,17 @@ function otherShaftEnd(drive: Frame, slide: AxisMeta['slide']): Frame {
  * front view (X right, Z up, seen from −Y), and the shaft end it uses. Along the travel the ends are 앞 (−X, left in
  * the front view) and 뒤 (+X); across it the shaft ends are 우측 on the side the slide stands out to (`slide.front`,
  * EGC-TB-KF) and 좌측 on the other; a centred slide (ELGD-TB, EGC-HD-TB) names the side in the front view (우측 =
- * towards the viewer, −Y). `order` sorts the choices: end, then 좌측 before 우측.
+ * towards the viewer, −Y). `order` sorts the choices: end, then 좌측 before 우측. `facing`: the axis turned on its
+ * side, its slide towards the other axis of a facing pair (`facingTurn`: 1 the first, −1 the second).
  */
 export function drivePositionWords(
   meta: AxisMeta,
   mounting: Mounting,
   position: DrivePosition,
+  facing: 0 | 1 | -1 = 0,
 ): { end: string; side: string; order: number } {
-  const toWorld = axisToWorldOf(meta, mounting, position)
+  const placed = axisToWorldOf(meta, mounting, position)
+  const toWorld = facing ? facingTurn(placed, mounting, facing) : placed
   const end = rotate(toWorld, scale(meta.slide.travel, -1))
   const drive = position.otherSide ? otherShaftEnd(meta.drive, meta.slide) : meta.drive
   const side = rotate(toWorld, drive.axis)
@@ -189,6 +195,15 @@ function axisToWorldOf(meta: AxisMeta, mounting: Mounting, position: DrivePositi
 const twinDirection = (mounting: Mounting): Vec3 => {
   const world = mountingFrame(mounting)
   return cross(world.normal, world.travel)
+}
+
+/**
+ * Facing pair: a placed part turned a quarter turn about the travel line through `pivot` (its axis's slide centre),
+ * the slide normal onto the lateral direction: `sign` 1 towards the second axis (the first axis), −1 back (the second).
+ */
+function facingTurn(m: Transform, mounting: Mounting, sign: 1 | -1, pivot: Vec3 = [0, 0, 0]): Transform {
+  const world = mountingFrame(mounting)
+  return turnAbout(m, pivot, world.travel, world.normal, scale(twinDirection(mounting), sign))
 }
 
 /** The motor's shaft end points towards the second axis of a twin arrangement */
@@ -545,7 +560,10 @@ export async function comboParts(
   }
 
   const first = train(position)
-  const { drive, axisToWorld } = first
+  const { drive } = first
+  // facing pair (motor sync): each axis with its drive train turned on its side, the slides towards each other
+  const facing = options.twinFacing === true && twin?.drive === true
+  const axisToWorld = facing ? facingTurn(first.axisToWorld, req.mounting, 1) : first.axisToWorld
 
   const parts = first.parts
   const lateral = cross(world.normal, world.travel)
@@ -562,10 +580,18 @@ export async function comboParts(
       const { file, axisToWorld: transform } = mirrorAxis(position, otherShaftEnd(drive, slide))
       return [{ role: 'axis' as const, name: sel.axisModel, file, transform }]
     }
-    const second = twin.drive ? train(twinAt, twinOrientation(options), mirror, rotate(axisToWorld, drive.axis)).parts : mirror ? shaftMirror() : parts
+    const second = twin.drive
+      ? train(twinAt, twinOrientation(options), mirror, rotate(first.axisToWorld, drive.axis)).parts
+      : mirror
+        ? shaftMirror()
+        : parts
     const copies = second
       .filter((p) => twin.drive || p.role === 'axis')
-      .map((p) => ({ ...p, name: `${p.name} (2)`, transform: { ...p.transform, t: add(p.transform.t, shift) } }))
+      .map((p) => {
+        const shifted = { ...p.transform, t: add(p.transform.t, shift) }
+        return { ...p, name: `${p.name} (2)`, transform: facing ? facingTurn(shifted, req.mounting, -1, shift) : shifted }
+      })
+    if (facing) for (const p of parts) p.transform = facingTurn(p.transform, req.mounting, 1)
     parts.push(...copies)
     name += ' (2 axes)'
     // Connecting shaft from the first axis's free shaft end (cover cap taken off) to the second axis's motor-side
