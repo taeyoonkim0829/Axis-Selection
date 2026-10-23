@@ -365,7 +365,10 @@ describe('selection on real data', () => {
 
   it('orders ELGT, ELGD and EGC by type code: standard stroke, else the modular product system', () => {
     const order = (id: string, stroke: number) => axisOrder(axes.find((a) => a.id === id)!, stroke)
-    expect(order('ELGT-BS-120-…10P', 250)).toEqual({ model: 'ELGT-BS-120-300-10P', partNumber: '8124451', stroke: 300, modular: false })
+    expect(order('ELGT-BS-120-…10P', 280)).toEqual({ model: 'ELGT-BS-120-300-10P', partNumber: '8124451', stroke: 300, modular: false })
+    // standard strokes start at 300, the modular system's fixed ones at 100
+    expect(order('ELGT-BS-120-…10P', 100)).toEqual({ model: 'ELGT-BS-120-100-10P', partNumber: '8121225', stroke: 100, modular: true })
+    expect(order('ELGT-BS-160-…20P', 230).model).toBe('ELGT-BS-160-250-20P')
     // ELGT modular strokes come in fixed steps
     expect(order('ELGT-BS-120-…10P', 1050)).toEqual({ model: 'ELGT-BS-120-1100-10P', partNumber: '8121225', stroke: 1100, modular: true })
     expect(order('ELGD-BS-KF-60-…10P', 120).model).toBe('ELGD-BS-KF-60-200-0H-10P')

@@ -162,10 +162,11 @@ export interface AxisOrder {
 }
 
 /**
- * Standard strokes have their own order numbers: the required stroke is rounded up to the next one. Other
- * strokes are configured in the modular product system and ordered by module number: a whole mm within its
- * variable range, else the next of its fixed strokes (ELGT-BS has only fixed ones). Axes without order data
- * keep their data model name.
+ * Standard strokes have their own order numbers: the required stroke is rounded up to the next one, unless a
+ * fixed stroke of the modular product system is shorter (ELGT-BS-120/160 have standard strokes from 300, fixed
+ * ones from 100). Other strokes are configured in the modular product system and ordered by module number: a
+ * whole mm within its variable range, else the next of its fixed strokes (ELGT-BS has only fixed ones). Axes
+ * without order data keep their data model name.
  */
 export function axisOrder(axis: Axis, stroke: number, options: AxisOptions | null = null): AxisOrder {
   const template = axis.typeCode ?? axis.model
@@ -174,10 +175,11 @@ export function axisOrder(axis: Axis, stroke: number, options: AxisOptions | nul
   }
   // Options are configured in the modular product system; additional slides lengthen the ordered stroke.
   const parts = customised(axis, options) ? {} : (axis.strokePartNumbers ?? {})
+  const fixed = axis.moduleNumber ? axis.moduleStrokes?.fixed.toSorted((a, b) => a - b).find((s) => s >= stroke) : undefined
   const standard = Object.keys(parts)
     .map(Number)
     .sort((a, b) => a - b)
-    .find((s) => s >= stroke)
+    .find((s) => s >= stroke && !(fixed != null && fixed < s))
   const ordered = standard ?? moduleStroke(axis.moduleStrokes, stroke + (options?.extension ?? 0))
   return {
     model: optionCode(axis, template, options).replace('…', String(ordered)),
