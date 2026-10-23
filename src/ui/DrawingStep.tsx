@@ -242,7 +242,12 @@ export function DrawingStep({ axis, drive, kit, req: input, sides, onSides, faci
           )}
           {!ready && (
             <p className="muted small-print">
-              {t('도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.')}
+              {t('도면이 없는 부품이 있어 조합할 수 없습니다: {parts}. 관리자에게 문의하세요.', {
+                parts: rows
+                  .filter((r) => found?.missing.includes(r.role))
+                  .map((r) => `${t(roleLabel[r.role])} ${r.model}`)
+                  .join(', '),
+              })}
             </p>
           )}
           <div className="drawing-sides">

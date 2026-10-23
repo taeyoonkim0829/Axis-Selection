@@ -238,12 +238,12 @@ export const en: Record<string, string> = {
   '직렬 키트': 'Axial kit',
   '병렬 키트': 'Parallel kit',
   '견시창': 'Inspection window',
-  '이 축의 인터페이스 코드가 없습니다. 축 데이터(JSON)의 interfaceCode를 입력하세요.':
-    'This axis has no interface code. Enter interfaceCode in the axis data (JSON).',
-  '이 감속기의 인터페이스 코드가 없습니다. 감속기 데이터(JSON)의 interfaceCode를 입력하세요.':
-    'This gearbox has no interface code. Enter interfaceCode in the gearbox data (JSON).',
-  '이 모터의 인터페이스 코드가 없습니다. 모터 데이터(JSON)의 interfaceCode를 입력하세요.':
-    'This motor has no interface code. Enter interfaceCode in the motor data (JSON).',
+  '이 축의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.':
+    'This axis has no interface code, so no mounting kit can be found. Please contact the administrator.',
+  '이 감속기의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.':
+    'This gearbox has no interface code, so no mounting kit can be found. Please contact the administrator.',
+  '이 모터의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.':
+    'This motor has no interface code, so no mounting kit can be found. Please contact the administrator.',
   '커플링': 'Coupling',
   '풀리 품번': 'Pulley part no.',
   'SA 특수품 (참고용 · TEC 문의 필요)': 'SA special kits (reference only · contact TEC)',
@@ -466,7 +466,8 @@ export const en: Record<string, string> = {
   '조합 키트는 ELGT-BS, ELGD 데이터시트의 조합표 기준입니다(EGC는 해당 키트 데이터 없음). 축은 시작 위치에 그리며, 위쪽 축은 조립 설명서대로 키트가 잡는 위치(핀과 볼트 구멍)에 붙이고, 그 데이터가 없는 키트는 입력한 장착 오프셋을 따릅니다. 키트가 없는 결합은 입력한 장착 위치에 축만 배치합니다. 키트에 축을 고정하는 프로파일 마운팅(EAHF-…-B4)은 도면에 없습니다.':
     'Gantry kits follow the combination tables of the ELGT-BS and ELGD data sheets (no kit data for EGC). The axes are drawn at their start position; a carried axis sits where the kit holds it as in the assembly instructions (pin and screw holes), else at the entered mounting offset. A joint without a kit places the axis alone at the entered mounting point. The profile mountings holding an axis on a kit (EAHF-…-B4) are not drawn.',
   '키트 없이 배치한 결합: {pairs}': 'Joints placed without a kit: {pairs}',
-  '도면이 없는 부품이 있어 조합할 수 없습니다: {parts}': 'Parts without a drawing, the gantry cannot be assembled: {parts}',
+  '도면이 없는 부품이 있어 조합할 수 없습니다: {parts}. 관리자에게 문의하세요.':
+    'Some parts have no drawing, so they cannot be assembled: {parts}. Please contact the administrator.',
   '프로파일 이동형 Z축용 조합 키트 데이터가 없습니다. 장착 부품을 별도로 준비하세요.':
     'No gantry kit data for a moving Z profile. Provide the mounting parts separately.',
   '{pair}: 이 설치 방향 조합에 맞는 Festo 조합 키트가 없습니다. 장착 브래킷을 별도로 설계하세요.':
@@ -494,8 +495,6 @@ export const en: Record<string, string> = {
   '모터 커넥터가 축 쪽을 향합니다. 간섭을 확인하세요.': 'The motor connector points towards the axis. Check for interference.',
   '모터가 슬라이드 쪽에 있어 슬라이드·소재와 간섭할 수 있으므로 사용 가능한 스트로크가 줄어들 수 있습니다.': 'The motor sits on the slide side and can collide with the slide or the payload, so the usable stroke may be shorter.',
   '같은 모터의 다른 옵션 도면': 'Drawing of another option of the same motor',
-  '도면이 없는 부품이 있어 조합할 수 없습니다. data/<종류>/<메이커>/Drawings/에 STEP 파일과 정합 정보(JSON)를 넣으세요.':
-    'Some parts have no drawing, so they cannot be assembled. Put the STEP file and its mating data (JSON) in data/<kind>/<maker>/Drawings/.',
   '3D 미리보기': '3D preview',
   '3D 미리보기 새로 고침': 'Refresh 3D preview',
   'STEP 내보내기': 'Export STEP',

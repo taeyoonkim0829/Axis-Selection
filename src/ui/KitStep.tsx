@@ -61,13 +61,13 @@ function KitTable({
 }) {
   const t = useT()
   if (!match.axisCode)
-    return <p className="empty">{t('이 축의 인터페이스 코드가 없습니다. 축 데이터(JSON)의 interfaceCode를 입력하세요.')}</p>
+    return <p className="empty">{t('이 축의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.')}</p>
   if (!match.motorCode) {
     return (
       <p className="empty">
         {match.motorSide === 'gearbox'
-          ? t('이 감속기의 인터페이스 코드가 없습니다. 감속기 데이터(JSON)의 interfaceCode를 입력하세요.')
-          : t('이 모터의 인터페이스 코드가 없습니다. 모터 데이터(JSON)의 interfaceCode를 입력하세요.')}
+          ? t('이 감속기의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.')
+          : t('이 모터의 인터페이스 코드가 없어 연결키트를 찾을 수 없습니다. 관리자에게 문의하세요.')}
       </p>
     )
   }
