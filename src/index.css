@@ -1,6 +1,6 @@
 /*
  * AxisPilot — route-sign system on blueprint glass.
- * The app is dark: a navy-black ground with a blueprint grid, and panels of frosted glass over it. Signal yellow
+ * The app is dark: a navy-black ground with two soft lights, and panels of frosted glass over it. Signal yellow
  * marks only the selected route (active sign, step boxes, selected rows); cyan is the accent; green / amber / red
  * carry verdicts and nothing else. The calculation report (PDF) keeps the light tokens.
  */
@@ -37,7 +37,6 @@
   --glass-blur: 18px;
   --glass-rail: rgb(8 14 24 / 0.62);
   --panel-radius: 16px;
-  --grid-line: rgb(56 189 248 / 0.06);
   --glow-1: rgb(56 189 248 / 0.16);
   --glow-2: rgb(242 183 5 / 0.08);
 
@@ -1790,25 +1789,13 @@ th.num {
 
 /* ---------- blueprint glass ---------- */
 
-/* The ground behind the glass: blueprint grid and two soft lights (fixed, so the panels move over it). */
+/* The ground behind the glass: two soft lights (fixed, so the panels move over it), no lines. */
 body {
   background-color: var(--bg);
   background-image:
     radial-gradient(640px 640px at 0% 12%, var(--glow-1), transparent 70%),
-    radial-gradient(560px 560px at 100% 100%, var(--glow-2), transparent 70%),
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size:
-    auto,
-    auto,
-    40px 40px,
-    40px 40px;
-  background-position:
-    0 0,
-    0 0,
-    -1px -1px,
-    -1px -1px;
-  background-repeat: no-repeat, no-repeat, repeat, repeat;
+    radial-gradient(560px 560px at 100% 100%, var(--glow-2), transparent 70%);
+  background-repeat: no-repeat;
   background-attachment: fixed;
 }
 

@@ -92,7 +92,7 @@ components:
 
 **Creative North Star: "The Route Sign"**
 
-The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **blueprint glass**: a navy-black ground with a 40px blueprint grid, two soft lights (cyan top left, yellow bottom right), both fixed, and frosted-glass panels (translucent white, backdrop blur) moving over it, with tables of exact numbers.
+The selection chain axis → motor → gearbox → kit is a route, and the app shows it as a DIN direction sign: a rail across the top with four numbered route boxes, chevrons between them, each carrying the chosen part number and its verdict. Everything below the rail is a quiet, dense working surface on **blueprint glass**: a navy-black ground with two soft lights (cyan top left, yellow bottom right), fixed, and frosted-glass panels (translucent white, backdrop blur) moving over it, with tables of exact numbers.
 
 It is an operating tool, so the world contributes only type, palette, density and the one signature move (the rail). Controls stay standard web controls.
 
@@ -114,7 +114,7 @@ Restrained workspace on a dark blueprint ground. The app is dark only; the PDF r
 - **Signal Yellow** (#f2b705): the active route box on the rail, step number boxes, the selected row outline, selection highlight, focus ring. Soft variant (yellow at 12%) fills the selected row.
 
 ### Neutral
-- **Ground** (#060a12): page background, with the blueprint grid (cyan at 6%), and the two lights as fixed background layers (`--glow-1/2`, `--grid-line`); no other lines or drawings behind the work, so nothing competes with the numbers.
+- **Ground** (#060a12): page background, with the two lights as fixed background layers (`--glow-1/2`); no grid, lines or drawings behind the work, so nothing competes with the numbers.
 - **Surface** (white at 5.5%) glass panels, **Surface 2** (white at 5%) hover and fills inside panels, **Surface Solid** (rgb(14 21 32 / 0.94)) sticky table heads and the notice dialog, which content scrolls under.
 - **Line** (white at 11%) / **Line Strong** (white at 20%): dividers, input borders, the input switches' outlines.
 - **Text** (#e6edf5), **Muted** (#a3b1c2): secondary labels and units.
