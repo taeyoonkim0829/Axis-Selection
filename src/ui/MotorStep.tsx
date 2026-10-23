@@ -25,6 +25,8 @@ interface Props {
 const makers: MotorMaker[] = ['Festo', 'Siemens', 'Mitsubishi']
 
 const supplies: Supply[] = ['ac400', 'ac230', 'dc48']
+/** Power supply a maker starts on: the 400 V class for Festo and Siemens, 200 V for Mitsubishi */
+const makerSupply: Record<MotorMaker, Supply> = { Festo: 'ac400', Siemens: 'ac400', Mitsubishi: 'ac230' }
 
 const ROW_LIMIT = 60
 
@@ -64,6 +66,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
     onSettings({
       ...settings,
       makers: v,
+      supplies: [makerSupply[maker]],
       excludedMotorFamilies: all ? excluded.filter((f) => !options.includes(f)) : excluded,
     })
   }
@@ -84,10 +87,10 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
       </header>
       <div className="step-filters">
         <RadioGroup options={makers} value={settings.makers[0] ?? 'Festo'} onChange={onMaker} />
-        <ToggleGroup
+        <RadioGroup
           options={supplies}
-          selected={settings.supplies}
-          onChange={(v) => onSettings({ ...settings, supplies: v })}
+          value={settings.supplies[0] ?? 'ac400'}
+          onChange={(v) => onSettings({ ...settings, supplies: [v] })}
           label={(v) => supplyLabel[v]}
         />
         <RadioGroup
