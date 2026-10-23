@@ -1,3 +1,4 @@
+import { RadioGroup } from './common'
 import { useT } from '../i18n'
 
 /** single = one axis (with its parallel arrangement), gantry = XYZ combination */
@@ -8,19 +9,13 @@ const modeLabel: Record<AppMode, string> = { single: '단축 선정', gantry: '�
 export function ModeSwitch({ mode, onMode }: { mode: AppMode; onMode: (mode: AppMode) => void }) {
   const t = useT()
   return (
-    <div className="segmented mode-switch" role="radiogroup" aria-label={t('선정 화면')}>
-      {(Object.keys(modeLabel) as AppMode[]).map((m) => (
-        <button
-          key={m}
-          type="button"
-          role="radio"
-          aria-checked={mode === m}
-          className={mode === m ? 'active' : ''}
-          onClick={() => mode !== m && onMode(m)}
-        >
-          {t(modeLabel[m])}
-        </button>
-      ))}
-    </div>
+    <RadioGroup
+      className="mode-switch"
+      ariaLabel={t('선정 화면')}
+      options={Object.keys(modeLabel) as AppMode[]}
+      value={mode}
+      onChange={onMode}
+      label={(m) => t(modeLabel[m])}
+    />
   )
 }

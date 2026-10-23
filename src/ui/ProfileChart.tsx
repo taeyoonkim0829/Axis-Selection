@@ -4,7 +4,7 @@ import { tracePhases, type Phase, type TracePoint } from '../calc/motionProfile'
 import { motorTorqueFn, type DriveEvaluation } from '../calc/motorSelection'
 import type { Settings, VerticalDirection } from '../calc/types'
 import { useT } from '../i18n'
-import { CollapseTitle } from './common'
+import { CollapseTitle, RadioGroup } from './common'
 import { fmt, moveLabel } from './format'
 
 const W = 1000
@@ -94,20 +94,12 @@ export function ProfileChart({ axis, drive, settings, vertical, open, onToggle, 
           {t('모션 프로파일')}
         </CollapseTitle>
         {open && (
-          <div className="segmented small" role="radiogroup">
-            {(['cycle', 'forward', 'back'] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                role="radio"
-                aria-checked={view === v}
-                className={view === v ? 'active' : ''}
-                onClick={() => onView(v)}
-              >
-                {t(v === 'cycle' ? '왕복' : moveLabel(v === 'back', vertical))}
-              </button>
-            ))}
-          </div>
+          <RadioGroup
+            options={['cycle', 'forward', 'back'] as const}
+            value={view}
+            onChange={onView}
+            label={(v) => t(v === 'cycle' ? '왕복' : moveLabel(v === 'back', vertical))}
+          />
         )}
       </div>
       {open && <ProfilePlot axis={axis} drive={drive} settings={settings} view={view} />}

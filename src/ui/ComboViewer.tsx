@@ -5,6 +5,7 @@ import type { PartRole } from '../cad/combo'
 import { EDGE_ANGLE, type PartMesh } from '../cad/occt'
 import type { Vec3 } from '../cad/step'
 import { useT } from '../i18n'
+import { RadioGroup } from './common'
 
 // 3D preview of the assembled combination (Z up). Loaded lazily with three.js.
 
@@ -155,13 +156,7 @@ export default function ComboViewer({ meshes, roles, cog }: { meshes: PartMesh[]
   return (
     <div className="combo-viewer">
       <div className="combo-viewer-bar">
-        <div className="segmented small">
-          {(Object.keys(VIEW_DIRS) as ViewName[]).map((v) => (
-            <button key={v} type="button" className={v === view ? 'active' : ''} onClick={() => pick(v)}>
-              {t(viewLabel[v])}
-            </button>
-          ))}
-        </div>
+        <RadioGroup options={Object.keys(VIEW_DIRS) as ViewName[]} value={view} onChange={pick} label={(v) => t(viewLabel[v])} />
         <ul className="combo-legend">
           {present.map((r) => (
             <li key={r}>

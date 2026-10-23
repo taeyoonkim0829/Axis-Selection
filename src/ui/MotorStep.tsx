@@ -4,7 +4,7 @@ import type { DriveEvaluation } from '../calc/motorSelection'
 import type { Settings, Supply } from '../calc/types'
 import { motorFamilies } from '../data'
 import type { MotorMaker } from '../data/types'
-import { CheckTable, CollapseTitle, RadioGroup, Ratio, SlideGroup, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { translateData, useLang, useT } from '../i18n'
 import { DrivePackage } from './DrivePackage'
@@ -83,7 +83,7 @@ export function MotorStep({ results, selected, onSelect, settings, onSettings, l
         </label>
       </header>
       <div className="step-filters">
-        <SlideGroup options={makers} value={settings.makers[0] ?? 'Festo'} onChange={onMaker} />
+        <RadioGroup options={makers} value={settings.makers[0] ?? 'Festo'} onChange={onMaker} />
         <ToggleGroup
           options={supplies}
           selected={settings.supplies}

@@ -45,6 +45,18 @@ function useActiveStep(): number {
   return active
 }
 
+/** The page has scrolled, so content passes under the floating rail */
+function useScrolled(): boolean {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 0)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [])
+  return scrolled
+}
+
 function Sign({
   no,
   name,
@@ -86,6 +98,7 @@ function Sign({
 export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang }: Props) {
   const t = useT()
   const active = useActiveStep()
+  const scrolled = useScrolled()
   const axisTight = axis && tightest(axis.checks)
   const driveTight = drive && tightest(drive.checks)
   // the advisory motor-torque check is not part of the kit verdict, so not its headline either
@@ -98,77 +111,80 @@ export function RouteRail({ axis, drive, kit, onExport, exporting, lang, onLang 
   const exportClick = () => (missing.length ? dialog.current?.showModal() : onExport())
 
   return (
-    <header className="rail">
-      <div className="rail-inner">
-        <div className="rail-brand">
-          {/* the rail is sign blue in both themes, so the logo's dark-background version is used in both */}
-          <img className="rail-logo" src={`${import.meta.env.BASE_URL}axispilot-logo-dark.svg`} alt="AxisPilot" width={171} height={32} />
-        </div>
-        <ol className="signs" aria-label={t('선정 경로')}>
-          <Sign
-            no={1}
-            name={t('직교 축')}
-            value={axis?.order.model ?? null}
-            status={axis?.status}
-            detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
-            active={active === 0}
-          />
-          <Sign
-            no={2}
-            name={t('모터')}
-            value={drive ? drive.motor.model : null}
-            status={drive?.status}
-            detail={
-              drive ? `${drive.motor.maker}${driveTight ? ` · ${t(driveTight.label)} ${pct(driveTight.ratio)}` : ''}` : undefined
-            }
-            active={active === 1}
-          />
-          <Sign
-            no={3}
-            name={t('감속기')}
-            value={drive ? (g ? g.model : t('감속기 미사용')) : null}
-            detail={g ? `${g.maker} · ${g.ratio}:1` : undefined}
-            active={active === 2}
-          />
-          <Sign
-            no={4}
-            name={t('연결키트')}
-            value={kit?.kit.product ?? null}
-            status={kit?.status}
-            empty={drive ? t('해당 키트 없음') : undefined}
-            detail={kit ? (kitTight ? `${t(kitTight.label)} ${pct(kitTight.ratio)}` : t('축 {axis} · {motor}', { axis: kit.kit.axisCode, motor: kit.kit.motorCode })) : undefined}
-            active={active === 3}
-          />
-        </ol>
-        <div className="rail-actions">
-          <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
-            {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
-          </button>
-          <button
-            type="button"
-            className="rail-action"
-            lang={lang === 'ko' ? 'en' : 'ko'}
-            onClick={() => onLang(lang === 'ko' ? 'en' : 'ko')}
-          >
-            {langSwitchLabel[lang]}
-          </button>
-        </div>
-        <dialog ref={dialog} className="notice" aria-labelledby="notice-title">
-          <h2 id="notice-title">{t('PDF로 내보낼 수 없습니다')}</h2>
-          <p>
-            {t('{items} 선정되지 않았습니다.', {
-              items: lang === 'ko' ? missingText + koSubjectParticle(missingText) : missingText,
-            })}
-            <br />
-            {t('직교 축, 모터, 연결키트를 먼저 선정하세요.')}
-          </p>
-          <form method="dialog">
-            <button type="submit" className="notice-ok" autoFocus>
-              {t('확인')}
+    <>
+      <div className={`rail-veil${scrolled ? ' on' : ''}`} aria-hidden />
+      <header className={`rail${scrolled ? ' over' : ''}`}>
+        <div className="rail-inner">
+          <div className="rail-brand">
+            {/* the rail is sign blue in both themes, so the logo's dark-background version is used in both */}
+            <img className="rail-logo" src={`${import.meta.env.BASE_URL}axispilot-logo-dark.svg`} alt="AxisPilot" width={171} height={32} />
+          </div>
+          <ol className="signs" aria-label={t('선정 경로')}>
+            <Sign
+              no={1}
+              name={t('직교 축')}
+              value={axis?.order.model ?? null}
+              status={axis?.status}
+              detail={axisTight ? `${t(axisTight.label)} ${pct(axisTight.ratio)}` : undefined}
+              active={active === 0}
+            />
+            <Sign
+              no={2}
+              name={t('모터')}
+              value={drive ? drive.motor.model : null}
+              status={drive?.status}
+              detail={
+                drive ? `${drive.motor.maker}${driveTight ? ` · ${t(driveTight.label)} ${pct(driveTight.ratio)}` : ''}` : undefined
+              }
+              active={active === 1}
+            />
+            <Sign
+              no={3}
+              name={t('감속기')}
+              value={drive ? (g ? g.model : t('감속기 미사용')) : null}
+              detail={g ? `${g.maker} · ${g.ratio}:1` : undefined}
+              active={active === 2}
+            />
+            <Sign
+              no={4}
+              name={t('연결키트')}
+              value={kit?.kit.product ?? null}
+              status={kit?.status}
+              empty={drive ? t('해당 키트 없음') : undefined}
+              detail={kit ? (kitTight ? `${t(kitTight.label)} ${pct(kitTight.ratio)}` : t('축 {axis} · {motor}', { axis: kit.kit.axisCode, motor: kit.kit.motorCode })) : undefined}
+              active={active === 3}
+            />
+          </ol>
+          <div className="rail-actions">
+            <button type="button" className="rail-action" onClick={exportClick} disabled={exporting}>
+              {exporting ? t('PDF 생성 중…') : t('PDF로 내보내기')}
             </button>
-          </form>
-        </dialog>
-      </div>
-    </header>
+            <button
+              type="button"
+              className="rail-action"
+              lang={lang === 'ko' ? 'en' : 'ko'}
+              onClick={() => onLang(lang === 'ko' ? 'en' : 'ko')}
+            >
+              {langSwitchLabel[lang]}
+            </button>
+          </div>
+          <dialog ref={dialog} className="notice" aria-labelledby="notice-title">
+            <h2 id="notice-title">{t('PDF로 내보낼 수 없습니다')}</h2>
+            <p>
+              {t('{items} 선정되지 않았습니다.', {
+                items: lang === 'ko' ? missingText + koSubjectParticle(missingText) : missingText,
+              })}
+              <br />
+              {t('직교 축, 모터, 연결키트를 먼저 선정하세요.')}
+            </p>
+            <form method="dialog">
+              <button type="submit" className="notice-ok" autoFocus>
+                {t('확인')}
+              </button>
+            </form>
+          </dialog>
+        </div>
+      </header>
+    </>
   )
 }

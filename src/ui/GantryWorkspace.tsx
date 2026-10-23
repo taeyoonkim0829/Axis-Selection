@@ -6,6 +6,7 @@ import { kitList } from '../calc/gantryKits'
 import { computeGantry, noPicks, type GantryAxisResult, type Picks } from '../selection'
 import { AxisSteps } from './AxisSteps'
 import { StatusBadge } from './common'
+import { useSlideThumb } from './useSlideThumb'
 import { fmt, mountingLabel } from './format'
 import { Footer } from './Footer'
 import { GantryDrawing } from './GantryDrawing'
@@ -156,6 +157,8 @@ function GantrySummary({
   onTab: (a: GantryAxis) => void
 }) {
   const t = useT()
+  const shown = order.filter((a) => results.some((r) => r.axis === a))
+  const { ref: tabsRef, thumb: tabThumb } = useSlideThumb<HTMLDivElement>(shown.indexOf(active), shown.length)
   return (
     <section className="panel gantry-summary">
       <header className="step-head">
@@ -166,7 +169,7 @@ function GantrySummary({
           })}
         </span>
       </header>
-      <div className="gantry-tabs" role="tablist" aria-label={t('조합축 축')}>
+      <div className="gantry-tabs" role="tablist" aria-label={t('조합축 축')} ref={tabsRef}>
         {order.map((a) => {
           const i = results.findIndex((r) => r.axis === a)
           const r = results[i]
@@ -197,6 +200,7 @@ function GantrySummary({
             </button>
           )
         })}
+        {tabThumb && <span className="gantry-tab-thumb" aria-hidden style={tabThumb} />}
       </div>
     </section>
   )

@@ -94,20 +94,13 @@ export function InputPanel({ req, settings, onReq, onSettings, mode, onMode }: P
           <h2>{t('사용 조건')}</h2>
           <div className="field">
             <span className="field-label">{t('축 설치 방향')}</span>
-            <div className="segmented" role="radiogroup">
-              {(Object.keys(mountingLabel) as Mounting[]).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={req.mounting === m}
-                  className={req.mounting === m ? 'active' : ''}
-                  onClick={() => setMounting(m)}
-                >
-                  {t(mountingLabel[m])}
-                </button>
-              ))}
-            </div>
+            <RadioGroup
+              className=""
+              options={Object.keys(mountingLabel) as Mounting[]}
+              value={req.mounting}
+              onChange={setMounting}
+              label={(m) => t(mountingLabel[m])}
+            />
           </div>
           <div className="grid-2">
             <NumberField label={t('스트로크')} unit="mm" value={req.stroke} min={1} onChange={(v) => set('stroke', v)} />
@@ -115,20 +108,13 @@ export function InputPanel({ req, settings, onReq, onSettings, mode, onMode }: P
           </div>
           <div className="field">
             <span className="field-label">{t('가속 입력')}</span>
-            <div className="segmented" role="radiogroup">
-              {(Object.keys(accelModeLabel) as AccelMode[]).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={accelMode === m}
-                  className={accelMode === m ? 'active' : ''}
-                  onClick={() => changeAccelMode(m)}
-                >
-                  {t(accelModeLabel[m])}
-                </button>
-              ))}
-            </div>
+            <RadioGroup
+              className=""
+              options={Object.keys(accelModeLabel) as AccelMode[]}
+              value={accelMode}
+              onChange={changeAccelMode}
+              label={(m) => t(accelModeLabel[m])}
+            />
           </div>
           <div className="grid-2">
             <NumberField
@@ -200,20 +186,13 @@ export function InputPanel({ req, settings, onReq, onSettings, mode, onMode }: P
 
       <section className="panel application">
         <h2>{t('어플리케이션 선택')}</h2>
-        <div className="segmented" role="radiogroup">
-          {(['general', 'press'] as const).map((a) => (
-            <button
-              key={a}
-              type="button"
-              role="radio"
-              aria-checked={press.enabled === (a === 'press')}
-              className={press.enabled === (a === 'press') ? 'active' : ''}
-              onClick={() => press.enabled !== (a === 'press') && setApplication(a === 'press')}
-            >
-              {t(a === 'press' ? '프레싱' : '일반')}
-            </button>
-          ))}
-        </div>
+        <RadioGroup
+          className=""
+          options={['general', 'press'] as const}
+          value={press.enabled ? 'press' : 'general'}
+          onChange={(a) => setApplication(a === 'press')}
+          label={(a) => t(a === 'press' ? '프레싱' : '일반')}
+        />
         {!press.enabled && <p className="field-hint application-hint">{t('스트로크를 왕복 이송')}</p>}
         {press.enabled && req.mounting === 'vertical' && (
           <div className="field">
@@ -279,20 +258,13 @@ export function ParallelSection({
   return (
     <section className="panel application">
       <h2>{t(title)}</h2>
-      <div className="segmented segmented-grid" role="radiogroup">
-        {(Object.keys(parallelModeLabel) as ParallelMode[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={parallel.mode === m}
-            className={parallel.mode === m ? 'active' : ''}
-            onClick={() => setParallel('mode', m)}
-          >
-            {t(parallelModeLabel[m])}
-          </button>
-        ))}
-      </div>
+      <RadioGroup
+        className="segmented-grid"
+        options={Object.keys(parallelModeLabel) as ParallelMode[]}
+        value={parallel.mode}
+        onChange={(m) => setParallel('mode', m)}
+        label={(m) => t(parallelModeLabel[m])}
+      />
       <p className="field-hint application-hint">{t(parallelModeHint[parallel.mode])}</p>
       {parallel.mode === 'guides' && (
         <div className="field">

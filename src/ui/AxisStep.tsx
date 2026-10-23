@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AxisEvaluation } from '../calc/axisSelection'
 import type { AdditionalSlideSide, Settings } from '../calc/types'
 import type { AxisFamily, DriveKind } from '../data/types'
-import { CheckTable, CollapseTitle, RadioGroup, Ratio, SlideGroup, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
+import { CheckTable, CollapseTitle, RadioGroup, Ratio, SortTh, StatusBadge, ToggleButton, ToggleGroup } from './common'
 import { statusRank, useSort } from './useSort'
 import { useT } from '../i18n'
 import { axisDetailChecks, driveLabel, fmt } from './format'
@@ -108,7 +108,7 @@ export function AxisStep({ results, selectedId, onSelect, settings, onSettings }
         </label>
       </header>
       <div className="step-filters">
-        <SlideGroup
+        <RadioGroup
           options={drives}
           value={settings.drives[0] ?? 'spindle'}
           label={(d) => t(driveLabel[d])}

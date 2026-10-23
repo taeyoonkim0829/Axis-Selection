@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Check, Status } from '../calc/types'
 import { useT } from '../i18n'
 import { fmt, pct, statusLabel } from './format'
 import type { SortState } from './useSort'
+import { useSlideThumb } from './useSlideThumb'
 
 export function StatusBadge({ status }: { status: Status }) {
   const t = useT()
@@ -168,75 +169,28 @@ export function CollapseTitle({ open, onToggle, children }: { open: boolean; onT
   )
 }
 
-/** Single-select segmented buttons. */
+/**
+ * One-of choice as segmented buttons, the highlight sliding to the picked one (`useSlideThumb`, `.segmented-thumb`).
+ * `className` replaces the size class (default `small`).
+ */
 export function RadioGroup<T extends string | number>({
   options,
   value,
   onChange,
-  label,
-}: {
-  options: readonly T[]
-  value: T
-  onChange: (value: T) => void
-  label: (value: T) => ReactNode
-}) {
-  return (
-    <div className="segmented small" role="radiogroup">
-      {options.map((o) => (
-        <button
-          key={o}
-          type="button"
-          role="radio"
-          aria-checked={o === value}
-          className={o === value ? 'active' : ''}
-          onClick={() => onChange(o)}
-        >
-          {label(o)}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/**
- * One-of choice whose highlight slides to the picked button (`.segmented-thumb`, measured from the button so it
- * follows label widths, the language and resizes).
- */
-export function SlideGroup<T extends string>({
-  options,
-  value,
-  onChange,
   label = (v) => v,
+  className = 'small',
+  ariaLabel,
 }: {
   options: readonly T[]
   value: T
   onChange: (value: T) => void
   label?: (value: T) => ReactNode
+  className?: string
+  ariaLabel?: string
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [thumb, setThumb] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
-  const index = options.indexOf(value)
-  useLayoutEffect(() => {
-    const box = ref.current
-    if (!box) return
-    const measure = () => {
-      const b = box.querySelectorAll('button')[index]
-      setThumb(b ? { x: b.offsetLeft, y: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight } : null)
-    }
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(box)
-    return () => observer.disconnect()
-  }, [index, options.length])
+  const { ref, thumb } = useSlideThumb<HTMLDivElement>(options.indexOf(value), options.length)
   return (
-    <div className="segmented small sliding" role="radiogroup" ref={ref}>
-      {thumb && (
-        <span
-          className="segmented-thumb"
-          aria-hidden
-          style={{ width: thumb.w, height: thumb.h, transform: `translate(${thumb.x}px, ${thumb.y}px)` }}
-        />
-      )}
+    <div className={`segmented sliding ${className}`.trim()} role="radiogroup" aria-label={ariaLabel} ref={ref}>
       {options.map((o) => (
         <button
           key={o}
@@ -249,6 +203,8 @@ export function SlideGroup<T extends string>({
           {label(o)}
         </button>
       ))}
+      {/* after the buttons, so their nth-child rules stay */}
+      {thumb && <span className="segmented-thumb" aria-hidden style={thumb} />}
     </div>
   )
 }
