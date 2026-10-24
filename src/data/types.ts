@@ -391,14 +391,18 @@ export interface AdapterAxis {
  * Festo kit joining two axes of a gantry (EHAM angle and adapter kits, EAHF profile mountings): the carried axis's
  * profile on the base axis's slide. `angle`: the carried slide faces across the base slide's normal (X floor, Y on
  * the wall side); `plate`: both slides face the same way (crossed axes, Z on a wall-mounted Y).
+ * Custom brackets (data/adapters/Custom, `custom: true`, made to order) have no part number; `beam`: a cross beam
+ * bolted between the walls of two Festo angle kits on twin X axes (in place of the carried ELGT profile), carrying a
+ * Z axis on a Festo EHAM-MA plate (XZ). The app has no XZ arrangement yet, so no joint picks a beam.
  */
 export interface AxisAdapter {
   id: string
-  maker: 'Festo'
-  family: 'EHAM-AK' | 'EHAM-MA' | 'EAHF'
+  maker: 'Festo' | 'Custom'
+  family: 'EHAM-AK' | 'EHAM-MA' | 'EAHF' | 'Custom'
   model: string
-  partNumber: string
-  joint: 'angle' | 'plate'
+  /** null for custom brackets */
+  partNumber: string | null
+  joint: 'angle' | 'plate' | 'beam'
   base: AdapterAxis[]
   carried: AdapterAxis[]
   /** angle kits come in two mirror-image versions (…-ML / …-MR) */
@@ -415,4 +419,12 @@ export interface AxisAdapter {
   /** further parts to order with it (`quantity` per kit, when known) */
   accessories: { model: string; partNumber: string; quantity?: number; note?: string }[]
   dataSource: string
+  /** custom bracket (made to order): never preferred over a Festo kit */
+  custom?: boolean
+  /** custom bracket: its dimensioned drawing (PDF, data/… path) */
+  drawing?: string
+  /** `beam` brackets: the Festo angle kits it is bolted between (first X axis, second), `end` (mm, the kits'
+   *  carried end: beam end from the X slide centre, so the X spacing D = L + 2 · end), length range and reference
+   *  length (mm), mass per metre (kg/m; `mass` is at the reference length), the Z pad's hole pattern */
+  beam?: { kits: [string, string]; end: number; length: [number, number]; referenceLength: number; massPerMeter: number; pad: string }
 }

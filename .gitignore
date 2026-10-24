@@ -38,3 +38,7 @@ data/**/Drawings/**/*.csv
 data/**/Drawings/**/*.bak
 data/**/Drawings/**/*.dwl
 data/**/Drawings/**/*.dwl2
+# Custom brackets: the drawing PDF is the deliverable (committed)
+!data/adapters/Custom/Drawings/*.pdf
+# cadgen / python caches
+cad/**/__pycache__/

@@ -1,0 +1,277 @@
+{
+  "items": [
+    {
+      "id": "BR-ELGT-BS-90-ELGT-BS-90-1",
+      "maker": "Custom",
+      "family": "Custom",
+      "model": "BR-ELGT-BS-90-ELGT-BS-90-1",
+      "partNumber": null,
+      "joint": "beam",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle",
+          "end": -181.5,
+          "pinned": true,
+          "threads": {
+            "first": 81.5,
+            "pitch": 100
+          },
+          "screws": [
+            -100,
+            200
+          ]
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        0,
+        500
+      ],
+      "wall": null,
+      "mass": 9.7,
+      "custom": true,
+      "drawing": "data/adapters/Custom/Drawings/BR-ELGT-BS-90-ELGT-BS-90-1_BR-ELGT-BS-90-ELGT-BS-90-1.pdf",
+      "beam": {
+        "kits": [
+          "EHAM-AK-L9-90-L9-90-ML",
+          "EHAM-AK-L9-90-L9-90-MR"
+        ],
+        "end": 10.5,
+        "length": [
+          609,
+          2200
+        ],
+        "referenceLength": 1000,
+        "massPerMeter": 9.7,
+        "pad": "ELGT-120 slide"
+      },
+      "accessories": [
+        {
+          "model": "EHAM-AK-L9-90-L9-90-ML",
+          "partNumber": "8128210",
+          "quantity": 1,
+          "note": "end A on the first X axis slide, pinned"
+        },
+        {
+          "model": "EHAM-AK-L9-90-L9-90-MR",
+          "partNumber": "8128215",
+          "quantity": 1,
+          "note": "end B on the second X axis slide, screws only (its two carried-side pins left out)"
+        },
+        {
+          "model": "EHAM-MA-L9-120-L9-90",
+          "partNumber": "8128227",
+          "quantity": 1,
+          "note": "Z plate on the beam pad, Z stroke 101–500 mm (type B)"
+        },
+        {
+          "model": "EHAM-MA-L9-120-L9-90-S",
+          "partNumber": "8128232",
+          "quantity": 0,
+          "note": "instead of the type B plate for Z stroke 0–100 mm (type C)"
+        },
+        {
+          "model": "ISO 4762 M6x16-8.8",
+          "partNumber": "ISO 4762-M6x16-8.8",
+          "quantity": 12,
+          "note": "kit walls into the beam (6 per end) instead of the kits' M6x12: full thread engagement in the 8 mm wall; tighten 8 Nm"
+        }
+      ],
+      "dataSource": "AxisPilot custom design 2026-10-24 (cad/brackets/elgt_twin_beam.py, reports/brackets/2026-10-24-2240-BR-ELGT-BS-twin-X-Z.md); interfaces measured on the Festo STEP models of EHAM-AK-L9, EHAM-MA-L9 and ELGT-BS"
+    },
+    {
+      "id": "BR-ELGT-BS-120-ELGT-BS-90-1",
+      "maker": "Custom",
+      "family": "Custom",
+      "model": "BR-ELGT-BS-120-ELGT-BS-90-1",
+      "partNumber": null,
+      "joint": "beam",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 90,
+          "drive": "spindle",
+          "end": -181.5,
+          "pinned": true,
+          "threads": {
+            "first": 81.5,
+            "pitch": 100
+          },
+          "screws": [
+            -100,
+            200
+          ]
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        0,
+        500
+      ],
+      "wall": null,
+      "mass": 9.7,
+      "custom": true,
+      "drawing": "data/adapters/Custom/Drawings/BR-ELGT-BS-120-ELGT-BS-90-1_BR-ELGT-BS-120-ELGT-BS-90-1.pdf",
+      "beam": {
+        "kits": [
+          "EHAM-AK-L9-120-L9-120-ML",
+          "EHAM-AK-L9-120-L9-120-MR"
+        ],
+        "end": 44.5,
+        "length": [
+          609,
+          2150
+        ],
+        "referenceLength": 1000,
+        "massPerMeter": 9.7,
+        "pad": "ELGT-120 slide"
+      },
+      "accessories": [
+        {
+          "model": "EHAM-AK-L9-120-L9-120-ML",
+          "partNumber": "8128208",
+          "quantity": 1,
+          "note": "end A on the first X axis slide, pinned"
+        },
+        {
+          "model": "EHAM-AK-L9-120-L9-120-MR",
+          "partNumber": "8128213",
+          "quantity": 1,
+          "note": "end B on the second X axis slide, screws only (its two carried-side pins left out)"
+        },
+        {
+          "model": "EHAM-MA-L9-120-L9-90",
+          "partNumber": "8128227",
+          "quantity": 1,
+          "note": "Z plate on the beam pad, Z stroke 101–500 mm (type B)"
+        },
+        {
+          "model": "EHAM-MA-L9-120-L9-90-S",
+          "partNumber": "8128232",
+          "quantity": 0,
+          "note": "instead of the type B plate for Z stroke 0–100 mm (type C)"
+        },
+        {
+          "model": "ISO 4762 M6x16-8.8",
+          "partNumber": "ISO 4762-M6x16-8.8",
+          "quantity": 12,
+          "note": "kit walls into the beam (6 per end) instead of the kits' M6x12: full thread engagement in the 8 mm wall; tighten 8 Nm"
+        }
+      ],
+      "dataSource": "AxisPilot custom design 2026-10-24 (cad/brackets/elgt_twin_beam.py, reports/brackets/2026-10-24-2240-BR-ELGT-BS-twin-X-Z.md); interfaces measured on the Festo STEP models of EHAM-AK-L9, EHAM-MA-L9 and ELGT-BS"
+    },
+    {
+      "id": "BR-ELGT-BS-160-ELGT-BS-120-1",
+      "maker": "Custom",
+      "family": "Custom",
+      "model": "BR-ELGT-BS-160-ELGT-BS-120-1",
+      "partNumber": null,
+      "joint": "beam",
+      "base": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 160,
+          "drive": "spindle"
+        }
+      ],
+      "carried": [
+        {
+          "family": "ELGT",
+          "variant": null,
+          "size": 120,
+          "drive": "spindle",
+          "end": -231.5,
+          "pinned": true,
+          "threads": {
+            "first": 81.5,
+            "pitch": 100
+          },
+          "screws": [
+            -150,
+            250
+          ]
+        }
+      ],
+      "hand": null,
+      "layout": null,
+      "carriedStroke": [
+        0,
+        500
+      ],
+      "wall": null,
+      "mass": 14.07,
+      "custom": true,
+      "drawing": "data/adapters/Custom/Drawings/BR-ELGT-BS-160-ELGT-BS-120-1_BR-ELGT-BS-160-ELGT-BS-120-1.pdf",
+      "beam": {
+        "kits": [
+          "EHAM-AK-L9-160-L9-160-ML",
+          "EHAM-AK-L9-160-L9-160-MR"
+        ],
+        "end": 63.5,
+        "length": [
+          615,
+          2200
+        ],
+        "referenceLength": 1000,
+        "massPerMeter": 14.07,
+        "pad": "ELGT-160 slide"
+      },
+      "accessories": [
+        {
+          "model": "EHAM-AK-L9-160-L9-160-ML",
+          "partNumber": "8128206",
+          "quantity": 1,
+          "note": "end A on the first X axis slide, pinned"
+        },
+        {
+          "model": "EHAM-AK-L9-160-L9-160-MR",
+          "partNumber": "8128211",
+          "quantity": 1,
+          "note": "end B on the second X axis slide, screws only (its two carried-side pins left out)"
+        },
+        {
+          "model": "EHAM-MA-L9-160-L9-120",
+          "partNumber": "8128226",
+          "quantity": 1,
+          "note": "Z plate on the beam pad, Z stroke 201–500 mm (type B)"
+        },
+        {
+          "model": "EHAM-MA-L9-160-L9-120-S",
+          "partNumber": "8128231",
+          "quantity": 0,
+          "note": "instead of the type B plate for Z stroke 0–200 mm (type C)"
+        },
+        {
+          "model": "ISO 4762 M8x20-8.8",
+          "partNumber": "ISO 4762-M8x20-8.8",
+          "quantity": 12,
+          "note": "kit walls into the beam (6 per end) instead of the kits' M8x16: full thread engagement in the 10 mm wall; tighten 18 Nm"
+        }
+      ],
+      "dataSource": "AxisPilot custom design 2026-10-24 (cad/brackets/elgt_twin_beam.py, reports/brackets/2026-10-24-2240-BR-ELGT-BS-twin-X-Z.md); interfaces measured on the Festo STEP models of EHAM-AK-L9, EHAM-MA-L9 and ELGT-BS"
+    }
+  ]
+}

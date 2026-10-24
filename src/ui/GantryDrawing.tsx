@@ -106,7 +106,7 @@ export function GantryDrawing({
                       <StatusBadge status={j.status} />
                     </td>
                     <td className="model">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.model}</div>) : '—'}</td>
-                    <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.partNumber}</div>) : '—'}</td>
+                    <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.partNumber ?? t('주문 제작')}</div>) : '—'}</td>
                     <td className="num">{j.kit ? kitModels(j.kits).map((k) => <div key={k.model}>{k.n}</div>) : '—'}</td>
                     <td className="muted">
                       {j.status !== 'ok' ? t(j.note, j.noteArgs) : ''}
@@ -153,7 +153,8 @@ export function GantryDrawing({
 
 /** The joint's kits by model (a mirrored pair under two X axes is two rows) */
 function kitModels(kits: AxisAdapter[]) {
-  const out: { model: string; partNumber: string; n: number }[] = []
+  // custom brackets (made to order) have no part number
+  const out: { model: string; partNumber: string | null; n: number }[] = []
   for (const k of kits) {
     const row = out.find((r) => r.model === k.model)
     if (row) row.n++

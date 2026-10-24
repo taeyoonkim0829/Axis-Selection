@@ -197,6 +197,26 @@ Festo parts joining a carried axis's profile to the slide of the axis below it i
 
 Drawings: `adapters/Festo/Drawings/<partNumber>_<model>.stp` with frame JSONs (see "Drawings").
 
+## Custom brackets (`adapters/Custom/Brackets.json`)
+
+Made-to-order parts (machined aluminium) for gantry joints no Festo kit covers, designed in this repository: cadgen source in `cad/brackets/` (`<id>.py` model, `<id>_drawing.py` shop drawing, shared helpers; `check_elgt_twin_beam.py` assembles them with the Festo STEP models and reports interferences), report in `reports/brackets/`. Same item shape as the Festo kits, plus:
+
+| Field | Meaning |
+|---|---|
+| `id` / `model` | `BR-<base>-<carried>-<n>`, e.g. `BR-ELGT-BS-120-ELGT-BS-90-1` |
+| `maker` / `family` | `Custom` |
+| `partNumber` | null (made to order; the app shows 주문 제작) |
+| `custom` | true: never picked in place of a Festo kit (`gantryJoint` takes Festo kits only) |
+| `joint` | `beam`: a cross beam bolted between the walls of two Festo angle kits on twin X axes, in place of the carried ELGT profile, carrying a Z axis on a Festo EHAM-MA plate on its front pad (XZ). The app has no XZ arrangement yet: `beamBrackets` lists them |
+| `base` | the X axis type (each X slide carries one of the `beam.kits`) |
+| `carried` | the Z axis, as the EHAM-MA plate on the pad holds it (copied from that plate's item: the pad has the slide's hole pattern) |
+| `mass` | kg at the reference length |
+| `beam` | `kits` (angle kits, first X axis -ML pinned, second -MR screws only), `end` (mm, the kits' carried end: beam end from the X slide centre, so X spacing D = L + 2 · end), `length` (mm, [min, max]: walls clear of each other / stiffness limit from the report), `referenceLength` (mm, of the STEP), `massPerMeter` (kg/m), `pad` (the slide pattern on the front) |
+| `drawing` | the dimensioned PDF (`adapters/Custom/Drawings/<id>_<model>.pdf`, committed unlike the makers' PDFs) |
+| `accessories` | the Festo kits and plates to order with it (`quantity` 0 = alternative) |
+
+Drawings: `adapters/Custom/Drawings/<id>_<model>.stp` (beam coordinates: x along the beam from end A, z up from its underside, back face at y = 0, front at −B) with a JSON: `length` (mm, of the model), `base` / `baseB` (end A / end B face on the kit's profile centreline, `axis` from the kit wall into the beam (−y), `up` away from the beam: where the kit's carried ELGT profile would have its drive flange), `carried` (centre of the Z pad's pin pattern on the front face, `axis` out of the pad (−y), `up` along the beam: the EHAM-MA plate's `base` frame goes on it).
+
 ## Drawings (`<kind>/<maker>/Drawings/…/<partNumber>_<model>.stp`)
 
 Manufacturer CAD models (STEP) for step 5 (조합 도면), next to the product data of their kind (`axes`, `motors`, `gearboxes`, `kits`, `shafts`, `adapters`); subfolders below `Drawings/` are free. The file name is `<partNumber>_<model>` as Festo's CAD download names it (`8124427_ELGT-BS-90-500-20P.stp`), or the maker's own name, read as the model up to the first `_` in upper case (Mitsubishi `hg-kr13b_.stp` = HG-KR13B, `hg-ak0136_b_.stp` = HG-AK0136, `hk-kt13wb_.stp` = HK-KT13WB, which matches the data's `HK-KT13WB (200V)`: a voltage class in brackets is left out when matching; `(4)` stands for both names, `hg-jr12k1(4)_.stp` = HG-JR12K1 and HG-JR12K14). Only STEP files are read; the DWG/DXF/IGES/ZIP downloads may sit next to them but are not committed (`.gitignore`). The files are copied unchanged into the assembly (the CADENAS files carry `License CC BY-ND 4.0`; the exported STEP repeats it in its header). Each STEP file has a JSON file of the same name with its mating frames, in the file's own coordinates (mm). A frame is `{ "origin": [x, y, z], "axis": [x, y, z], "up": [x, y, z] }`: `axis` points from the axis side towards the motor side, `up` is perpendicular to it and is turned onto the parent's `up` (motor connector, kit and axis "up" line up).

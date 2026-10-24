@@ -241,7 +241,8 @@ function pickJoint(
     }
   const inRange = (k: AxisAdapter) => !k.carriedStroke || (carriedStroke >= k.carriedStroke[0] && carriedStroke <= k.carriedStroke[1])
   const candidates = adapters
-    .filter((k) => k.joint === kind && fits(k.base, baseAxis) && fits(k.carried, carriedAxis))
+    // Festo kits only: custom brackets (made to order) are listed by `beamBrackets`
+    .filter((k) => !k.custom && k.joint === kind && fits(k.base, baseAxis) && fits(k.carried, carriedAxis))
     .sort((a, b) => Number(inRange(b)) - Number(inRange(a)) || Number(b.hand !== 'right') - Number(a.hand !== 'right'))
   // the same kit in the hand each slide needs (the mirror image, when the data has it)
   const kits = candidates.length
@@ -282,6 +283,15 @@ function pickJoint(
   return { base, carried, kind, kit, kits, quantity, status: 'ok', note: '{kit}', noteArgs: { kit: kitList(kits) } }
 }
 
+/**
+ * Custom cross beams (data/adapters/Custom, `joint: 'beam'`) carrying a Z axis across two X axes of the given type
+ * (XZ: the beam bolted between two Festo angle kits in place of the carried ELGT profile, the Z axis on a Festo
+ * EHAM-MA plate). The app has no XZ arrangement yet, so the gantry joint never picks one; this lists them.
+ */
+export function beamBrackets(xAxis: Axis, zAxis: Axis | null, adapters: AxisAdapter[]): AxisAdapter[] {
+  return adapters.filter((k) => k.custom && k.joint === 'beam' && !!fits(k.base, xAxis) && (!zAxis || !!fits(k.carried, zAxis)))
+}
+
 /** The kits of a joint as one line: `EHAM-AK-…-ML × 2`, or both hands `…-ML × 1 · …-MR × 1` */
 export function kitList(kits: AxisAdapter[], partNumbers = false): string {
   const count = new Map<AxisAdapter, number>()
@@ -289,5 +299,5 @@ export function kitList(kits: AxisAdapter[], partNumbers = false): string {
     const same = [...count.keys()].find((x) => x.model === k.model) ?? k
     count.set(same, (count.get(same) ?? 0) + 1)
   }
-  return [...count].map(([k, n]) => `${k.model}${partNumbers ? ` (${k.partNumber})` : ''} × ${n}`).join(' · ')
+  return [...count].map(([k, n]) => `${k.model}${partNumbers ? ` (${k.partNumber ?? '주문 제작'})` : ''} × ${n}`).join(' · ')
 }

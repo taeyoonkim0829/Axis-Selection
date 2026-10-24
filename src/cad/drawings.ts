@@ -180,5 +180,11 @@ export const gearboxDrawingFor = (gearbox: Gearbox, all = drawings) =>
       (d.names.includes(gearbox.model) || (gearbox.partNumber != null && d.partNumber === gearbox.partNumber)),
   ) as Drawing<GearboxMeta> | undefined) ?? null
 
+/** A gantry kit's drawing by part number; a custom bracket (no part number) by its model (`<id>_<model>.stp`) */
 export const adapterDrawingFor = (adapter: AxisAdapter, all = drawings) =>
-  (all.find((d) => d.kind === 'adapters' && d.meta && d.partNumber === adapter.partNumber) as Drawing<AdapterMeta> | undefined) ?? null
+  (all.find(
+    (d) =>
+      d.kind === 'adapters' &&
+      d.meta &&
+      (adapter.partNumber != null ? d.partNumber === adapter.partNumber : d.partNumber == null && d.names.includes(adapter.model)),
+  ) as Drawing<AdapterMeta> | undefined) ?? null
