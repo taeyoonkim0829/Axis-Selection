@@ -1,4 +1,4 @@
-import { gantryAxes, gantryChain, type AxisMotion, type GantryAxis, type GantryConfig, type GantryInputs, type GantrySettings, type Vec, type ZMode } from '../calc/gantry'
+import { gantryAxes, gantryBase, gantryChain, type AxisMotion, type GantryAxis, type GantryConfig, type GantryInputs, type GantrySettings, type Vec, type ZMode } from '../calc/gantry'
 import type { Settings } from '../calc/types'
 import { useT } from '../i18n'
 import { NumberField, RadioGroup } from './common'
@@ -39,13 +39,17 @@ interface Props {
   onSettings: (s: GantrySettings) => void
   mode: AppMode
   onMode: (mode: AppMode) => void
-  /** two X axes: the spacing the calculation uses, set to fit the gantry kits */
-  xSpacing?: { entered: number; used: number }
+  /** two base axes: the spacing the calculation uses, set to fit the gantry kits */
+  baseSpacing?: { entered: number; used: number }
 }
 
-export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode, xSpacing }: Props) {
+export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode, onMode, baseSpacing }: Props) {
   const t = useT()
   const chain = gantryChain(gantry.config)
+  // the base axis can be a parallel arrangement (X, or Y in yz); the axis it carries
+  const base = gantryBase(gantry.config)
+  const parallel = gantry.parallel[base]
+  const twinBase = parallel.mode !== 'single'
   // inputs in X, Y, Z order; the selection runs from the tool end (`chain`)
   const axes = gantryAxes(gantry.config)
   const set = <K extends keyof GantryInputs>(key: K, value: GantryInputs[K]) => onGantry({ ...gantry, [key]: value })
@@ -144,21 +148,20 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
         )}
       </section>
 
-      {chain.includes('x') && (
-        <ParallelSection
-          parallel={gantry.xParallel}
-          onParallel={(p) => set('xParallel', p)}
-          title="X축 구성"
-          spacingNote={
-            xSpacing
-              ? t('조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 Y축이 두 키트에 맞는 간격, 입력 {entered} mm).', {
-                  used: fmt(xSpacing.used, 1),
-                  entered: fmt(xSpacing.entered, 1),
-                })
-              : undefined
-          }
-        />
-      )}
+      <ParallelSection
+        parallel={parallel}
+        onParallel={(p) => set('parallel', { ...gantry.parallel, [base]: p })}
+        title={base === 'x' ? 'X축 구성' : 'Y축 구성'}
+        spacingNote={
+          baseSpacing
+            ? t('조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 {axis}축이 두 키트에 맞는 간격, 입력 {entered} mm).', {
+                used: fmt(baseSpacing.used, 1),
+                entered: fmt(baseSpacing.entered, 1),
+                axis: chain[chain.length - 2].toUpperCase(),
+              })
+            : undefined
+        }
+      />
 
       <details className="panel settings">
         <summary>{t('질량 · 장착 위치')}</summary>
@@ -184,9 +187,13 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
             <VecFields value={gantry.offsets.yz} onChange={(v) => set('offsets', { ...gantry.offsets, yz: v })} />
             <p className="field-hint">
               {t(
-                gantry.zMode === 'profile'
-                  ? 'Y 슬라이드 중심에서 고정된 Z 슬라이드 중심까지'
-                  : 'Y 슬라이드 중심에서 Z축 본체 중심까지',
+                base === 'y' && twinBase
+                  ? gantry.zMode === 'profile'
+                    ? 'Y축 구성 중심에서 고정된 Z 슬라이드 중심까지'
+                    : 'Y축 구성 중심에서 Z축 본체 중심까지'
+                  : gantry.zMode === 'profile'
+                    ? 'Y 슬라이드 중심에서 고정된 Z 슬라이드 중심까지'
+                    : 'Y 슬라이드 중심에서 Z축 본체 중심까지',
               )}
               {gantry.zMode !== 'profile' && gantry.yMounting === 'wall'
                 ? ` ${t('어댑터 플레이트(EHAM-MA)를 쓰면 Z축은 모터 쪽 끝이 핀 구멍에 맞춰 플레이트에 고정되고, Z 값은 쓰지 않습니다.')}`
@@ -204,7 +211,7 @@ export function GantryInputPanel({ gantry, onGantry, settings, onSettings, mode,
               {t('X축 구성 중심에서 Y축 본체 중심까지')}
               {gantry.yMounting === 'wall' && gantry.xMounting === 'floor'
                 ? ` ${t(
-                    gantry.xParallel.mode === 'twinMotor' || gantry.xParallel.mode === 'twinShaft'
+                    gantry.parallel.x.mode === 'twinMotor' || gantry.parallel.x.mode === 'twinShaft'
                       ? '앵글 키트(EHAM-AK)를 쓰면 Y축은 첫 번째 X축의 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 쓰지 않습니다.'
                       : '앵글 키트(EHAM-AK)를 쓰면 Y축은 키트가 잡는 위치(조립 설명서)에 놓이고, Y 값은 놓이는 쪽(+/−)만 정합니다.',
                   )}`

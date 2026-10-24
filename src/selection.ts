@@ -4,7 +4,7 @@ import { selectAxes, type AxisEvaluation } from './calc/axisSelection'
 import { attachController } from './calc/controllerSelection'
 import { attachKit, findKits, type KitEvaluation, type KitMatch } from './calc/kitSelection'
 import { evaluateDrive, gearboxOptionsFor, selectMotors, type DriveEvaluation } from './calc/motorSelection'
-import { gantryChain, gantryRequirements, stageOf, type GantryAxis, type GantryInputs, type Stage } from './calc/gantry'
+import { baseParallel, gantryBase, gantryChain, gantryRequirements, stageOf, withBaseSpacing, type GantryAxis, type GantryInputs, type Stage } from './calc/gantry'
 import type { Requirements, Settings } from './calc/types'
 import { gantryJoint, kitList, type GantryJoint } from './calc/gantryKits'
 import { adapters, axes, brakingResistors, cables, controllers, kits, motors, shafts } from './data'
@@ -92,7 +92,7 @@ export interface GantryAxisResult {
   carried: { label: string; axis?: string; model?: string; mass: number }[]
   /** the gantry kit joining the axis below (the one this axis carries) to this axis's slide */
   joint: GantryJoint | null
-  /** two X axes: the spacing set to fit the gantry kits (mm), when it differs from the entered one */
+  /** two base axes: the spacing set to fit the gantry kits (mm), when it differs from the entered one */
   spacing?: { entered: number; used: number }
 }
 
@@ -147,16 +147,17 @@ export function computeGantry(g: GantryInputs, settings: Record<GantryAxis, Sett
       return { req, sel, drive, joint }
     }
     let { req, sel, drive, joint } = evaluate(g)
-    // two X axes carrying Y on gantry kits: the X spacing set to the one that fits the kits (clear of each other,
-    // the second kit's screws on the carried axis's bores or its far end at the bracket); twice, as the X axis
-    // (and so its kit) may change with it
+    // two base axes (X, or Y in yz) carrying the next on gantry kits: their spacing set to the one that fits the kits
+    // (clear of each other, the second kit's screws on the carried axis's bores or its far end at the bracket);
+    // twice, as the base axis (and so its kit) may change with it
     let spacing: GantryAxisResult['spacing']
     for (let pass = 0; pass < 2; pass++) {
       const fit = joint?.span?.spacing
-      const used = spacing?.used ?? g.xParallel.spacing
-      if (a !== 'x' || fit == null || Math.abs(fit - used) < 0.05) break
-      spacing = { entered: g.xParallel.spacing, used: fit }
-      ;({ req, sel, drive, joint } = evaluate({ ...g, xParallel: { ...g.xParallel, spacing: fit } }))
+      const entered = baseParallel(g).spacing
+      const used = spacing?.used ?? entered
+      if (a !== gantryBase(g.config) || fit == null || Math.abs(fit - used) < 0.05) break
+      spacing = { entered, used: fit }
+      ;({ req, sel, drive, joint } = evaluate(withBaseSpacing(g, fit)))
     }
     const kitLoad = joint?.kit ? [{ label: '조합 키트', model: kitList(joint.kits), mass: joint.kits.reduce((m, k) => m + k.mass, 0) }] : []
     const stage = sel.selectedAxis ? stageOf(a, g, sel.selectedAxis, req, drive.mass) : null

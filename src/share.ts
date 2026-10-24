@@ -2,7 +2,7 @@
 // report carries one) opens the same calculation. JSON, deflated, base64url; read once at start-up.
 import { defaultComboOptions, type ComboOptions } from './cad/combo'
 import { defaultGantry, initialGantrySettings, type GantryAxis, type GantryInputs, type GantrySettings } from './calc/gantry'
-import { defaultPress, defaultSettings, type Requirements, type Settings } from './calc/types'
+import { defaultParallel, defaultPress, defaultSettings, type ParallelConfig, type Requirements, type Settings } from './calc/types'
 import { noPicks, type Picks } from './selection'
 import type { ProfileView } from './ui/ProfileChart'
 
@@ -81,7 +81,7 @@ function withDefaults(s: Partial<Shared> & { mode?: string }): Shared | null {
     const v = s as Partial<GantryShare>
     return {
       mode: 'gantry',
-      gantry: { ...defaultGantry, ...v.gantry },
+      gantry: gantryOf(v.gantry),
       gantrySettings: perAxis((a) => ({ ...initialGantrySettings[a], ...v.gantrySettings?.[a] })),
       picks: perAxis((a) => ({ ...noPicks, ...v.picks?.[a] })),
       views: perAxis((a) => v.views?.[a] ?? 'cycle'),
@@ -90,6 +90,18 @@ function withDefaults(s: Partial<Shared> & { mode?: string }): Shared | null {
     }
   }
   return null
+}
+
+/** Gantry inputs from a link, the fields added since filled from the defaults; links made before Y could be a twin
+ *  arrangement carry the X arrangement as `xParallel` */
+function gantryOf(v: (Partial<GantryInputs> & { xParallel?: ParallelConfig }) | undefined): GantryInputs {
+  const { xParallel, ...rest } = v ?? {}
+  const parallel = { ...defaultGantry.parallel, ...rest.parallel, ...(xParallel ? { x: xParallel } : {}) }
+  return {
+    ...defaultGantry,
+    ...rest,
+    parallel: { x: { ...defaultParallel, ...parallel.x }, y: { ...defaultParallel, ...parallel.y } },
+  }
 }
 
 /** The address that opens `shared`: this page with the state, #gantry for the gantry screen. */

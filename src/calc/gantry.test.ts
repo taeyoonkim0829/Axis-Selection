@@ -116,7 +116,7 @@ describe('computeGantry', () => {
 
   it('sets the X spacing to fit the angle kits under two X axes (no overlap, screws on the Y bores)', () => {
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!.id
-    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 600 } }
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', parallel: { ...defaultGantry.parallel, x: { ...defaultGantry.parallel.x, mode: 'twinMotor', spacing: 600 } } }
     const chosen = { ...picks, x: { ...noPicks, axisId: elgt(160) }, y: { ...noPicks, axisId: elgt(120) } }
     const [, x] = computeGantry(g, initialGantrySettings, chosen)
     const j = x.joint!
@@ -128,6 +128,22 @@ describe('computeGantry', () => {
     expect(j.interference).toBe(false)
     expect(j.span!.mismatch).toBeCloseTo(0)
     expect(j.status).toBe('ok')
+  })
+
+  it('takes the parallel arrangement on the base axis: Y in yz, X otherwise', () => {
+    const twinY = { ...defaultGantry.parallel.y, mode: 'twinMotor' as const, spacing: 400 }
+    const g: GantryInputs = { ...defaultGantry, config: 'yz', yMounting: 'wall', parallel: { ...defaultGantry.parallel, y: twinY } }
+    const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!.id
+    const chosen = { ...picks, y: { ...noPicks, axisId: elgt(120) }, z: { ...noPicks, axisId: elgt(90) } }
+    const [z, y] = computeGantry(g, initialGantrySettings, chosen)
+    expect(y.req!.parallel?.mode).toBe('twinMotor')
+    expect(z.req!.parallel).toBeUndefined()
+    // Z on two Y slides: one kit per slide
+    expect(y.joint!.kit?.family).toBe('EHAM-MA')
+    expect(y.joint!.kits).toHaveLength(2)
+    // in xyz the Y arrangement is not used
+    const [, yx] = computeGantry({ ...g, config: 'xyz' }, initialGantrySettings, chosen)
+    expect(yx.req!.parallel).toBeUndefined()
   })
 
   it('runs a moving Z profile with its selected drive', () => {

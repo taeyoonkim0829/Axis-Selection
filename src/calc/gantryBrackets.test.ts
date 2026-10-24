@@ -25,7 +25,7 @@ describe('custom brackets', () => {
   })
 
   it('never takes the place of a Festo kit', () => {
-    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 1000 } }
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', parallel: { ...defaultGantry.parallel, x: { ...defaultGantry.parallel.x, mode: 'twinMotor', spacing: 1000 } } }
     for (const [x, y] of [
       [90, 90],
       [120, 120],

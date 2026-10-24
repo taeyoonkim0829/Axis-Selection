@@ -101,7 +101,7 @@ describe('gantry kits', () => {
 
   it('takes the angle kit hand whose wall reaches towards the carried axis', () => {
     const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
-    const single = { ...wallY, xParallel: { ...wallY.xParallel, mode: 'single' as const } }
+    const single = { ...wallY, parallel: { ...wallY.parallel, x: { ...wallY.parallel.x, mode: 'single' as const } } }
     const at = (dy: number) => gantryJoint({ ...single, offsets: { ...single.offsets, xy: { x: 0, y: dy, z: 0 } } }, 'x', 'y', x, y, 500, adapters).kit?.model
     // seen facing the Y slide (from −X), ML reaches to the right (−Y), MR to the left (+Y)
     expect(at(300)).toBe('EHAM-AK-L9-160-L9-120-MR')
@@ -111,7 +111,7 @@ describe('gantry kits', () => {
 
   it('pins the carried axis at its drive end on the angle kit (pin and threaded holes of the profile)', () => {
     const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
-    const g = { ...wallY, xParallel: { ...wallY.xParallel, mode: 'single' as const }, offsets: { ...wallY.offsets, xy: { x: 0, y: 300, z: 0 } } }
+    const g = { ...wallY, parallel: { ...wallY.parallel, x: { ...wallY.parallel.x, mode: 'single' as const } }, offsets: { ...wallY.offsets, xy: { x: 0, y: 300, z: 0 } } }
     const j = gantryJoint(g, 'x', 'y', x, y, 500, adapters, 500 + y.baseLength!)
     // MR reaches to +Y; the kit's pins hold the Y drive flange 71.5 mm from the foot, the body beyond it, so the
     // drive is at the −Y end
@@ -124,7 +124,7 @@ describe('gantry kits', () => {
 
   it('checks the second kit under two X axes against the threaded holes of the pinned carried axis', () => {
     const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
-    const twin = (spacing: number) => ({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor' as const, spacing } })
+    const twin = (spacing: number) => ({ ...wallY, parallel: { ...wallY.parallel, x: { ...wallY.parallel.x, mode: 'twinMotor' as const, spacing } } })
     // first X at −500 (MR, reaching +Y): bores at 153 + k·100 from its foot, the mirrored kit's screws at d − 153 − k·100
     const far = gantryJoint(twin(1000), 'x', 'y', x, y, 500, adapters, 716)
     expect(far.flange).toBeCloseTo(-500 + 71.5)
@@ -139,14 +139,14 @@ describe('gantry kits', () => {
 
   it('finds the two mirrored angle kits overlapping when the X axes are close', () => {
     const [x, y] = [find('ELGT', 160, 'spindle'), find('ELGT', 120, 'spindle')]
-    const close = gantryJoint({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor', spacing: 600 } }, 'x', 'y', x, y, 500, adapters, 716)
+    const close = gantryJoint({ ...wallY, parallel: { ...wallY.parallel, x: { ...wallY.parallel.x, mode: 'twinMotor', spacing: 600 } } }, 'x', 'y', x, y, 500, adapters, 716)
     // the walls reach 375 mm from each foot: they clear from 752 mm; 806 is the nearest fitting spacing
     expect(close.interference).toBe(true)
     expect(close.span!.clear).toBe(752)
     expect(close.span!.spacing).toBe(806)
     expect(close.status).toBe('warn')
     // a Y axis too short to reach the second kit at any clear spacing
-    const short = gantryJoint({ ...wallY, xParallel: { ...wallY.xParallel, mode: 'twinMotor', spacing: 600 } }, 'x', 'y', x, y, 100, adapters, 316)
+    const short = gantryJoint({ ...wallY, parallel: { ...wallY.parallel, x: { ...wallY.parallel.x, mode: 'twinMotor', spacing: 600 } } }, 'x', 'y', x, y, 100, adapters, 316)
     expect(short.span!.spacing).toBeNull()
     expect(short.status).toBe('warn')
   })
@@ -180,7 +180,7 @@ describe('gantry drawing', () => {
   }, 120000)
 
   it('stands Y on the X slide with an angle kit and hangs Z on the Y slide with an adapter plate (ELGT)', async () => {
-    const g: GantryInputs = { ...defaultGantry, yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'single' } }
+    const g: GantryInputs = { ...defaultGantry, yMounting: 'wall', parallel: { ...defaultGantry.parallel, x: { ...defaultGantry.parallel.x, mode: 'single' } } }
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!
     const [x, y, z] = [elgt(160), elgt(120), elgt(90)]
     const parts = [axisDrawing('x', x, 1000, g), axisDrawing('y', y, 500, g), axisDrawing('z', z, 300, g)]
@@ -203,7 +203,7 @@ describe('gantry drawing', () => {
       ...defaultGantry,
       config: 'xy',
       yMounting: 'wall',
-      xParallel: { ...defaultGantry.xParallel, mode: 'single' },
+      parallel: { ...defaultGantry.parallel, x: { ...defaultGantry.parallel.x, mode: 'single' } },
       offsets: { ...defaultGantry.offsets, xy: { x: 0, y: 300, z: 0 } },
     }
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!
@@ -217,7 +217,7 @@ describe('gantry drawing', () => {
 
   it('mirrors the angle kits under two X axes, both walls reaching inwards', async () => {
     // Y 1000 + 216 mm long, pinned at the first kit; 1006 puts the second kit's screws on its threaded bores
-    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', xParallel: { ...defaultGantry.xParallel, mode: 'twinMotor', spacing: 1006 } }
+    const g: GantryInputs = { ...defaultGantry, config: 'xy', yMounting: 'wall', parallel: { ...defaultGantry.parallel, x: { ...defaultGantry.parallel.x, mode: 'twinMotor', spacing: 1006 } } }
     const elgt = (size: number) => axes.find((x) => x.family === 'ELGT' && x.drive === 'spindle' && x.size === size)!
     const [x, y] = [elgt(160), elgt(120)]
     const yd = axisDrawing('y', y, 1000, g)

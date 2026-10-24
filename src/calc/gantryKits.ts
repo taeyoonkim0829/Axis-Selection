@@ -1,7 +1,7 @@
 // Gantry kits: the Festo part joining a carried axis's profile to the slide of the axis below it (EHAM angle and
 // adapter kits, EAHF-E24 profile mountings), from the axis data sheets' combination tables (data/adapters).
 import type { Axis, AxisAdapter, AdapterAxis } from '../data/types'
-import { axisMounting, slideFrame, type GantryAxis, type GantryInputs, type Vec } from './gantry'
+import { axisMounting, baseParallel, gantryBase, slideFrame, type GantryAxis, type GantryInputs, type Vec } from './gantry'
 import type { Status } from './types'
 
 /** One joint of the gantry: `carried` sits on the slide(s) of `base` */
@@ -47,11 +47,12 @@ const cross = (a: number[], b: number[]) => [a[1] * b[2] - a[2] * b[1], a[2] * b
 
 /**
  * Lateral positions (mm along the base slide's l, from the arrangement centre) of the base axis members carrying
- * the next axis: two X axes at ∓spacing/2, an X axis with LM guides where the layout puts the axis, else 0.
+ * the next axis: two base axes (X, or Y in yz) at ∓spacing/2, a base axis with LM guides where the layout puts the
+ * axis, else 0.
  */
 function baseSlides(g: GantryInputs, base: GantryAxis): number[] {
-  const p = g.xParallel
-  if (base !== 'x' || p.mode === 'single' || !(p.spacing > 0)) return [0]
+  const p = baseParallel(g)
+  if (base !== gantryBase(g.config) || p.mode === 'single' || !(p.spacing > 0)) return [0]
   if (p.mode === 'guides') return [p.guideCount === 2 ? (p.guideAxisEdge ? -p.spacing : 0) : -p.spacing / 2]
   return [-p.spacing / 2, p.spacing / 2]
 }

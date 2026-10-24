@@ -445,8 +445,8 @@ export const en: Record<string, string> = {
     'With an angle kit (EHAM-AK) the Y axis sits where the kit holds it (assembly instructions); the Y value only picks the side (+/−).',
   '어댑터 플레이트(EHAM-MA)를 쓰면 Z축은 모터 쪽 끝이 핀 구멍에 맞춰 플레이트에 고정되고, Z 값은 쓰지 않습니다.':
     'With an adapter plate (EHAM-MA) the Z axis is fixed to the plate at its motor end by the pin holes; the Z value is not used.',
-  '조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 Y축이 두 키트에 맞는 간격, 입력 {entered} mm).':
-    'Calculated with the spacing set to {used} mm to fit the gantry kits (kits clear of each other, the Y axis fitting both; entered {entered} mm).',
+  '조합 키트에 맞춰 {used} mm로 자동 조정해 계산합니다(키트끼리 간섭 없이 {axis}축이 두 키트에 맞는 간격, 입력 {entered} mm).':
+    'Calculated with the spacing set to {used} mm to fit the gantry kits (kits clear of each other, the {axis} axis fitting both; entered {entered} mm).',
   '두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격은 {clear} mm 이상이어야 하는데 그 간격에서는 {axis}축이 두 번째 키트에 맞게 닿지 않습니다. 더 긴 {axis}축 스트로크가 필요합니다.':
     "The two {base} axes' gantry kits overlap (interference). The {base} spacing must be at least {clear} mm, and at that spacing the {axis} axis does not reach the second kit where it fits. A longer {axis} stroke is needed.",
   '{axis}축이 짧아 두 번째 {base}축 키트에 맞는 간격이 없습니다. 더 긴 {axis}축 스트로크가 필요합니다.':
@@ -454,6 +454,7 @@ export const en: Record<string, string> = {
   '두 {base}축의 조합 키트가 서로 겹칩니다(간섭). {base}축 간격을 {spacing} mm로 하면 겹치지 않고 맞습니다.':
     "The two {base} axes' gantry kits overlap (interference). A {base} spacing of {spacing} mm clears them and fits.",
   'X축 간격 (조합 키트에 맞춰 조정)': 'X axis spacing (set to fit the gantry kits)',
+  'Y축 간격 (조합 키트에 맞춰 조정)': 'Y axis spacing (set to fit the gantry kits)',
   '함께 주문: {model} ({partNumber}) × {n}': 'Order with it: {model} ({partNumber}) × {n}',
   '{config} 조합 · 각 축의 5단계 조합 도면과 조합 키트로 조립합니다.':
     '{config} gantry · assembled from each axis’s step 5 drawing and the gantry kits.',
@@ -610,6 +611,7 @@ export const en: Record<string, string> = {
   '슬라이드 면이 위쪽': 'Slide surface facing up',
   '슬라이드 면이 X 방향 (측면 설치)': 'Slide surface facing X (side mounting)',
   'X축 구성': 'X axis arrangement',
+  'Y축 구성': 'Y axis arrangement',
   '질량 · 장착 위치': 'Masses · mounting positions',
   '상위 축 하중에 들어가는 값입니다. 모터 질량은 모터 데이터에 질량이 없을 때 사용합니다 (Festo · Siemens).':
     'Used for the loads on the axes below. The motor mass is used when the motor data has none (Festo · Siemens).',
@@ -617,6 +619,8 @@ export const en: Record<string, string> = {
   'Y축 장착 위치': 'Y axis mounting position',
   'Y 슬라이드 중심에서 Z축 본체 중심까지': 'From the Y slide centre to the Z axis body centre',
   'Y 슬라이드 중심에서 고정된 Z 슬라이드 중심까지': 'From the Y slide centre to the clamped Z slide centre',
+  'Y축 구성 중심에서 Z축 본체 중심까지': 'From the centre of the Y arrangement to the Z axis body centre',
+  'Y축 구성 중심에서 고정된 Z 슬라이드 중심까지': 'From the centre of the Y arrangement to the clamped Z slide centre',
   'X축 구성 중심에서 Y축 본체 중심까지': 'From the centre of the X arrangement to the Y axis body centre',
   '하위 축의 이동부는 하중이 가장 불리한 끝 위치(Z 하강 끝, Y 모터 쪽 끝)에 있다고 봅니다.':
     'The moving parts of the carried axes are taken at their worst end position (Z fully down, Y at the motor end).',

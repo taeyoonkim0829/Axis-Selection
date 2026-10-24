@@ -39,9 +39,11 @@ export interface GantryInputs {
   zMode: ZMode
   yMounting: Exclude<Mounting, 'vertical'>
   xMounting: Exclude<Mounting, 'vertical'>
-  /** Two X axes or LM guides; the arrangement's centre is the X reference */
-  xParallel: ParallelConfig
-  /** Mounting point of the carried axis from the carrier's slide centre (X: from the centre of the X arrangement),
+  /** The base axis's arrangement (two axes or LM guides; the arrangement's centre is its reference): X in xyz / xy,
+   *  Y in yz (`gantryBase`); each kept, so switching the configuration keeps both */
+  parallel: Record<ParallelAxis, ParallelConfig>
+  /** Mounting point of the carried axis from the carrier's slide centre (the base axis: from the centre of its
+   *  arrangement),
    *  world mm: yz = Z on Y (profile centre, or the clamped Z slide), xy = Y profile centre on X */
   offsets: { yz: Vec; xy: Vec }
   /** kg, motor mass when the motor data has none */
@@ -60,7 +62,7 @@ export const defaultGantry: GantryInputs = {
   zMode: 'slide',
   yMounting: 'wall',
   xMounting: 'floor',
-  xParallel: { ...defaultParallel, mode: 'twinMotor', spacing: 600 },
+  parallel: { x: { ...defaultParallel, mode: 'twinMotor', spacing: 600 }, y: { ...defaultParallel, spacing: 600 } },
   offsets: { yz: { x: 0, y: 0, z: 0 }, xy: { x: 0, y: 0, z: 0 } },
   motorMass: { x: 3, y: 2, z: 1.5 },
 }
@@ -79,6 +81,21 @@ export const initialGantrySettings: GantrySettings = {
 /** Axes of a configuration in selection order, from the tool to the base. */
 export function gantryChain(config: GantryConfig): GantryAxis[] {
   return config === 'xyz' ? ['z', 'y', 'x'] : config === 'yz' ? ['z', 'y'] : ['y', 'x']
+}
+
+/** The axes that can be the base of a gantry, and so a parallel arrangement */
+export type ParallelAxis = Exclude<GantryAxis, 'z'>
+
+/** The base axis (bottom of the chain): X, or Y in yz */
+export const gantryBase = (config: GantryConfig): ParallelAxis => gantryChain(config).at(-1) as ParallelAxis
+
+/** The base axis's arrangement */
+export const baseParallel = (g: GantryInputs): ParallelConfig => g.parallel[gantryBase(g.config)]
+
+/** The inputs with the base axis's spacing changed */
+export const withBaseSpacing = (g: GantryInputs, spacing: number): GantryInputs => {
+  const b = gantryBase(g.config)
+  return { ...g, parallel: { ...g.parallel, [b]: { ...g.parallel[b], spacing } } }
 }
 
 /** The axes in display order (X, Y, Z); the selection order stays `gantryChain` */
@@ -214,7 +231,7 @@ export function gantryRequirements(
     payload,
     cog,
     mounting,
-    parallel: a === 'x' ? g.xParallel : undefined,
+    parallel: a === gantryBase(g.config) ? baseParallel(g) : undefined,
     cross: crossAccel,
     movingProfile: a === 'z' && g.zMode === 'profile' ? { driveMass: g.motorMass.z } : undefined,
   }
